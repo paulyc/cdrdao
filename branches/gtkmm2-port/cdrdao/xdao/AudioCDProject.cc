@@ -74,7 +74,7 @@ AudioCDProject::AudioCDProject(int number, const char *name, TocEdit *tocEdit)
     using namespace Gnome::UI::Items;
     vector<Info> menus, viewMenuTree;
 
-    menus.push_back(Item(Icon(Gtk::Stock::PROPERTIES.id),
+    menus.push_back(Item(Icon(Gtk::Stock::PROPERTIES),
     				 N_("CD-TEXT..."),
 			      slot(*this, &AudioCDProject::cdTextDialog),
 			      N_("Edit CD-TEXT data")));
@@ -105,6 +105,7 @@ AudioCDProject::AudioCDProject(int number, const char *name, TocEdit *tocEdit)
 
   newAudioCDView();
   guiUpdate(UPD_ALL);
+//GTKMM2
   show_all();
 }
 

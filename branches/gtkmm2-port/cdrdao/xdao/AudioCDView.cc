@@ -241,14 +241,14 @@ AudioCDView::AudioCDView(AudioCDChild *child, AudioCDProject *project)
 	Info info;
     int i;
     
-    menus.push_back(Item(Icon(Gtk::Stock::PROPERTIES.id),
+    menus.push_back(Item(Icon(Gtk::Stock::PROPERTIES),
     				 N_("Track Info..."),
   			      slot(*this, &AudioCDView::trackInfo),
   			      N_("Edit track data")));
   
     menus.push_back(Separator());
   
-	info = Item(Icon(Gtk::Stock::CUT.id),
+	info = Item(Icon(Gtk::Stock::CUT),
   			      N_("Cut"),
   			      slot(*this, &AudioCDView::cutTrackData),
   			      N_("Cut out selected samples"));
@@ -256,7 +256,7 @@ AudioCDView::AudioCDView(AudioCDChild *child, AudioCDProject *project)
     info.set_accel(Gtk::Menu_Helpers::AccelKey("<control>X"));
     menus.push_back(info);
 
-    info = Item(Icon(Gtk::Stock::PASTE.id),
+    info = Item(Icon(Gtk::Stock::PASTE),
   			      N_("Paste"),
   			      slot(*this, &AudioCDView::pasteTrackData),
   			      N_("Paste previously cut samples"));
