@@ -66,6 +66,7 @@ EXEEXT = @EXEEXT@
 OBJEXT = @OBJEXT@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 AMTAR = @AMTAR@
+AR = @AR@
 AWK = @AWK@
 CC = @CC@
 CPP = @CPP@
@@ -88,9 +89,12 @@ VERSION = @VERSION@
 am__include = @am__include@
 am__quote = @am__quote@
 antlr_path = @antlr_path@
-cdrdao_version = @cdrdao_version@
 dao_src = @dao_src@
 dlg_path = @dlg_path@
+en_cdrdao = @en_cdrdao@
+en_toc2cue = @en_toc2cue@
+en_toc2mp3 = @en_toc2mp3@
+en_xdao = @en_xdao@
 install_sh = @install_sh@
 mydefs = @mydefs@
 pccts_target = @pccts_target@
@@ -101,31 +105,34 @@ scsilib_incl = @scsilib_incl@
 scsilib_libs = @scsilib_libs@
 sound_if_obj = @sound_if_obj@
 thread_libs = @thread_libs@
-utils_sources = @utils_sources@
-utils_targets = @utils_targets@
-xdao = @xdao@
-bin_PROGRAMS = toc2cue toc2mp3
+@COND_TOC2MP3_TRUE@MAYBE_TOC2MP3 = toc2mp3
+@COND_TOC2MP3_FALSE@MAYBE_TOC2MP3 = 
+
+bin_PROGRAMS = toc2cue $(MAYBE_TOC2MP3)
+
 toc2cue_SOURCES = toc2cue.cc
 toc2mp3_SOURCES = toc2mp3.cc
 
+toc2cue_LDADD = -L$(top_builddir)/trackdb -ltrackdb
+toc2mp3_LDADD = -L$(top_builddir)/trackdb -ltrackdb @LAME_LIBS@
+
+toc2mp3_CXXFLAGS = @LAME_CFLAGS@
+
 INCLUDES = -I$(top_builddir)/trackdb
-LDADD = -L$(top_builddir)/trackdb -ltrackdb @LAME_LIBS@
-AM_CXXFLAGS = @LAME_CFLAGS@
 subdir = utils
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/config.h
 CONFIG_CLEAN_FILES =
-bin_PROGRAMS = toc2cue$(EXEEXT) toc2mp3$(EXEEXT)
+@COND_TOC2MP3_TRUE@bin_PROGRAMS = toc2cue$(EXEEXT) toc2mp3$(EXEEXT)
+@COND_TOC2MP3_FALSE@bin_PROGRAMS = toc2cue$(EXEEXT)
 PROGRAMS = $(bin_PROGRAMS)
 
 am_toc2cue_OBJECTS = toc2cue.$(OBJEXT)
 toc2cue_OBJECTS = $(am_toc2cue_OBJECTS)
-toc2cue_LDADD = $(LDADD)
 toc2cue_DEPENDENCIES =
 toc2cue_LDFLAGS =
-am_toc2mp3_OBJECTS = toc2mp3.$(OBJEXT)
+am_toc2mp3_OBJECTS = toc2mp3-toc2mp3.$(OBJEXT)
 toc2mp3_OBJECTS = $(am_toc2mp3_OBJECTS)
-toc2mp3_LDADD = $(LDADD)
 toc2mp3_DEPENDENCIES =
 toc2mp3_LDFLAGS =
 
@@ -136,7 +143,8 @@ LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__depfiles_maybe = depfiles
-@AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/toc2cue.Po ./$(DEPDIR)/toc2mp3.Po
+@AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/toc2cue.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/toc2mp3-toc2mp3.Po
 CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
 CXXLD = $(CXX)
@@ -183,6 +191,7 @@ clean-binPROGRAMS:
 toc2cue$(EXEEXT): $(toc2cue_OBJECTS) $(toc2cue_DEPENDENCIES) 
 	@rm -f toc2cue$(EXEEXT)
 	$(CXXLINK) $(toc2cue_LDFLAGS) $(toc2cue_OBJECTS) $(toc2cue_LDADD) $(LIBS)
+toc2mp3-toc2mp3.$(OBJEXT): toc2mp3.cc
 toc2mp3$(EXEEXT): $(toc2mp3_OBJECTS) $(toc2mp3_DEPENDENCIES) 
 	@rm -f toc2mp3$(EXEEXT)
 	$(CXXLINK) $(toc2mp3_LDFLAGS) $(toc2mp3_OBJECTS) $(toc2mp3_LDADD) $(LIBS)
@@ -194,7 +203,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/toc2cue.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/toc2mp3.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/toc2mp3-toc2mp3.Po@am__quote@
 
 distclean-depend:
 	-rm -rf ./$(DEPDIR)
@@ -210,6 +219,18 @@ distclean-depend:
 @AMDEP_TRUE@	depfile='$(DEPDIR)/$*.Po' tmpdepfile='$(DEPDIR)/$*.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(CXXCOMPILE) -c -o $@ `cygpath -w $<`
+
+toc2mp3-toc2mp3.o: toc2mp3.cc
+@AMDEP_TRUE@	source='toc2mp3.cc' object='toc2mp3-toc2mp3.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/toc2mp3-toc2mp3.Po' tmpdepfile='$(DEPDIR)/toc2mp3-toc2mp3.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(toc2mp3_CXXFLAGS) $(CXXFLAGS) -c -o toc2mp3-toc2mp3.o `test -f 'toc2mp3.cc' || echo '$(srcdir)/'`toc2mp3.cc
+
+toc2mp3-toc2mp3.obj: toc2mp3.cc
+@AMDEP_TRUE@	source='toc2mp3.cc' object='toc2mp3-toc2mp3.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/toc2mp3-toc2mp3.Po' tmpdepfile='$(DEPDIR)/toc2mp3-toc2mp3.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(toc2mp3_CXXFLAGS) $(CXXFLAGS) -c -o toc2mp3-toc2mp3.obj `cygpath -w toc2mp3.cc`
 CXXDEPMODE = @CXXDEPMODE@
 uninstall-info-am:
 

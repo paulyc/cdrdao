@@ -66,6 +66,7 @@ EXEEXT = @EXEEXT@
 OBJEXT = @OBJEXT@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 AMTAR = @AMTAR@
+AR = @AR@
 AWK = @AWK@
 CC = @CC@
 CPP = @CPP@
@@ -88,9 +89,12 @@ VERSION = @VERSION@
 am__include = @am__include@
 am__quote = @am__quote@
 antlr_path = @antlr_path@
-cdrdao_version = @cdrdao_version@
 dao_src = @dao_src@
 dlg_path = @dlg_path@
+en_cdrdao = @en_cdrdao@
+en_toc2cue = @en_toc2cue@
+en_toc2mp3 = @en_toc2mp3@
+en_xdao = @en_xdao@
 install_sh = @install_sh@
 mydefs = @mydefs@
 pccts_target = @pccts_target@
@@ -101,10 +105,10 @@ scsilib_incl = @scsilib_incl@
 scsilib_libs = @scsilib_libs@
 sound_if_obj = @sound_if_obj@
 thread_libs = @thread_libs@
-utils_sources = @utils_sources@
-utils_targets = @utils_targets@
-xdao = @xdao@
-SUBDIRS = scsilib pccts trackdb utils paranoia dao xdao
+@COND_XDAO_TRUE@MAYBE_XDAO = xdao
+@COND_XDAO_FALSE@MAYBE_XDAO = 
+
+SUBDIRS = scsilib pccts trackdb utils paranoia dao $(MAYBE_XDAO)
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/mkinstalldirs
@@ -120,7 +124,7 @@ DIST_COMMON = README AUTHORS COPYING ChangeLog INSTALL Makefile.am \
 	Makefile.in NEWS acinclude.m4 aclocal.m4 config.guess \
 	config.h.in config.sub configure configure.in depcomp \
 	install-sh missing mkinstalldirs
-DIST_SUBDIRS = $(SUBDIRS)
+DIST_SUBDIRS = scsilib pccts trackdb utils paranoia dao xdao
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-recursive
 
@@ -291,7 +295,7 @@ distdir: $(DISTFILES)
 	    || exit 1; \
 	  fi; \
 	done
-	list='$(SUBDIRS)'; for subdir in $$list; do \
+	list='$(DIST_SUBDIRS)'; for subdir in $$list; do \
 	  if test "$$subdir" = .; then :; else \
 	    test -d $(distdir)/$$subdir \
 	    || mkdir $(distdir)/$$subdir \
