@@ -53,6 +53,20 @@ DumpCDProject::DumpCDProject()
   tiSave_->set_sensitive(false);
   tiRecord_->hide();
 
+  {
+    using namespace Gnome::UI::Items;
+    vector<Info> menus, dumpMenuTree;
+
+    dumpMenuTree.push_back(Item(Icon(Gtk::Stock::PROPERTIES),
+    				 N_("Options"),
+  			      slot(*this, &DumpCDProject::projectOptions),
+  			      N_("Advanced dump options")));
+
+    menus.push_back(Gnome::UI::Items::Menu(N_("_Dump"), dumpMenuTree));
+
+    insert_menus("Edit", menus);
+  }
+
   CDSource = new RecordCDSource(this);
   CDSource->onTheFlyOption(false);
   CDSource->show();
