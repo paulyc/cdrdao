@@ -88,14 +88,18 @@ diff -ru --unidirectional-new-file /home/denis/packages/cdrtools-2.01a25/libscg/
 diff -ru --unidirectional-new-file /home/denis/packages/cdrtools-2.01a25/Makefile scsilib/Makefile
 --- scsilib.orig/Makefile	1998-09-20 15:58:30.000000000 -0700
 +++ scsilib/Makefile	2004-04-12 18:56:23.000000000 -0700
-@@ -13,3 +13,9 @@
+@@ -13,3 +13,13 @@
  #
  include		$(SRCROOT)/$(RULESDIR)/rules.rdi
  ###########################################################################
 +
 +install:
++	@
++
 +check:
++
 +uninstall:
++	@
 +
 +distclean: clean
 diff -ru --unidirectional-new-file /home/denis/packages/cdrtools-2.01a31/README.cdrdao scsilib/README.cdrdao
