@@ -18,6 +18,11 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2000/05/01 18:15:00  andreasm
+ * Switch to gnome-config settings.
+ * Adapted Message Box to Gnome look, unfortunately the Gnome::MessageBox is
+ * not implemented in gnome--, yet.
+ *
  * Revision 1.3  2000/04/23 09:07:08  andreasm
  * * Fixed most problems marked with '//llanero'.
  * * Added audio CD edit menus to MDIWindow.
@@ -36,7 +41,7 @@
  *
  */
 
-static char rcsid[] = "$Id: MessageBox.cc,v 1.4 2000-05-01 18:15:00 andreasm Exp $";
+static char rcsid[] = "$Id: MessageBox.cc,v 1.5 2000-05-14 16:54:59 andreasm Exp $";
 
 #include <stddef.h>
 #include <stdarg.h>
@@ -66,28 +71,28 @@ MessageBoxBase::~MessageBoxBase()
 
 Gtk::Button *MessageBoxBase::createButton(const char *name)
 {
-  Gnome::Stock *pixmap = NULL;
+  Gnome::StockPixmap *pixmap = NULL;
   const char *text;
 
   if (strcmp(name, GNOME_STOCK_BUTTON_OK) == 0) {
-    pixmap = manage(Gnome::Stock::pixmap_widget(*this, name));
+    pixmap = manage(Gnome::StockPixmap::pixmap_widget(*this, name));
     text = "Ok";
   }
   else if (strcmp(name, GNOME_STOCK_BUTTON_CANCEL) == 0) {
-    pixmap = manage(Gnome::Stock::pixmap_widget(*this, name));
+    pixmap = manage(Gnome::StockPixmap::pixmap_widget(*this, name));
     text = "Cancel";
   }
   else if (strcmp(name, GNOME_STOCK_BUTTON_YES) == 0) {
-    pixmap = manage(Gnome::Stock::pixmap_widget(*this, name));
+    pixmap = manage(Gnome::StockPixmap::pixmap_widget(*this, name));
     text = "Yes";
   }
   else if (strcmp(name, GNOME_STOCK_BUTTON_NO) == 0) {
-    pixmap = manage(Gnome::Stock::pixmap_widget(*this, name));
+    pixmap = manage(Gnome::StockPixmap::pixmap_widget(*this, name));
     text = "No";
   }
 
   if (pixmap != NULL)
-    return Gnome::Stock::pixmap_button(*pixmap, text);
+    return Gnome::StockPixmap::pixmap_button(*pixmap, text);
   else 
     return new Gtk::Button(name);
 }
