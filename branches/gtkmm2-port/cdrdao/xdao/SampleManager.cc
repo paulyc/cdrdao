@@ -18,6 +18,11 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2002/01/20 20:43:37  andreasm
+ * Added support for sub-channel reading and writing.
+ * Adapted to autoconf-2.52.
+ * Adapted to gcc-3.0.
+ *
  * Revision 1.4  2000/09/24 17:39:07  andreasm
  * Fixed length of processed data per idle signal call so that playback does
  * not jump when audio data scanning is active.
@@ -62,8 +67,7 @@
 #include <math.h>
 #include <assert.h>
 
-#include <gtk--.h>
-#include <gtk/gtk.h>
+#include <libgnomeuimm.h>
 
 #include "SampleManager.h"
 
@@ -110,7 +114,7 @@ public:
 	       short *leftNeg, short *leftPos,
 	       short *rightNeg, short *rightPos);
   int scanToc(unsigned long start, unsigned long end);
-  int readSamples();
+  bool readSamples();
   void abortAction();
   void reallocSamples(unsigned long maxSample);
   void removeSamples(unsigned long start, unsigned long end, TrackDataScrap *);
@@ -195,8 +199,7 @@ SampleManagerImpl::SampleManagerImpl(unsigned long blocking) : tocReader_(NULL)
   label->show();
 
   progressBar_ = new Gtk::ProgressBar();
-  progressBar_->set_bar_style(GTK_PROGRESS_CONTINUOUS);
-  progressBar_->set_orientation(GTK_PROGRESS_LEFT_TO_RIGHT);
+  progressBar_->set_orientation(Gtk::PROGRESS_LEFT_TO_RIGHT);
   vbox->pack_start(*(progressBar_), FALSE, FALSE);
   progressBar_->show();
 
@@ -204,13 +207,13 @@ SampleManagerImpl::SampleManagerImpl(unsigned long blocking) : tocReader_(NULL)
   Gtk::Button *button = new Gtk::Button(" Abort ");
   hbox->pack_start(*button, TRUE, FALSE);
   button->show();
-  button->clicked.connect(slot(this, &SampleManagerImpl::abortAction));
+  button->signal_clicked().connect(slot(*this, &SampleManagerImpl::abortAction));
   vbox->pack_start(*hbox, FALSE, FALSE, 5);
   hbox->show();
 
-  progressWindow_ = new Gtk::Window(GTK_WINDOW_DIALOG);
+  progressWindow_ = new Gtk::Window(Gtk::WINDOW_TOPLEVEL);
   progressWindow_->add(*vbox);
-  progressWindow_->set_usize(200, 0);
+  progressWindow_->set_default_size(200, 0);
   vbox->show();
 }
 
@@ -325,7 +328,7 @@ int SampleManagerImpl::scanToc(unsigned long start, unsigned long end)
   if (withGui_) {
     progressWindow_->show();
 
-    Gtk::Main::idle.connect(slot(this, &SampleManagerImpl::readSamples));
+    Glib::signal_idle().connect(slot(*this, &SampleManagerImpl::readSamples));
 
     tocEdit_->blockEdit();
   }
@@ -336,7 +339,7 @@ int SampleManagerImpl::scanToc(unsigned long start, unsigned long end)
   return 0;
 }
 
-int SampleManagerImpl::readSamples()
+bool SampleManagerImpl::readSamples()
 {
   int j;
   long n;
@@ -404,7 +407,7 @@ int SampleManagerImpl::readSamples()
     percent_ = 1.0;
 
   if (withGui_) {
-    progressBar_->set_percentage(percent_);
+    progressBar_->set_fraction(percent_);
   }
 
   return 1;
