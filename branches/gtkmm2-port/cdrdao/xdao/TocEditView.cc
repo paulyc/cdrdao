@@ -17,12 +17,13 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "TocEditView.h"
-
 #include <stddef.h>
+
+#include <sigc++/signal.h>
 
 #include "guiUpdate.h"
 #include "TocEdit.h"
+#include "TocEditView.h"
 
 TocEditView::TocEditView(TocEdit *t)
 {
