@@ -403,8 +403,6 @@ void AudioCDProject::playStart()
   if (tocEdit_ && !tocEdit_->editable())
     return;
 
-  tocEdit_->blockEdit();
-
   if (audioCDView_ && audioCDView_->tocEditView()) {
     if (!audioCDView_->tocEditView()->sampleSelection(&start, &end))
       audioCDView_->tocEditView()->sampleView(&start, &end);
@@ -504,7 +502,7 @@ void AudioCDProject::playStop()
       playStatus_ = STOPPED;
       tocEdit_->unblockEdit();
       playStatus_ = STOPPED;
-      guiUpdate(UPD_PLAY_STATUS);
+      guiUpdate(UPD_PLAY_STATUS|UPD_EDITABLE_STATE);
     }
   else
     {
@@ -548,7 +546,7 @@ bool AudioCDProject::playCallback()
     soundInterface_->end();
     tocReader.init(NULL);
     playStatus_ = STOPPED;
-    level |= UPD_PLAY_STATUS;
+    level |= UPD_PLAY_STATUS | UPD_EDITABLE_STATE;
     tocEdit_->unblockEdit();
     guiUpdate(level);
     return false; // remove idle handler
