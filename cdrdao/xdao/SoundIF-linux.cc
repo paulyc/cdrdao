@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2004/02/12 01:13:32  poolshark
+ * Merge from gnome2 branch
+ *
  * Revision 1.1.1.1.6.3  2004/01/12 20:50:26  poolshark
  * Added _( and N_( intl macros
  *
@@ -46,7 +49,14 @@
  *
  */
 
+# if defined(__FreeBSD__)
+#include <sys/soundcard.h>
+# if !defined(SNDCTL_DSP_CHANNELS)
+#   define	SNDCTL_DSP_CHANNELS SOUND_PCM_WRITE_CHANNELS
+# endif
+# else 
 #include <linux/soundcard.h>
+# endif
 
 #include <stdio.h>
 #include <assert.h>
