@@ -18,6 +18,11 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2000/05/01 18:15:00  andreasm
+ * Switch to gnome-config settings.
+ * Adapted Message Box to Gnome look, unfortunately the Gnome::MessageBox is
+ * not implemented in gnome--, yet.
+ *
  * Revision 1.1.1.1  2000/02/05 01:38:51  llanero
  * Uploaded cdrdao 1.1.3 with pre10 patch applied.
  *
@@ -29,6 +34,7 @@
 extern const char *SET_CDRDAO_PATH;
 extern const char *SET_RECORD_EJECT_WARNING;
 extern const char *SET_RECORD_RELOAD_WARNING;
+extern const char *SET_DUPLICATE_ONTHEFLY_WARNING;
 extern const char *SET_SECTION_DEVICES;
 extern const char *SET_DEVICES_NUM;
 
