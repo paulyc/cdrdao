@@ -18,6 +18,10 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2000/02/20 23:34:54  llanero
+ * fixed scsilib directory (files mising ?-()
+ * ported xdao to 1.1.8 / gnome (MDI) app
+ *
  * Revision 1.1.1.1  2000/02/05 01:40:33  llanero
  * Uploaded cdrdao 1.1.3 with pre10 patch applied.
  *
@@ -34,6 +38,7 @@
 #include <gtk--.h>
 #include <gtk/gtk.h>
 
+#include <glade/glade.h>
 #include <gnome--.h>
 
 #include "config.h"
@@ -152,6 +157,8 @@ int main (int argc, char* argv[])
    
   Gtk::ButtonBox::set_child_size_default(50, 10);
 
+glade_gnome_init ();
+
   // settings
   SETTINGS = new Settings;
 
@@ -201,6 +208,7 @@ int main (int argc, char* argv[])
 //llanero  MAIN_WINDOW->show();
   MDI_WINDOW = new MDIWindow();
   MDI_WINDOW->open_toplevel();
+  MDI_WINDOW->example_child();
 
 //llanero  guiUpdate();
 
