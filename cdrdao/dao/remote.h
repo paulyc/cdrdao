@@ -18,6 +18,10 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2000/10/08 16:39:41  andreasm
+ * Remote progress message now always contain the track relative and total
+ * progress and the total number of processed tracks.
+ *
  * Revision 1.2  2000/04/23 16:29:50  andreasm
  * Updated to state of my private development environment.
  *
@@ -32,21 +36,21 @@
 #ifndef __REMOTE_H__
 #define __REMOTE_H__
 
-struct DaoWritingProgress {
-  int status;         // 1: writing lead-in, 2: writing data, 3: writing lead-out
+#define PGSMSG_MIN PGSMSG_RCD_ANALYZING
+#define PGSMSG_RCD_ANALYZING   1
+#define PGSMSG_RCD_EXTRACTING  2 
+#define PGSMSG_WCD_LEADIN      3
+#define PGSMSG_WCD_DATA        4
+#define PGSMSG_WCD_LEADOUT     5
+#define PGSMSG_MAX PGSMSG_WCD_LEADOUT
+
+struct ProgressMsg {
+  int status;         // see PGSMSG_* constants
   int totalTracks;    // total number of tracks
   int track;          // actually written track
   int trackProgress;  // progress for current track 0..1000
   int totalProgress;  // total writing progress 0..1000
   int bufferFillRate; // buffer fill rate 0..100
-};
-
-struct ReadCdProgress {
-  int status;        // 1: analyzing, 2: extracting
-  int totalTracks;   // total number of tracks
-  int track;         // actually processed track
-  int trackProgress; // extraction progress for track 0..1000
-  int totalProgress; // total writing progress 0..1000
 };
 
 #endif
