@@ -37,7 +37,6 @@ edition and silence insertion.
 
 %prep
 %setup -q
-%patch0 -p1
 
 
 %build
@@ -62,7 +61,7 @@ rm -rf $RPM_BUILD_ROOT
 %defattr(-, root, root, -)
 %doc AUTHORS COPYING CREDITS ChangeLog INSTALL README NEWS README.PlexDAE README.Win32
 %{_bindir}/cdrdao
-%{_datadir}/cdrdao/*
+%{_datadir}/cdrdao
 %{_bindir}/toc2*
 %{_bindir}/cue2toc
 %{_mandir}/man1/cdrdao*
@@ -71,8 +70,10 @@ rm -rf $RPM_BUILD_ROOT
 %files gcdmaster
 %defattr(-, root, root, -)
 %{_bindir}/gcdmaster
+%{_datadir}/gcdmaster
+%{_datadir}/mime-info/gcdmaster*
 %{_datadir}/applications/gcdmaster.desktop
-%{_datadir}/pixmaps/gcdmaster.png
+%{_datadir}/pixmaps/gcdmaster*
 %{_mandir}/man1/gcdmaster*
 
 %changelog
