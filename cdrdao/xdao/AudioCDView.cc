@@ -541,6 +541,16 @@ AudioCDView::drag_data_received_cb(const Glib::RefPtr<Gdk::DragContext>&
       if (fn.empty())
         continue;
 
+      // Process m3u file.
+      const char* e = fileExtension(fn.c_str());
+      if (strcasecmp(e, "m3u") == 0) {
+        std::list<std::string> list;
+        if (parseM3u(fn.c_str(), list)) {
+          project_->appendTracks(list);
+        }
+        return;
+      }
+
       TrackData::FileType type = TrackData::audioFileType(fn.c_str());
       if (type == TrackData::WAVE
 #ifdef HAVE_MP3_SUPPORT
