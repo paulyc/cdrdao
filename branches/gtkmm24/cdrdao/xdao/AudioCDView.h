@@ -33,6 +33,7 @@ class Project;
 class TrackInfoDialog;
 class AddFileDialog;
 class AddSilenceDialog;
+class Track;
 
 enum {
   TARGET_URI_LIST,
@@ -41,7 +42,7 @@ enum {
 class AudioCDView : public GenericView
 {
 public:
-  AudioCDView(AudioCDChild *child, AudioCDProject *project);
+  AudioCDView(AudioCDProject *project);
   ~AudioCDView();
   void add_menus(Glib::RefPtr<Gtk::UIManager> m_refUIManager);
   sigc::signal0<void> add_view;
@@ -58,8 +59,11 @@ public:
 
   sigc::signal1<void, unsigned long> signal_tocModified;
 
+ protected:
+  static const char* sample2string(unsigned long sample);
+  static unsigned long string2sample(const char* s);
+
 private:
-  friend class AudioCDChild;
   AudioCDProject *project_;
 
   Glib::RefPtr<Gtk::ActionGroup> m_refActionGroup;
@@ -68,7 +72,6 @@ private:
   AddFileDialog     addFileDialog_;
   AddSilenceDialog* addSilenceDialog_;
 
-  AudioCDChild *cdchild;
   Mode mode_;
   SampleDisplay *sampleDisplay_;
 

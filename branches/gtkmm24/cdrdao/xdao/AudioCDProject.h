@@ -28,7 +28,6 @@ class Toc;
 class Track;
 class Sample;
 class SoundIF;
-class AudioCDChild;
 class AudioCDView;
 class TocInfoDialog;
 class CdTextDialog;
@@ -54,7 +53,6 @@ private:
   bool playCallback();
 
   Gtk::HBox      hbox_;
-  AudioCDChild*  audioCDChild_;
   AudioCDView*   audioCDView_;
   TocInfoDialog* tocInfoDialog_;
   CdTextDialog*  cdTextDialog_;

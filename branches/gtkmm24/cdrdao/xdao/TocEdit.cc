@@ -27,6 +27,7 @@
 #include "TrackData.h"
 #include "TrackDataList.h"
 #include "TrackDataScrap.h"
+#include "Converter.h"
 
 #include "guiUpdate.h"
 #include "SampleManager.h"
@@ -49,17 +50,20 @@ TocEdit::TocEdit(Toc *t, const char *filename)
 
 TocEdit::~TocEdit()
 {
-  delete toc_;
-  toc_ = NULL;
+  if (toc_)
+    delete toc_;
 
-  delete sampleManager_;
-  sampleManager_ = NULL;
+  if (converter_)
+    delete converter_;
 
-  delete[] filename_;
-  filename_ = NULL;
+  if (sampleManager_)
+    delete sampleManager_;
 
-  delete trackDataScrap_;
-  trackDataScrap_ = NULL;
+  if (filename_)
+    delete[] filename_;
+
+  if (trackDataScrap_)
+    delete trackDataScrap_;
 }
 
 void TocEdit::toc(Toc *t, const char *filename)
@@ -83,6 +87,8 @@ void TocEdit::toc(Toc *t, const char *filename)
   sampleManager_ = new SampleManager(588);
 
   sampleManager_->setTocEdit(this);
+
+  converter_ = new Converter;
 
   if (toc_->length().samples() > 0) {
     unsigned long maxSample = toc_->length().samples() - 1;
@@ -425,31 +431,12 @@ int TocEdit::appendFiles(std::list<std::string>& tracks)
 // Return: 0: OK
 //         1: cannot open file
 //         2: file has invalid format
-int TocEdit::insertFile(const char *fname, unsigned long pos, unsigned long *len)
+int TocEdit::insertFile(const char *fname, unsigned long pos,
+                        unsigned long *len)
 {
-  int ret;
-  TrackData *data;
-
-  if (!modifyAllowed())
-    return 0;
-
-  if ((ret = createAudioData(fname, &data)) == 0) {
-    TrackDataList list;
-    list.append(data);
-
-    if (toc_->insertTrackData(pos, &list) == 0) {
-//      unsigned long len = list.length();
-      *len = list.length();
-
-      sampleManager_->insertSamples(pos, *len, NULL);
-      sampleManager_->scanToc(pos, pos + *len);
-      
-      tocDirty(1);
-      updateLevel_ |= UPD_TOC_DATA | UPD_TRACK_DATA | UPD_SAMPLE_SEL;
-    }
-  }
-
-  return ret;
+    std::list<std::string> flist;
+    flist.push_front(fname);
+    return insertFiles(flist, pos, len);
 }
 
 int TocEdit::insertFiles(std::list<std::string>& tracks, unsigned long pos,

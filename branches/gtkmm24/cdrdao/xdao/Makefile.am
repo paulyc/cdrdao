@@ -5,18 +5,17 @@ bin_PROGRAMS = gcdmaster
 gcdmaster_SOURCES = \
 	AddFileDialog.cc 	\
 	AddSilenceDialog.cc 	\
-	AudioCDChild.cc		\
 	AudioCDProject.cc 	\
 	AudioCDView.cc 		\
 	BlankCDDialog.cc 	\
 	CdDevice.cc 		\
 	CdTextDialog.cc 	\
+	Converter.cc		\
 	DeviceConfDialog.cc 	\
 	DeviceList.cc 		\
 	DumpCDProject.cc 	\
 	DuplicateCDProject.cc 	\
 	gcdmaster.cc 		\
-	GenericChild.cc 	\
 	GenericView.cc 		\
 	guiUpdate.cc 		\
 	Icons.cc		\
@@ -49,12 +48,10 @@ gcdmaster_SOURCES = \
 	DuplicateCDProject.h	\
 	Project.h		\
 	TextEdit.h		\
-	AudioCDChild.h		\
 	gcdmaster.h		\
 	RecordCDSource.h	\
 	TocEdit.h		\
 	AudioCDProject.h	\
-	GenericChild.h		\
 	RecordCDTarget.h	\
 	TocEditView.h		\
 	AudioCDView.h		\
