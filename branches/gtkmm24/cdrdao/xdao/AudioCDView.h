@@ -43,6 +43,7 @@ class AudioCDView : public GenericView
 public:
   AudioCDView(AudioCDChild *child, AudioCDProject *project);
   ~AudioCDView();
+  void add_menus(Glib::RefPtr<Gtk::UIManager> m_refUIManager);
   sigc::signal0<void> add_view;
 
   void update(unsigned long level);
@@ -58,6 +59,8 @@ public:
 private:
   friend class AudioCDChild;
   AudioCDProject *project_;
+
+  Glib::RefPtr<Gtk::ActionGroup> m_refActionGroup;
 
   TrackInfoDialog*  trackInfoDialog_;
   AddFileDialog     addFileDialog_;
@@ -110,4 +113,3 @@ private:
 };
 
 #endif
-
