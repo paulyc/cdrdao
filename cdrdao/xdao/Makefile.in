@@ -46,18 +46,23 @@ AR = ar
 #
 #
 #
-SRC = xcdrdao.cc gcdmaster.cc ProjectChooser.cc Project.cc ViewSwitcher.cc \
+SRC = GenericChild.cc GenericView.cc\
+      ProjectChooser.cc \
+      Project.cc \
       SampleDisplay.cc SampleManager.cc \
       TrackManager.cc AddSilenceDialog.cc TrackInfoDialog.cc TocEdit.cc \
       TextEdit.cc TocInfoDialog.cc guiUpdate.cc TrackDataScrap.cc \
+      DeviceList.cc \
       AddFileDialog.cc CdDevice.cc DeviceConfDialog.cc \
       ProcessMonitor.cc ProgressDialog.cc Settings.cc MessageBox.cc \
-      AudioCDProject.cc DumpCDProject.cc \
-      AudioCDChild.cc RecordCDTarget.cc \
+      DumpCDProject.cc \
+      AudioCDChild.cc AudioCDProject.cc \
+      RecordCDTarget.cc \
       DuplicateCDProject.cc RecordTocDialog.cc BlankCDDialog.cc \
-      DeviceList.cc RecordTocSource.cc RecordCDSource.cc \
-      RecordHDTarget.cc AudioCDView.cc TocEditView.cc GenericChild.cc \
-      GenericView.cc CdTextDialog.cc \
+      RecordTocSource.cc RecordCDSource.cc \
+      RecordHDTarget.cc AudioCDView.cc TocEditView.cc \
+      CdTextDialog.cc \
+      gcdmaster.cc xcdrdao.cc \
       @sound_if_src@
 
 OBJ = $(SRC:%.cc=%.o)
