@@ -18,6 +18,17 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2000/09/21 02:07:07  llanero
+ * MDI support:
+ * Splitted AudioCDChild into same and AudioCDView
+ * Move Selections from TocEdit to AudioCDView to allow
+ *   multiple selections.
+ * Cursor animation in all the views.
+ * Can load more than one from from command line
+ * Track info, Toc info, Append/Insert Silence, Append/Insert Track,
+ *   they all are built for every child when needed.
+ * ...
+ *
  * Revision 1.2  2000/04/23 09:07:08  andreasm
  * * Fixed most problems marked with '//llanero'.
  * * Added audio CD edit menus to MDIWindow.
@@ -35,7 +46,7 @@
  *
  */
 
-static char rcsid[] = "$Id: TocEdit.cc,v 1.3 2000-09-21 02:07:07 llanero Exp $";
+static char rcsid[] = "$Id: TocEdit.cc,v 1.4 2000-11-05 12:24:41 andreasm Exp $";
 
 #include "TocEdit.h"
 
@@ -43,6 +54,7 @@ static char rcsid[] = "$Id: TocEdit.cc,v 1.3 2000-09-21 02:07:07 llanero Exp $";
 
 #include "util.h"
 #include "Toc.h"
+#include "TocEditView.h"
 #include "TrackData.h"
 #include "TrackDataList.h"
 #include "TrackDataScrap.h"
@@ -618,19 +630,18 @@ void TocEdit::setTocType(Toc::TocType type)
 //         1: no selection
 //         2: selection crosses track boundaries
 //         3: cannot modify data track
-int TocEdit::removeTrackData(int *sampleSelectionValid_,
-		unsigned long sampleSelectionMin_, unsigned long sampleSelectionMax_)
+int TocEdit::removeTrackData(TocEditView *view)
 {
   TrackDataList *list;
+  unsigned long selMin, selMax;
 
   if (!modifyAllowed())
     return 0;
 
-  if (!sampleSelectionValid_)
+  if (!view->sampleSelection(&selMin, &selMax))
     return 1;
 
-  switch (toc_->removeTrackData(sampleSelectionMin_, sampleSelectionMax_,
-				&list)) {
+  switch (toc_->removeTrackData(selMin, selMax, &list)) {
   case 0:
     if (list != NULL) {
       if (list->length() > 0) {
@@ -641,13 +652,13 @@ int TocEdit::removeTrackData(int *sampleSelectionValid_,
 	delete list;
       }
 
-      sampleManager_->removeSamples(sampleSelectionMin_, sampleSelectionMax_,
-				    trackDataScrap_);
+      sampleManager_->removeSamples(selMin, selMax, trackDataScrap_);
 
-      *sampleSelectionValid_ = 0;
+      view->sampleSelectionClear();
+      view->sampleMarker(selMin);
 
       tocDirty(1);
-      updateLevel_ |= UPD_TOC_DATA | UPD_TRACK_DATA | UPD_SAMPLE_SEL | UPD_SAMPLES;
+      updateLevel_ |= UPD_TOC_DATA | UPD_TRACK_DATA | UPD_SAMPLE_SEL | UPD_SAMPLE_MARKER | UPD_SAMPLES ;
     }
     break;
 
@@ -665,8 +676,8 @@ int TocEdit::removeTrackData(int *sampleSelectionValid_,
 // Inserts track data from scrap
 // Return: 0: OK
 //         1: no scrap data to paste
-int TocEdit::insertTrackData(int sampleMarkerValid_,
-  unsigned long sampleMarker_, unsigned long *selStart, unsigned long *selEnd)
+int TocEdit::insertTrackData(TocEditView *view)
+			     
 {
   if (!modifyAllowed())
     return 0;
@@ -675,19 +686,18 @@ int TocEdit::insertTrackData(int sampleMarkerValid_,
     return 1;
 
   unsigned long len = trackDataScrap_->trackDataList()->length();
+  unsigned long marker;
 
-  if (sampleMarkerValid_ && sampleMarker_ < toc_->length().samples()) {
-    if (toc_->insertTrackData(sampleMarker_, trackDataScrap_->trackDataList())
+  if (view->sampleMarker(&marker) && marker < toc_->length().samples()) {
+    if (toc_->insertTrackData(marker, trackDataScrap_->trackDataList())
 	== 0) {
 
-      sampleManager_->insertSamples(sampleMarker_, len, trackDataScrap_);
-      sampleManager_->scanToc(sampleMarker_, sampleMarker_);
-      sampleManager_->scanToc(sampleMarker_ + len - 1,
-			      sampleMarker_ + len - 1);
+      sampleManager_->insertSamples(marker, len, trackDataScrap_);
+      sampleManager_->scanToc(marker, marker);
+      sampleManager_->scanToc(marker + len - 1,
+			      marker + len - 1);
       
-      *selStart = sampleMarker_;
-      *selEnd = sampleMarker_ + len - 1;
-//      sampleSelection(sampleMarker_, sampleMarker_ + len - 1);
+      view->sampleSelection(marker, marker + len - 1);
     
       tocDirty(1);
       updateLevel_ |= UPD_TOC_DATA | UPD_TRACK_DATA | UPD_SAMPLE_SEL;
@@ -706,9 +716,7 @@ int TocEdit::insertTrackData(int sampleMarkerValid_,
       if (end > 0) 
 	sampleManager_->scanToc(Msf(start).samples() + len, Msf(end).samples() - 1);
 
-    *selStart = Msf(start).samples();
-    *selEnd = Msf(end).samples() - 1;
-//      sampleSelection(Msf(start).samples(), Msf(end).samples() - 1);
+      view->sampleSelection(Msf(start).samples(), Msf(end).samples() - 1);
       
       tocDirty(1);
       updateLevel_ |= UPD_TOC_DATA | UPD_TRACK_DATA | UPD_SAMPLE_SEL;
