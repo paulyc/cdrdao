@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.11  2001/04/23 00:15:11  llanero
+ * Dialogs will update title with project name + app name.
+ *
  * Revision 1.10  2001/04/21 12:53:30  llanero
  * lots of bug fixes and clean up. Works now.
  *
@@ -82,7 +85,6 @@ extern class GCDMaster *gcdmaster;
 extern class DeviceConfDialog *DEVICE_CONF_DIALOG;
 extern class ProcessMonitor *PROCESS_MONITOR;
 extern class ProgressDialogPool *PROGRESS_POOL;
-extern class RecordGenericDialog *RECORD_GENERIC_DIALOG;
 
 void blockProcessMonitorSignals();
 void unblockProcessMonitorSignals();
