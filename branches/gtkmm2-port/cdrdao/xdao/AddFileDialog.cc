@@ -17,27 +17,25 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include <libgnomeuimm.h>
 
 #include <stdio.h>
 #include <limits.h>
 #include <math.h>
 #include <assert.h>
 
-#include "AddFileDialog.h"
-
 #include "TocEdit.h"
 #include "TocEditView.h"
 #include "guiUpdate.h"
-
 #include "Sample.h"
 #include "util.h"
 #include "AudioCDProject.h"
 #include "xcdrdao.h"
+#include "AddFileDialog.h"
 
 AddFileDialog::AddFileDialog(AudioCDProject *project) : Gtk::FileSelection("")
 {
   tocEditView_ = NULL;
-  active_ = 0;
   project_ = project;
   
   mode(M_APPEND_TRACK);
@@ -45,8 +43,8 @@ AddFileDialog::AddFileDialog(AudioCDProject *project) : Gtk::FileSelection("")
   hide_fileop_buttons();
   ((Gtk::Label *)get_cancel_button()->get_child())->set_text("Close");
 
-  get_ok_button()->clicked.connect(SigC::slot(this,&AddFileDialog::applyAction));
-  get_cancel_button()->clicked.connect(SigC::slot(this,&AddFileDialog::closeAction));
+  get_ok_button()->signal_clicked().connect(SigC::slot(*this,&AddFileDialog::applyAction));
+  get_cancel_button()->signal_clicked().connect(SigC::slot(*this,&AddFileDialog::hide));
 }
 
 AddFileDialog::~AddFileDialog()
@@ -73,32 +71,13 @@ void AddFileDialog::mode(Mode m)
   }
 }
 
-void AddFileDialog::start(TocEditView *tocEditView)
+void AddFileDialog::setView(TocEditView *tocEditView)
 {
-  if (active_) {
-    get_window().raise();
-    return;
-  }
-
-  active_ = 1;
-
-  update(UPD_ALL, tocEditView);
-  show();
-}
-
-void AddFileDialog::stop()
-{
-  if (active_) {
-    hide();
-    active_ = 0;
-  }
+  tocEditView_ = tocEditView;
 }
 
 void AddFileDialog::update(unsigned long level, TocEditView *tocEditView)
 {
-  if (!active_)
-    return;
-
   if (tocEditView == NULL) {
     get_ok_button()->set_sensitive(FALSE);
     tocEditView_ = NULL;
@@ -117,18 +96,6 @@ void AddFileDialog::update(unsigned long level, TocEditView *tocEditView)
   }
 
   tocEditView_ = tocEditView;
-}
-
-
-gint AddFileDialog::delete_event_impl(GdkEventAny*)
-{
-  stop();
-  return 1;
-}
-
-void AddFileDialog::closeAction()
-{
-  stop();
 }
 
 void AddFileDialog::applyAction()
