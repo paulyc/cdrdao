@@ -19,6 +19,9 @@
 
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.1.1.1  2000/02/05 01:34:37  llanero
+ * Uploaded cdrdao 1.1.3 with pre10 patch applied.
+ *
  * Revision 1.1  1999/07/10 18:18:17  mueller
  * Initial revision
  *
@@ -494,12 +497,14 @@ static Toc *createToc(const char *cueFileName, const char *binFileName,
       trackLength = Msf((sbuf.st_size - byteOffset) / blockLen);
     }
 
+    /*
     if (trackLength.lba() < 4 * 75) {
       message(-2, "%s: Track %d is shorter than 4 seconds.", cueFileName,
 	      t + 1);
       delete toc;
       return NULL;
     }
+    */
 
     if (trackData[t].mode == TrackData::AUDIO) {
       if (trackData[t].pregap > 0) {
