@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.10  2001/04/21 12:53:30  llanero
+ * lots of bug fixes and clean up. Works now.
+ *
  * Revision 1.9  2001/04/16 21:56:04  llanero
  * Fixes to ProjecChooser.
  * Visibility of Dockitems in Project and AudioCDProject.
@@ -74,8 +77,6 @@
 
 #ifndef __XCDRDAO_H__
 #define __XCDRDAO_H__
-
-#define APP_NAME "Gnome CD Master"
 
 extern class GCDMaster *gcdmaster;
 extern class DeviceConfDialog *DEVICE_CONF_DIALOG;
