@@ -63,7 +63,9 @@ char *CdDevice::DRIVER_NAMES_[DRIVER_IDS] = {
   "toshiba",
   "yamaha-cdr10x"
 };
-  
+
+SigC::Signal0<void> CdDevice::signal_statusChanged;
+
 
 CdDevice::CdDevice(int bus, int id, int lun, const char *vendor,
 		   const char *product)
@@ -1383,7 +1385,7 @@ int CdDevice::count()
   return cnt;
 }
 
-int CdDevice::updateDeviceStatus()
+bool CdDevice::updateDeviceStatus()
 {
   int newStatus = 0;
 
@@ -1398,7 +1400,10 @@ int CdDevice::updateDeviceStatus()
 
   unblockProcessMonitorSignals();
 
-  return newStatus;
+  if (newStatus)
+    signal_statusChanged();
+
+  return true;
 }
 
 

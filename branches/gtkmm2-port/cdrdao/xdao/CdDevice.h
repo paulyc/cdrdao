@@ -119,7 +119,8 @@ public:
   static CdDevice *first();
   static CdDevice *next(const CdDevice *);
 
-  static int updateDeviceStatus();
+  static bool updateDeviceStatus();
+  static SigC::Signal0<void> signal_statusChanged;
 
   /* not used anymore since Gtk::Main::input signal will call
    * CdDevice::updateProgress directly.
