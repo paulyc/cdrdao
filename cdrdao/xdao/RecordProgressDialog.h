@@ -18,6 +18,10 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2000/07/31 01:55:49  llanero
+ * got rid of old Extract dialog and Record dialog.
+ * both are using RecordProgressDialog now.
+ *
  * Revision 1.2  2000/02/20 23:34:54  llanero
  * fixed scsilib directory (files mising ?-()
  * ported xdao to 1.1.8 / gnome (MDI) app
@@ -30,6 +34,7 @@
 #ifndef __RECORD_PROGRESS_DIALOG_H__
 #define __RECORD_PROGRESS_DIALOG_H__
 
+#include <sys/time.h>
 #include <gtk--.h>
 #include <gtk/gtk.h>
 
@@ -62,9 +67,13 @@ private:
 
   int actCloseButtonLabel_;
 
+  Gtk::Label *currentTime_;
+
+  struct timeval time_;
+  gint RecordProgressDialog::time(gint timer_nr);
+
+  Gtk::Button *cancelButton_;
   Gtk::Button *closeButton_;
-  Gtk::Label *abortLabel_;
-  Gtk::Label *closeLabel_;
   Gtk::Label *tocName_;
 
   Gtk::Label *statusMsg_;;
