@@ -19,6 +19,8 @@
 
 #include <iostream.h>
 
+#include <libgnomeuimm.h>
+
 #include "xcdrdao.h"
 #include "guiUpdate.h"
 #include "MessageBox.h"
@@ -34,7 +36,6 @@
 #include "TrackInfoDialog.h"
 #include "AddFileDialog.h"
 #include "AddSilenceDialog.h"
-#include <gnome.h>
 
 AudioCDView::AudioCDView(AudioCDChild *child, AudioCDProject *project) 
 {
@@ -62,16 +63,16 @@ AudioCDView::AudioCDView(AudioCDChild *child, AudioCDProject *project)
 
   static gint n_drop_types = sizeof (drop_types) / sizeof(drop_types[0]);
 
-  drag_dest_set(static_cast <GtkDestDefaults> (GTK_DEST_DEFAULT_MOTION
-    | GTK_DEST_DEFAULT_HIGHLIGHT | GTK_DEST_DEFAULT_DROP),
-    &drop_types[0], n_drop_types, GDK_ACTION_COPY);
+//GTKMM2  drag_dest_set(static_cast <GtkDestDefaults> (GTK_DEST_DEFAULT_MOTION
+//GTKMM2    | GTK_DEST_DEFAULT_HIGHLIGHT | GTK_DEST_DEFAULT_DROP),
+//GTKMM2    &drop_types[0], n_drop_types, GDK_ACTION_COPY);
   
-  drag_data_received.connect(slot(this, &AudioCDView::drag_data_received_cb));
+//GTKMM2  signal_drag_data_received().connect(slot(*this, &AudioCDView::drag_data_received_cb));
 
   sampleDisplay_ = new SampleDisplay;
   sampleDisplay_->setTocEdit(child->tocEdit());
 
-  sampleDisplay_->set_usize(200,200);
+//GTKMM2  sampleDisplay_->set_default_size(200,200);
   
   vbox->pack_start(*sampleDisplay_, TRUE, TRUE);
   sampleDisplay_->show();
@@ -89,22 +90,22 @@ AudioCDView::AudioCDView(AudioCDChild *child, AudioCDProject *project)
 
   markerPos_ = new Gtk::Entry;
   markerPos_->set_editable(true);
-  markerPos_->set_usize(entry_width, 0);
-  markerPos_->activate.connect(slot(this, &AudioCDView::markerSet));
+//GTKMM2  markerPos_->set_default_size(entry_width, 0);
+  markerPos_->signal_activate().connect(slot(*this, &AudioCDView::markerSet));
 
   cursorPos_ = new Gtk::Entry;
-  cursorPos_->set_usize(entry_width, 0);
+//GTKMM2  cursorPos_->set_default_size(entry_width, 0);
   cursorPos_->set_editable(false);
 
   selectionStartPos_ = new Gtk::Entry;
   selectionStartPos_->set_editable(true);
-  selectionStartPos_->set_usize(entry_width, 0);
-  selectionStartPos_->activate.connect(slot(this, &AudioCDView::selectionSet));
+//GTKMM2  selectionStartPos_->set_default_size(entry_width, 0);
+  selectionStartPos_->signal_activate().connect(slot(*this, &AudioCDView::selectionSet));
 
   selectionEndPos_ = new Gtk::Entry;
   selectionEndPos_->set_editable(true);
-  selectionEndPos_->set_usize(entry_width, 0);
-  selectionEndPos_->activate.connect(slot(this, &AudioCDView::selectionSet));
+//GTKMM2  selectionEndPos_->set_default_size(entry_width, 0);
+  selectionEndPos_->signal_activate().connect(slot(*this, &AudioCDView::selectionSet));
 
   label = new Gtk::Label("Cursor: ");
   selectionInfoBox->pack_start(*label, FALSE, FALSE);
@@ -130,43 +131,41 @@ AudioCDView::AudioCDView(AudioCDChild *child, AudioCDProject *project)
   label->show();
   selectionEndPos_->show();
   
-//  vbox->pack_start(*selectionInfoBox, FALSE, FALSE);
   selectionInfoBox->set_border_width(2);
   sprintf(buf, "selectionBox-%i", viewNumber);
-  project->add_docked(*selectionInfoBox, buf, GNOME_DOCK_ITEM_BEH_NEVER_VERTICAL,
-  		GNOME_DOCK_BOTTOM, 1, 1, 0);
-  widgetList->push_back(project->get_dock_item_by_name(buf));
+  project->add_docked(*selectionInfoBox, buf, (BonoboDockItemBehavior)8,
+  		(BonoboDockPlacement)2, 1, 1, 0);
+//GTKMM2  widgetList->push_back(project->get_dock_item_by_name(buf));
   selectionInfoBox->show();
 
   Gtk::Toolbar *playToolbar = project->getPlayToolbar();
-  Gnome::Pixmap *pixmap;
+  Gtk::Image *pixmap;
   Gtk::RadioButton_Helpers::Group playGroup;
   Gtk::Widget* tool;
 
-  pixmap = manage(new Gnome::Pixmap(Gnome::Pixmap::find_file("gcdmaster/pixmap_play-start.xpm")));
+  pixmap = manage(new Gtk::Image(PIXMAPS_DIR "/stock_media-play.png"));
   playToolbar->tools().push_back(Gtk::Toolbar_Helpers::RadioElem(playGroup, "Play", *pixmap,
-  		slot(this, &AudioCDView::playStart), "Play", ""));
-  playStartButton_ = static_cast <Gtk::RadioButton *>(playToolbar->tools().back()->get_widget());
+  		slot(*this, &AudioCDView::playStart), "Play", ""));
+  playStartButton_ = static_cast <Gtk::RadioButton *>(playToolbar->tools().back().get_widget());
   playStartButton_->hide();
   widgetList->push_back(playStartButton_);
 
-  pixmap = manage(new Gnome::Pixmap(Gnome::Pixmap::find_file("gcdmaster/pixmap_play-pause.xpm")));
+  pixmap = manage(new Gtk::Image(PIXMAPS_DIR "/stock_media-pause.png"));
   playToolbar->tools().push_back(Gtk::Toolbar_Helpers::RadioElem(playGroup, "Pause", *pixmap,
-  		slot(this, &AudioCDView::playPause), "Pause", ""));
-  playPauseButton_ = static_cast <Gtk::RadioButton *>(playToolbar->tools().back()->get_widget());
+  		slot(*this, &AudioCDView::playPause), "Pause", ""));
+  playPauseButton_ = static_cast <Gtk::RadioButton *>(playToolbar->tools().back().get_widget());
   playPauseButton_->hide();
   widgetList->push_back(playPauseButton_);
 
-  pixmap = manage(new Gnome::Pixmap(Gnome::Pixmap::find_file("gcdmaster/pixmap_play-stop.xpm")));
+  pixmap = manage(new Gtk::Image(PIXMAPS_DIR "/stock_media-stop.png"));
   playToolbar->tools().push_back(Gtk::Toolbar_Helpers::RadioElem(playGroup, "Stop", *pixmap,
-  		NULL, "Stop", ""));
-  playStopButton_ = static_cast <Gtk::RadioButton *>(playToolbar->tools().back()->get_widget());
+  	    slot(*this, &AudioCDView::playStop), "Stop", ""));
+  playStopButton_ = static_cast <Gtk::RadioButton *>(playToolbar->tools().back().get_widget());
   playStopButton_->set_active(true);
   // We need to connect the signal after we set it, so no signal is emitted.
-  playStopButton_->toggled.connect(slot(this, &AudioCDView::playStop));
+//GTKMM2  playStopButton_->signal_toggled().connect(slot(*this, &AudioCDView::playStop));
   playStopButton_->hide();
   widgetList->push_back(playStopButton_);
-
 
   setMode(SELECT);
 
@@ -175,145 +174,149 @@ AudioCDView::AudioCDView(AudioCDChild *child, AudioCDProject *project)
 
   widgetList->push_back(zoomToolbar);
 
-  pixmap = manage(new Gnome::Pixmap(Gnome::Pixmap::find_file("gcdmaster/pixmap_cursor-tool.xpm")));
+//GTKMM2  pixmap = manage(new Gnome::Pixmap(Gnome::Pixmap::find_file("gcdmaster/pixmap_cursor-tool.xpm")));
+  pixmap = manage(new Gtk::Image(PIXMAPS_DIR "/pixmap_cursor-tool.xpm"));
   zoomToolbar->tools().push_back(Gtk::Toolbar_Helpers::RadioElem(toolGroup, "Select", *pixmap,
-  		bind(slot(this, &AudioCDView::setMode), SELECT), "Selection tool", ""));
-  tool = zoomToolbar->tools().back()->get_widget();
+  		bind(slot(*this, &AudioCDView::setMode), SELECT), "Selection tool", ""));
+  tool = zoomToolbar->tools().back().get_widget();
   tool->hide();
   widgetList->push_back(tool);
 
-  pixmap = manage(new Gnome::Pixmap(Gnome::Pixmap::find_file("gcdmaster/pixmap_zoom-tool.xpm")));
+//GTKMM2  pixmap = manage(new Gnome::Pixmap(Gnome::Pixmap::find_file("gcdmaster/pixmap_zoom-tool.xpm")));
+  pixmap = manage(new Gtk::Image(PIXMAPS_DIR "/pixmap_zoom-tool.xpm"));
   zoomToolbar->tools().push_back(Gtk::Toolbar_Helpers::RadioElem(toolGroup, "Zoom", *pixmap,
-  		bind(slot(this, &AudioCDView::setMode), ZOOM), "Zoom tool", ""));
-  tool = zoomToolbar->tools().back()->get_widget();
+  		bind(slot(*this, &AudioCDView::setMode), ZOOM), "Zoom tool", ""));
+  tool = zoomToolbar->tools().back().get_widget();
   tool->hide();
   widgetList->push_back(tool);
 
-  pixmap = manage(new Gnome::Pixmap(Gnome::Pixmap::find_file("gcdmaster/pixmap_zoom-in.xpm")));
+  pixmap = manage(new Gtk::Image(Gtk::StockID(Gtk::Stock::ZOOM_IN), Gtk::ICON_SIZE_LARGE_TOOLBAR));
   zoomToolbar->tools().push_back(Gtk::Toolbar_Helpers::ButtonElem("Zoom +", *pixmap,
-  		slot(this, &AudioCDView::zoomx2), "Zoom In", ""));
-  tool = zoomToolbar->tools().back()->get_widget();
+  		slot(*this, &AudioCDView::zoomx2), "Zoom In", ""));
+  tool = zoomToolbar->tools().back().get_widget();
   tool->hide();
   widgetList->push_back(tool);
 
-  pixmap = manage(new Gnome::Pixmap(Gnome::Pixmap::find_file("gcdmaster/pixmap_zoom-out.xpm")));
+  pixmap = manage(new Gtk::Image(Gtk::StockID(Gtk::Stock::ZOOM_OUT), Gtk::ICON_SIZE_LARGE_TOOLBAR));
   zoomToolbar->tools().push_back(Gtk::Toolbar_Helpers::ButtonElem("Zoom -", *pixmap,
-  		slot(this, &AudioCDView::zoomOut), "Zoom Out", ""));
-  tool = zoomToolbar->tools().back()->get_widget();
+  		slot(*this, &AudioCDView::zoomOut), "Zoom Out", ""));
+  tool = zoomToolbar->tools().back().get_widget();
   tool->hide();
   widgetList->push_back(tool);
 
-  pixmap = manage(new Gnome::Pixmap(Gnome::Pixmap::find_file("gcdmaster/pixmap_zoom-selection.xpm")));
-  zoomToolbar->tools().push_back(Gtk::Toolbar_Helpers::ButtonElem("Fit Sel", *pixmap,
-  		slot(this, &AudioCDView::zoomIn), "Zoom to fit the selection", ""));
-  tool = zoomToolbar->tools().back()->get_widget();
-  tool->hide();
-  widgetList->push_back(tool);
-
-  pixmap = manage(new Gnome::Pixmap(Gnome::Pixmap::find_file("gcdmaster/pixmap_zoom-fit.xpm")));
+  pixmap = manage(new Gtk::Image(Gtk::StockID(Gtk::Stock::ZOOM_FIT), Gtk::ICON_SIZE_LARGE_TOOLBAR));
   zoomToolbar->tools().push_back(Gtk::Toolbar_Helpers::ButtonElem("Fit", *pixmap,
-  		slot(this, &AudioCDView::fullView), "Full View", ""));
-  tool = zoomToolbar->tools().back()->get_widget();
+  		slot(*this, &AudioCDView::fullView), "Full View", ""));
+  tool = zoomToolbar->tools().back().get_widget();
   tool->hide();
   widgetList->push_back(tool);
 
-  sampleDisplay_->markerSet.connect(slot(this,
+  pixmap = manage(new Gtk::Image(Gtk::StockID(Gtk::Stock::ZOOM_100), Gtk::ICON_SIZE_LARGE_TOOLBAR));
+  zoomToolbar->tools().push_back(Gtk::Toolbar_Helpers::ButtonElem("Fit Sel", *pixmap,
+  		slot(*this, &AudioCDView::zoomIn), "Zoom to fit the selection", ""));
+  tool = zoomToolbar->tools().back().get_widget();
+  tool->hide();
+  widgetList->push_back(tool);
+
+
+  sampleDisplay_->markerSet.connect(slot(*this,
   			&AudioCDView::markerSetCallback));
-  sampleDisplay_->selectionSet.connect(slot(this,
+  sampleDisplay_->selectionSet.connect(slot(*this,
   			&AudioCDView::selectionSetCallback));
-  sampleDisplay_->cursorMoved.connect(slot(this,
+  sampleDisplay_->cursorMoved.connect(slot(*this,
   			&AudioCDView::cursorMovedCallback));
-  sampleDisplay_->trackMarkSelected.connect(slot(this,
+  sampleDisplay_->trackMarkSelected.connect(slot(*this,
   			&AudioCDView::trackMarkSelectedCallback));
-  sampleDisplay_->trackMarkMoved.connect(slot(this,
+  sampleDisplay_->trackMarkMoved.connect(slot(*this,
   			&AudioCDView::trackMarkMovedCallback));
-  sampleDisplay_->viewModified.connect(slot(this,
+  sampleDisplay_->viewModified.connect(slot(*this,
 		        &AudioCDView::viewModifiedCallback));
 
   tocEditView_->sampleViewFull();
   
   // Menu Stuff
   {
-    using namespace Gnome::UI;
+    using namespace Gnome::UI::Items;
     vector<Info> menus;
 	Info info;
     int i;
     
-    menus.push_back(Item(Icon(GNOME_STOCK_MENU_PROP),
+    menus.push_back(Item(Icon(Gtk::Stock::PROPERTIES.id),
     				 N_("Track Info..."),
-  			      slot(this, &AudioCDView::trackInfo),
+  			      slot(*this, &AudioCDView::trackInfo),
   			      N_("Edit track data")));
   
     menus.push_back(Separator());
   
-	info = Item(Icon(GNOME_STOCK_MENU_CUT),
+	info = Item(Icon(Gtk::Stock::CUT.id),
   			      N_("Cut"),
-  			      slot(this, &AudioCDView::cutTrackData),
+  			      slot(*this, &AudioCDView::cutTrackData),
   			      N_("Cut out selected samples"));
-	info.set_accel("<control>X");
+
+    info.set_accel(Gtk::Menu_Helpers::AccelKey("<control>X"));
     menus.push_back(info);
 
-    info = Item(Icon(GNOME_STOCK_MENU_PASTE),
+    info = Item(Icon(Gtk::Stock::PASTE.id),
   			      N_("Paste"),
-  			      slot(this, &AudioCDView::pasteTrackData),
+  			      slot(*this, &AudioCDView::pasteTrackData),
   			      N_("Paste previously cut samples"));
-	info.set_accel("<control>V");
+	info.set_accel(Gtk::Menu_Helpers::AccelKey("<control>V"));
     menus.push_back(info);
 
     menus.push_back(Separator());
 
     info = Item(N_("Add Track Mark"),
-			      slot(this, &AudioCDView::addTrackMark),
+			      slot(*this, &AudioCDView::addTrackMark),
 			      N_("Add track marker at current marker position"));
-	info.set_accel("T");
+	info.set_accel(Gtk::Menu_Helpers::AccelKey("T"));
     menus.push_back(info);
 
     info = Item(N_("Add Index Mark"),
-			      slot(this, &AudioCDView::addIndexMark),
+			      slot(*this, &AudioCDView::addIndexMark),
 			      N_("Add index marker at current marker position"));
-	info.set_accel("I");
+	info.set_accel(Gtk::Menu_Helpers::AccelKey("I"));
     menus.push_back(info);
 
     info = Item(N_("Add Pre-Gap"),
-			      slot(this, &AudioCDView::addPregap),
+			      slot(*this, &AudioCDView::addPregap),
 			      N_("Add pre-gap at current marker position"));
-	info.set_accel("P");
+	info.set_accel(Gtk::Menu_Helpers::AccelKey("P"));
     menus.push_back(info);
 
     info = Item(N_("Remove Track Mark"),
-			      slot(this, &AudioCDView::removeTrackMark),
+			      slot(*this, &AudioCDView::removeTrackMark),
 			      N_("Remove selected track/index marker or pre-gap"));
-	info.set_accel("<control>D");
+	info.set_accel(Gtk::Menu_Helpers::AccelKey("<control>D"));
     menus.push_back(info);
  
     menus.push_back(Separator());
 
     info = Item(N_("Append Track"),
-			      slot(this, &AudioCDView::appendTrack),
+			      slot(*this, &AudioCDView::appendTrack),
 			      N_("Append track with data from audio file"));
-	info.set_accel("<control>T");
+	info.set_accel(Gtk::Menu_Helpers::AccelKey("<control>T"));
     menus.push_back(info);
 
     info = Item(N_("Append File"),
-			      slot(this, &AudioCDView::appendFile),
+			      slot(*this, &AudioCDView::appendFile),
 			      N_("Append data from audio file to last track"));
-	info.set_accel("<control>F");
+	info.set_accel(Gtk::Menu_Helpers::AccelKey("<control>F"));
     menus.push_back(info);
   
     info = Item(N_("Insert File"),
-			      slot(this, &AudioCDView::insertFile),
+			      slot(*this, &AudioCDView::insertFile),
 			      N_("Insert data from audio file at current marker position"));
-	info.set_accel("<control>I");
+	info.set_accel(Gtk::Menu_Helpers::AccelKey("<control>I"));
     menus.push_back(info);
 
     menus.push_back(Separator());
 
     menus.push_back(Item(N_("Append Silence"),
-			      slot(this, &AudioCDView::appendSilence),
+			      slot(*this, &AudioCDView::appendSilence),
 			      N_("Append silence to last track")));
 
     menus.push_back(Item(N_("Insert Silence"),
-			      slot(this, &AudioCDView::insertSilence),
+			      slot(*this, &AudioCDView::insertSilence),
 			      N_("Insert silence at current marker position")));
 
     Array<Info>& arrayInfo = project->insert_menus("Edit/CD-TEXT...", menus);
@@ -610,6 +613,7 @@ void AudioCDView::selectionSet()
 void AudioCDView::drag_data_received_cb(GdkDragContext *context,
   gint x, gint y, GtkSelectionData *selection_data, guint info, guint time)
 {
+/*//GTKMM2
   GList *names;
   
   switch (info) {
@@ -642,6 +646,7 @@ void AudioCDView::drag_data_received_cb(GdkDragContext *context,
 //	tocEdit_->unblockEdit();
     break;
   }
+*/
 }
 
 void AudioCDView::trackInfo()
@@ -657,7 +662,7 @@ void AudioCDView::trackInfo()
   }
   else
   {
-      Gnome::Dialogs::ok(*project_, "Please select a track first");
+      Gtk::MessageDialog(*project_, "Please select a track first", Gtk::MESSAGE_INFO);
   }
 
 }

@@ -20,10 +20,6 @@
 #ifndef __AUDIO_CD_VIEW_H__
 #define __AUDIO_CD_VIEW_H__
 
-#include <gtk--.h>
-#include <gtk/gtk.h>
-#include <gnome--.h>
-
 #include "GenericView.h"
 #include <list>
 
