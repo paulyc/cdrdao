@@ -19,6 +19,9 @@
 
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.1.1.1  2000/02/05 01:35:04  llanero
+ * Uploaded cdrdao 1.1.3 with pre10 patch applied.
+ *
  * Revision 1.8  1999/04/05 18:47:40  mueller
  * Added driver options.
  * Added option to read Q sub-channel data instead raw PW sub-channel data
@@ -111,6 +114,9 @@ protected:
   virtual int getSessionInfo();
   virtual int getNWA(long *);
   virtual int getStartOfSession(long *);
+
+  virtual int getFeature(unsigned int feature, unsigned char *buf,
+			 unsigned long bufLen, int showMsg);
 
   int readCatalog(Toc *, long startLba, long endLba);
   int readIsrc(int, char *);
