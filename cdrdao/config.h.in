@@ -120,6 +120,12 @@
 /* The size of a `int', as computed by sizeof. */
 #undef SIZEOF_INT
 
+/* The size of a `long', as computed by sizeof. */
+#undef SIZEOF_LONG
+
+/* The size of a `long long', as computed by sizeof. */
+#undef SIZEOF_LONG_LONG
+
 /* The size of a `short', as computed by sizeof. */
 #undef SIZEOF_SHORT
 
@@ -142,4 +148,16 @@
 #undef const
 
 /* "" */
+#undef int16_t
+
+/* "" */
+#undef int32_t
+
+/* "" */
 #undef size16
+
+/* "" */
+#undef u_int16_t
+
+/* "" */
+#undef u_int32_t

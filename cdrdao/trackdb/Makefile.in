@@ -66,6 +66,7 @@ EXEEXT = @EXEEXT@
 OBJEXT = @OBJEXT@
 PATH_SEPARATOR = @PATH_SEPARATOR@
 AMTAR = @AMTAR@
+AR = @AR@
 AWK = @AWK@
 CC = @CC@
 CPP = @CPP@
@@ -88,9 +89,12 @@ VERSION = @VERSION@
 am__include = @am__include@
 am__quote = @am__quote@
 antlr_path = @antlr_path@
-cdrdao_version = @cdrdao_version@
 dao_src = @dao_src@
 dlg_path = @dlg_path@
+en_cdrdao = @en_cdrdao@
+en_toc2cue = @en_toc2cue@
+en_toc2mp3 = @en_toc2mp3@
+en_xdao = @en_xdao@
 install_sh = @install_sh@
 mydefs = @mydefs@
 pccts_target = @pccts_target@
@@ -101,9 +105,6 @@ scsilib_incl = @scsilib_incl@
 scsilib_libs = @scsilib_libs@
 sound_if_obj = @sound_if_obj@
 thread_libs = @thread_libs@
-utils_sources = @utils_sources@
-utils_targets = @utils_targets@
-xdao = @xdao@
 noinst_LIBRARIES = libtrackdb.a
 libtrackdb_a_SOURCES = Cddb.cc lec.cc Toc.cc TrackDataList.cc CdTextContainer.cc Msf.cc Track.cc util.cc CdTextItem.cc SubTrack.cc TrackData.cc TocParser.cpp TocParserGram.cpp TocLexerBase.cpp CueParser.cpp CueParserGram.cpp CueLexerBase.cpp @pcctsinc@/AParser.cpp @pcctsinc@/DLexerBase.cpp @pcctsinc@/ATokenBuffer.cpp
 
@@ -174,8 +175,6 @@ $(srcdir)/Makefile.in:  Makefile.am  $(top_srcdir)/configure.in $(ACLOCAL_M4)
 	  $(AUTOMAKE) --gnu  trackdb/Makefile
 Makefile:  $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__depfiles_maybe)
-
-AR = ar
 
 clean-noinstLIBRARIES:
 	-test -z "$(noinst_LIBRARIES)" || rm -f $(noinst_LIBRARIES)
