@@ -20,11 +20,6 @@
 #ifndef __AUDIO_CD_CHILD_H__
 #define __AUDIO_CD_CHILD_H__
 
-#include <gtk--.h>
-#include <gtk/gtk.h>
-
-#include <gnome--.h>
-
 #include "Toc.h"
 #include "GenericChild.h"
 
