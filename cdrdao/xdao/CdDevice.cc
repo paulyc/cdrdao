@@ -18,6 +18,10 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2000/04/24 12:49:06  andreasm
+ * Changed handling or message from remote processes to use the
+ * Gtk::Main::input mechanism.
+ *
  * Revision 1.3  1999/12/15 20:34:18  mueller
  * CD image extraction added by Manuel Clos.
  *
@@ -29,7 +33,7 @@
  *
  */
 
-static char rcsid[] = "$Id: CdDevice.cc,v 1.2 2000-04-24 12:49:06 andreasm Exp $";
+static char rcsid[] = "$Id: CdDevice.cc,v 1.3 2000-04-28 19:08:10 llanero Exp $";
 
 #include <sys/time.h>
 #include <sys/types.h>
@@ -609,7 +613,7 @@ void CdDevice::recordProgress(int *status, int *track, int *totalProgress,
 // Starts a 'cdrdao' for reading whole cd.
 // Return: 0: OK, process succesfully launched
 //         1: error occured
-int CdDevice::extractDao(char *tocFileName)
+int CdDevice::extractDao(char *tocFileName, int correction)
 {
   char *args[20];
   int n = 0;
@@ -618,6 +622,7 @@ int CdDevice::extractDao(char *tocFileName)
   char speedbuf[20];
   char *execName;
   const char *s; 
+  char correctionbuf[20];
 
   if (status_ != DEV_READY || process_ != NULL)
     return 1;
@@ -653,6 +658,10 @@ int CdDevice::extractDao(char *tocFileName)
     args[n++] = "--driver";
     args[n++] = drivername;
   }
+
+  sprintf(correctionbuf, "%d", correction);
+  args[n++] = "--paranoia-mode";
+  args[n++] = correctionbuf;
 
   args[n++] = "--datafile";
   args[n++] = g_strdup_printf("%s.bin", tocFileName);
