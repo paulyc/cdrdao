@@ -18,6 +18,12 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2000/12/17 10:51:22  andreasm
+ * Default verbose level is now 2. Adaopted message levels to have finer
+ * grained control about the amount of messages printed by cdrdao.
+ * Added CD-TEXT writing support to the GenericMMCraw driver.
+ * Fixed CD-TEXT cue sheet creating for the GenericMMC driver.
+ *
  * Revision 1.1.1.1  2000/02/05 01:36:34  llanero
  * Uploaded cdrdao 1.1.3 with pre10 patch applied.
  *
@@ -32,7 +38,7 @@
  *
  */
 
-static char rcsid[] = "$Id: PQChannelEncoder.cc,v 1.2 2000-12-17 10:51:22 andreasm Exp $";
+static char rcsid[] = "$Id: PQChannelEncoder.cc,v 1.3 2001-01-28 10:37:15 andreasm Exp $";
 
 #include <config.h>
 
@@ -83,7 +89,18 @@ int PQChannelEncoder::setCueSheet(SubChannel *chan, unsigned char discType,
 
   subChannel_ = chan;
 
-  if (!(discType == 0 || discType == 0x10 || discType == 0x20)) {
+  // Convert toc type to decimal numbers so that they look like the
+  // corresponding hex value when stored as BCD in the sub-channel
+  switch (discType) {
+  case 0:
+    break;
+  case 0x10:
+    discType = 10;
+    break;
+  case 0x20:
+    discType = 20;
+    break;
+  default:
     message(-3, "Illegal disc type.");
     return 1;
   }
@@ -135,16 +152,19 @@ int PQChannelEncoder::setCueSheet(SubChannel *chan, unsigned char discType,
   toc_[tocEnt]->point(0xa0);
   toc_[tocEnt]->pmin(firstTrackNr_);
   toc_[tocEnt]->psec(discType_);
+  toc_[tocEnt]->ctl(firstTrackCtlAdr_ & 0xf0);
   tocEnt++;
 
   toc_[tocEnt]->point(0xa1);
   toc_[tocEnt]->pmin(lastTrackNr_);
+  toc_[tocEnt]->ctl(lastTrackCtlAdr_ & 0xf0);
   tocEnt++;
 
   toc_[tocEnt]->point(0xa2);
   toc_[tocEnt]->pmin(leadOutStart_.min());
   toc_[tocEnt]->psec(leadOutStart_.sec());
   toc_[tocEnt]->pframe(leadOutStart_.frac());
+  toc_[tocEnt]->ctl(leadOutCtlAdr_ & 0xf0);
   tocEnt++;
 
   assert(tocEnt == tocLen_);
@@ -179,8 +199,11 @@ int PQChannelEncoder::analyzeCueSheet()
   long lba;
 
   firstTrackNr_ = 0;
+  firstTrackCtlAdr_ = 0;
   lastTrackNr_ = 0;
+  lastTrackCtlAdr_ = 0;
   leadOutStart_ = 0;
+  leadOutCtlAdr_ = 0;
   actCueSheetEntry_ = NULL;
   writeCatalog_ = 0;
 
@@ -206,6 +229,7 @@ int PQChannelEncoder::analyzeCueSheet()
       else if (ent->trackNr == 0xaa) { // indicates lead-out
 	if (i == cueSheetLen_ - 1) { // must be last entry
 	  leadOutStart_ = Msf(ent->min, ent->sec, ent->frame);
+	  leadOutCtlAdr_ = ent->ctlAdr;
 	}
 	else {
 	  message(-3, "Illegal track number at cue sheet entry: %d", i);
@@ -215,6 +239,7 @@ int PQChannelEncoder::analyzeCueSheet()
       else if (ent->trackNr <= 99) { // data track
 	if (firstTrackNr_ == 0) {
 	  firstTrackNr_ = ent->trackNr;
+	  firstTrackCtlAdr_ = ent->ctlAdr;
 	  prevTrackNr = ent->trackNr;
 	}
 	else {
@@ -226,6 +251,7 @@ int PQChannelEncoder::analyzeCueSheet()
 	  prevTrackNr = ent->trackNr;
 	}
 	lastTrackNr_ = ent->trackNr;
+	lastTrackCtlAdr_ = ent->ctlAdr;
       }
       else {
 	message(-3, "Illegal track number at cue sheet entry: %d", i);
