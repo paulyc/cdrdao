@@ -36,7 +36,9 @@ public:
   CdDevice *getFirstSelected();
   bool isSelected(CdDevice *);
   bool selectionEmpty();
-  std::list<CdDevice *> getAllSelected();
+  std::list<CdDevice *> getAll(bool selected);
+
+  SigC::Signal0<void> signal_changed;
 
 private:
   TocEdit *tocEdit_;
