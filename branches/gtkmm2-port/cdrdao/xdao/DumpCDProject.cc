@@ -43,6 +43,8 @@ DumpCDProject::DumpCDProject()
   vbox->pack_start(*hbox, false, false);
   set_contents(*vbox);
 
+  moreOptionsDialog_ = 0;
+
   // menu stuff
   miSave_->set_sensitive(false);
   miSaveAs_->set_sensitive(false);
@@ -92,6 +94,10 @@ DumpCDProject::DumpCDProject()
   vbox->pack_start(*hbox2, true, false);
 
   install_menu_hints();
+
+  pixmap = manage(new Gtk::Image(Gtk::StockID(Gtk::Stock::PROPERTIES), Gtk::ICON_SIZE_LARGE_TOOLBAR));
+  toolbar_->tools().push_back(Gtk::Toolbar_Helpers::ButtonElem("Options", *pixmap,
+  		slot(*this, &DumpCDProject::projectOptions), "Project options", ""));
 
   CdDevice::signal_statusChanged.connect(slot(*this, &DumpCDProject::devicesStatusChanged));
 }
@@ -166,12 +172,12 @@ void DumpCDProject::start()
   tocPath += ".toc";
 
   if (access(binPath.c_str(), R_OK) == 0) {
-    Glib::ustring s = "The image file \"";
+    Glib::ustring s = "Do you want to overwrite \"";
     s += binPath;
-    s += "\" already exists.";
+    s += "\"?";
 
-    Ask2Box msg(this, "Dump CD", 0, 1, s.c_str(),
-    		"Do you want to overwrite it?", "", NULL);
+    Ask2Box msg(this, "Dump CD", false, s,
+    		"The image file already exists");
 
     if (msg.run() != 1) 
       return;
@@ -179,19 +185,19 @@ void DumpCDProject::start()
 
   if (access(tocPath.c_str(), R_OK) == 0) 
   {
-    Glib::ustring s = "The toc-file \"";
+    Glib::ustring s = "Do you want to overwrite \"";
     s += tocPath;
-    s += "\" already exists.";
+    s += "\"?";
 
-    Ask2Box msg(this, "Dump CD", 0, 1, s.c_str(),
-    		"Do you want to overwrite it?", "", NULL);
+    Ask2Box msg(this, "Dump CD", false, s,
+    		"The toc-file already exists");
 
     switch (msg.run()) {
-    case 1: // remove the file an continue
+    case Gtk::RESPONSE_YES: // remove the file an continue
       if (unlink(tocPath.c_str()) != -0)
       {
-        MessageBox msg(this, "Dump CD", 0,
-		       "Cannot delete toc-file", tocPath.c_str(), NULL);
+        MessageBox msg(this, "Dump CD", false,
+		       string("Cannot delete toc-file") + tocPath);
         msg.run();
         return;
       }
@@ -213,6 +219,31 @@ bool DumpCDProject::closeProject()
 {
   return true;  // Close the project
 }
+
+void DumpCDProject::projectOptions()
+{
+  if (!moreOptionsDialog_)
+  {
+    moreOptionsDialog_ = new Gtk::Dialog("Dump options",
+                                         *this, false, false);
+
+    Gtk::Button *button = moreOptionsDialog_->add_button(Gtk::StockID(Gtk::Stock::CLOSE), Gtk::RESPONSE_CLOSE);
+    button->signal_clicked().connect(slot(*moreOptionsDialog_, &Gtk::Widget::hide));
+
+    Gtk::VBox *vbox = moreOptionsDialog_->get_vbox();
+    Gtk::HBox *hbox = new Gtk::HBox();
+    hbox->show();
+    vbox->pack_start(*hbox);
+    vbox->set_border_width(10);
+    vbox->set_spacing(5);
+
+    hbox->pack_start(*CDSource->moreOptions());
+//GTKMM2    hbox->pack_start(*CDTarget->moreOptions());
+  }
+
+  moreOptionsDialog_->show();
+}
+
 
 void DumpCDProject::devicesStatusChanged()
 {

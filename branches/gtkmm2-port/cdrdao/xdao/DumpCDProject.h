@@ -34,9 +34,12 @@ private:
   RecordCDSource *CDSource;
   RecordHDTarget *HDTarget;
 
+  Gtk::Dialog *moreOptionsDialog_;
+
   void start();
   void recordToc2CD() {}
   void projectInfo() {}
+  void projectOptions();
   void devicesStatusChanged();
 };
 #endif
