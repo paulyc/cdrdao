@@ -1412,3 +1412,8 @@ long TocReader::readSamples(Sample *buf, long len)
  
   return nread;
 }
+
+const char* TocReader::curFilename()
+{
+    return reader.curFilename();
+}

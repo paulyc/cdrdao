@@ -160,6 +160,8 @@ public:
   int seekSample(unsigned long sample);
   long readSamples(Sample *buf, long len);
   void closeData();
+
+  const char* curFilename();
   
 private:
   const Toc *toc_;

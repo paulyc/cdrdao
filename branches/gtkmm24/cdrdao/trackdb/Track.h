@@ -186,6 +186,7 @@ public:
   long readSamples(Sample *buf, long len);
   void closeData();
 
+  const char* curFilename();
 
 private:
   const Track *track_;

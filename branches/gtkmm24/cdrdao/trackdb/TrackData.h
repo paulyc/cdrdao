@@ -159,6 +159,8 @@ public:
   long readData(Sample *buffer, long len);
   int seekSample(unsigned long sample);
 
+  const TrackData* trackData() const { return trackData_; }
+
   // returns number of bytes/samples that are left for reading
   unsigned long readLeft() const;
 
