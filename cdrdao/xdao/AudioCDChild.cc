@@ -62,7 +62,8 @@ bool AudioCDChild::closeProject()
     message = g_strdup_printf(_("Project %s not saved."),
                               tocEdit_->filename());
 
-    Ask2Box msg(project_, _("Close"), 0, 2, message, "", _("Continue?"), NULL);
+    Ask2Box msg(project_->getParentWindow (), _("Close"), 0, 2, message,
+                "", _("Continue?"), NULL);
     g_free(message);
 
     if (msg.run() != 1)
@@ -127,4 +128,3 @@ AudioCDView *AudioCDChild::view()
     return view_;
   }
 }
-
