@@ -22,7 +22,7 @@
 #include <math.h>
 #include <assert.h>
 
-#include <gnome.h>
+#include <libgnomeuimm.h>
 
 #include "RecordHDTarget.h"
 #include "MessageBox.h"
@@ -61,19 +61,19 @@ RecordHDTarget::RecordHDTarget()
 
   label = new Gtk::Label("Directory: ");
   label->show();
-  table->attach(*label, 0, 1, 0, 1, GTK_FILL);
+  table->attach(*label, 0, 1, 0, 1, Gtk::FILL);
 
-  dirEntry_ = new Gnome::FileEntry("record_hd_target_dir_entry",
+  dirEntry_ = new Gnome::UI::FileEntry("record_hd_target_dir_entry",
 				   "Select Directory for Image");
-  dirEntry_->set_directory(TRUE);
-  dirEntry_->set_usize(30, 0);
+  dirEntry_->set_directory_entry(TRUE);
+  dirEntry_->set_size_request(30, -1);
   dirEntry_->show();
 
   table->attach(*dirEntry_, 1, 2, 0, 1);
 
   label = new Gtk::Label("Name: ");
   label->show();
-  table->attach(*label, 0, 1, 1, 2, GTK_FILL);
+  table->attach(*label, 0, 1, 1, 2, Gtk::FILL);
 
   fileNameEntry_ = new Gtk::Entry;
   fileNameEntry_->show();
@@ -108,12 +108,12 @@ void RecordHDTarget::cancelAction()
   stop();
 }
 
-Gtk::string RecordHDTarget::getFilename()
+Glib::ustring RecordHDTarget::getFilename()
 {
   return fileNameEntry_->get_text();
 }
 
-Gtk::string RecordHDTarget::getPath()
+Glib::ustring RecordHDTarget::getPath()
 {
   Gtk::Entry *entry = static_cast<Gtk::Entry *>(dirEntry_->gtk_entry());
   return entry->get_text();
