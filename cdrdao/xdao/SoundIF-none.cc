@@ -18,6 +18,15 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.1.1.1.6.1  2004/01/05 00:34:03  poolshark
+ * First checking of gnome2 port
+ *
+ * Revision 1.1.1.1  2003/12/09 05:32:28  denis
+ * Fooya
+ *
+ * Revision 1.1.1.1  2000/02/05 01:39:57  llanero
+ * Uploaded cdrdao 1.1.3 with pre10 patch applied.
+ *
  * Revision 1.1  1999/05/24 18:07:11  mueller
  * Initial revision
  *
