@@ -20,7 +20,7 @@ class Icons
  private:
   static struct IconEntry {
     Gtk::StockID& name;
-    const char*   filename;
+    const guint8* pixbuf;
   } iconList[];
 };
 
