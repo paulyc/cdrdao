@@ -38,27 +38,6 @@
 #include "SampleManager.h"
 #include "Icons.h"
 
-void describeChildren(Gtk::Widget* w, int indent)
-{
-  for (int i = indent; i >= 0; i--)
-    printf(" ");
-  int width, height;
-  w->get_size_request(width, height);
-  printf("0x%08x is a %s (%d x %d)\n", (unsigned)w,
-         g_type_name(G_OBJECT(w->gobj())->g_type_instance.g_class->g_type),
-         width, height);
-
-  if (GTK_IS_CONTAINER(w->gobj())) {
-    Gtk::Container* c = dynamic_cast<Gtk::Container*>(w);
-
-    Glib::ListHandle<Gtk::Widget*> children = c->get_children();
-    for (Glib::ListHandle<Gtk::Widget*>::iterator i = children.begin();
-         i != children.end(); i++) {
-      describeChildren(*i, indent + 2);
-    }
-  }
-}
-
 AudioCDProject::AudioCDProject(int number, const char *name, TocEdit *tocEdit)
 {
   frame_.add(hbox_);
@@ -430,8 +409,6 @@ void AudioCDProject::createToolbar()
   buttonPlay_->set_sensitive(true);
   buttonStop_->set_sensitive(false);
   buttonPause_->set_sensitive(false);
-
-  // describeChildren((Gtk::Widget*)buttonPlay_->get_parent());
 }
 
 

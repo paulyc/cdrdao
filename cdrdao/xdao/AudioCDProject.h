@@ -35,8 +35,6 @@ class CdTextDialog;
 class TocEdit;
 #include "Project.h"
 
-extern void describeChildren(Gtk::Widget* w, int indent = 0);
-
 class AudioCDProject : public Project
 {
 public:
