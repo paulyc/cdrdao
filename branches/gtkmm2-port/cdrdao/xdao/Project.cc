@@ -253,9 +253,10 @@ void Project::saveProject()
   else {
     std::string s("Cannot save toc to \"");
     s += tocEdit_->filename();
-    s+= "\":";
+    s+= "\"";
     
-    MessageBox msg(this, "Save Project", 0, s.c_str(), strerror(errno), NULL);
+    ErrorMessageBox msg(this, "Save Project", false,
+      s, string("The problem is: ") + string(strerror(errno)));
     msg.run();
   }
 }
@@ -306,7 +307,8 @@ void Project::saveFileSelectorOKCB()
   	m += tocEdit_->filename();
   	m += "\":";
     
-  	MessageBox msg(saveFileSelector_, "Save Project", 0, m.c_str(), strerror(errno), NULL);
+    ErrorMessageBox msg(saveFileSelector_, "Save Project", false,
+      m, string("The problem is: ") + string(strerror(errno)));
   	msg.run();
     }
     g_free(s);
@@ -344,9 +346,9 @@ TocEdit *Project::tocEdit()
 
 void Project::tocBlockedMsg(const char *op)
 {
-  MessageBox msg(this, op, 0,
-		 "Cannot perform requested operation because", 
-		 "project is in read-only state.", NULL);
+  ErrorMessageBox msg(this, op, false,
+         "The project is in read-only state.",
+		 "Cannot perform the requested operation because while the project is in read-only state.");
   msg.run();
 }
 
