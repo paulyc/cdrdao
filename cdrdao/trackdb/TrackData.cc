@@ -19,6 +19,10 @@
 
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2000/06/10 14:44:47  andreasm
+ * Tracks that are shorter than 4 seconds do not lead to a fatal error anymore.
+ * The user has the opportunity to record such tracks now.
+ *
  * Revision 1.1.1.1  2000/02/05 01:34:30  llanero
  * Uploaded cdrdao 1.1.3 with pre10 patch applied.
  *
@@ -58,7 +62,7 @@
  *
  */
 
-static char rcsid[] = "$Id: TrackData.cc,v 1.2 2000-06-10 14:44:47 andreasm Exp $";
+static char rcsid[] = "$Id: TrackData.cc,v 1.3 2001-03-25 07:36:14 andreasm Exp $";
 
 #include <config.h>
 
@@ -74,6 +78,12 @@ static char rcsid[] = "$Id: TrackData.cc,v 1.2 2000-06-10 14:44:47 andreasm Exp 
 #include "TrackData.h"
 #include "Msf.h"
 #include "util.h"
+
+#ifdef UNIXWARE
+extern "C" {
+  extern int      strcasecmp(const char *, const char *);
+}
+#endif
 
 // creates an object representing a portion of an audio data file
 TrackData::TrackData(const char *filename, long offset,

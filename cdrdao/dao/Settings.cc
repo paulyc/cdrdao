@@ -18,6 +18,10 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2000/08/06 13:13:08  andreasm
+ * Added option --cddb-directory and corresponding setting to specify where
+ * fetched CDDB record should be stored.
+ *
  * Revision 1.3  2000/06/22 12:19:28  andreasm
  * Added switch for reading CDs written in TAO mode.
  * The fifo buffer size is now also saved to $HOME/.cdrdao.
@@ -35,7 +39,7 @@
  *
  */
 
-static char rcsid[] = "$Id: Settings.cc,v 1.4 2000-08-06 13:13:08 andreasm Exp $";
+static char rcsid[] = "$Id: Settings.cc,v 1.5 2001-03-25 07:36:14 andreasm Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -49,6 +53,14 @@ static char rcsid[] = "$Id: Settings.cc,v 1.4 2000-08-06 13:13:08 andreasm Exp $
 
 #include "util.h"
 
+
+#ifdef UNIXWARE
+extern "C" {
+  extern int      strcasecmp(const char *, const char *);
+}
+#endif
+
+  
 enum SettingType { SET_INTEGER, SET_STRING };
 
 const char *SET_WRITE_SPEED = "write_speed";

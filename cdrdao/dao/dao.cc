@@ -18,6 +18,12 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2000/12/17 10:51:23  andreasm
+ * Default verbose level is now 2. Adaopted message levels to have finer
+ * grained control about the amount of messages printed by cdrdao.
+ * Added CD-TEXT writing support to the GenericMMCraw driver.
+ * Fixed CD-TEXT cue sheet creating for the GenericMMC driver.
+ *
  * Revision 1.5  2000/11/12 16:50:44  andreasm
  * Fixes for compilation under Win32.
  *
@@ -71,7 +77,7 @@
  *
  */
 
-static char rcsid[] = "$Id: dao.cc,v 1.6 2000-12-17 10:51:23 andreasm Exp $";
+static char rcsid[] = "$Id: dao.cc,v 1.7 2001-03-25 07:36:14 andreasm Exp $";
 
 #include <config.h>
 
@@ -958,7 +964,7 @@ static int getSharedMemory(long nofBuffers,
       segmentLength += sizeof(BufferHeader) + nofBuffers * sizeof(Buffer);
     }
 
-    (*shmSegments)[i].id = shmget(IPC_PRIVATE, segmentLength, 0600);
+    (*shmSegments)[i].id = shmget(IPC_PRIVATE, segmentLength, 0600|IPC_CREAT);
     if ((*shmSegments)[i].id < 0) {
       message(-2, "Cannot create shared memory segment: %s",
 	      strerror(errno));
