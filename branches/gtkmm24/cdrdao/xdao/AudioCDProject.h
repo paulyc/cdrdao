@@ -58,6 +58,9 @@ private:
   AudioCDView*   audioCDView_;
   TocInfoDialog* tocInfoDialog_;
   CdTextDialog*  cdTextDialog_;
+  Glib::RefPtr<Gtk::ActionGroup> m_refActionGroup;
+  Glib::RefPtr<Gtk::ToggleAction> selectToggle_;
+  Glib::RefPtr<Gtk::ToggleAction> zoomToggle_;
   void recordToc2CD();
   void projectInfo();
   void cdTextDialog();
@@ -70,7 +73,6 @@ private:
   Gtk::Button* buttonStop_;
   Gtk::Button* buttonPause_;
 
-  virtual void createToolbar();
   virtual void on_play_clicked();
   virtual void on_stop_clicked();
   virtual void on_pause_clicked();
@@ -81,7 +83,11 @@ private:
   virtual void on_zoom_fit_clicked();
  
 public:
-  AudioCDProject(int number, const char *name, TocEdit *tocEdit);
+  AudioCDProject(int number, const char *name, TocEdit *tocEdit,
+                 Gtk::Window *parent);
+
+  void add_menus (Glib::RefPtr<Gtk::UIManager> m_refUIManager);
+  void configureAppBar (Gnome::UI::AppBar *s, Gtk::Button *b);
 
   bool            closeProject();
 
@@ -99,4 +105,3 @@ public:
   bool            insertFiles(std::list<std::string>&);
 };
 #endif
-
