@@ -88,7 +88,7 @@ private:
   void trackMarkMovedCallback(const Track *, int trackNr, int indexNr,
 			      unsigned long sample);
   void viewModifiedCallback(unsigned long, unsigned long);
-  int snapSampleToBlock(unsigned long sample, long *block);
+  int  snapSampleToBlock(unsigned long sample, long *block);
 
   void trackInfo();
   void cutTrackData();
@@ -106,14 +106,14 @@ private:
   void appendFile();
   void insertFile();
 
-  int getMarker(unsigned long *sample);
+  int  getMarker(unsigned long *sample);
   void markerSet();
 
   void selectionSet();
 
   void drag_data_received_cb(const Glib::RefPtr<Gdk::DragContext>& context,
-			     gint x, gint y,
-			     const GtkSelectionData *selection_data,
+			     int x, int y,
+			     const Gtk::SelectionData& selection_data,
 			     guint info, guint time);
 };
 
