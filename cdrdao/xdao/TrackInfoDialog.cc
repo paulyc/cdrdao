@@ -18,6 +18,10 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2000/02/20 23:34:54  llanero
+ * fixed scsilib directory (files mising ?-()
+ * ported xdao to 1.1.8 / gnome (MDI) app
+ *
  * Revision 1.1.1.1  2000/02/05 01:40:28  llanero
  * Uploaded cdrdao 1.1.3 with pre10 patch applied.
  *
@@ -26,10 +30,11 @@
  *
  */
 
-static char rcsid[] = "$Id: TrackInfoDialog.cc,v 1.2 2000-02-20 23:34:54 llanero Exp $";
+static char rcsid[] = "$Id: TrackInfoDialog.cc,v 1.3 2000-04-16 20:31:20 andreasm Exp $";
 
 #include "TrackInfoDialog.h"
 
+#include <stdio.h>
 #include <stddef.h>
 #include <string.h>
 #include <ctype.h>
