@@ -18,6 +18,11 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2002/01/20 20:43:37  andreasm
+ * Added support for sub-channel reading and writing.
+ * Adapted to autoconf-2.52.
+ * Adapted to gcc-3.0.
+ *
  * Revision 1.5  2000/10/01 16:39:10  llanero
  * applied Jason Lunz patch: "Close" instead of "Cancel" where appropiate.
  *
@@ -56,28 +61,19 @@
 #ifndef __DEVICE_CONF_DIALOG_H
 #define __DEVICE_CONF_DIALOG_H
 
-#include <gtk--.h>
-#include <gtk/gtk.h>
-
 class TocEdit;
 class CdDevice;
+class DeviceList;
 
 class DeviceConfDialog : public Gtk::Dialog {
 public:
   DeviceConfDialog();
   ~DeviceConfDialog();
 
-  void start();
-  void stop();
-
-  void update(unsigned long level);
-
   gint delete_event_impl(GdkEventAny*);
 
 private:
-  int active_;
-
-  int selectedRow_;
+  CdDevice *selectedDevice_;
 
   struct DeviceData {
     int bus, id, lun;
@@ -87,13 +83,13 @@ private:
     std::string specialDevice;
   };
 
-  Gtk::CList *list_;
-  Gtk::Button *applyButton_;
+  DeviceList *devices_;
 
   Gtk::OptionMenu *driverMenu_;
 
   Gtk::OptionMenu *devtypeMenu_;
 
+  Gtk::Dialog *addDeviceDialog_;
   Gtk::SpinButton *busEntry_, *idEntry_, *lunEntry_;
   Gtk::Entry *vendorEntry_, *productEntry_;
   Gtk::Entry *specialDeviceEntry_;
@@ -104,23 +100,19 @@ private:
   void setDriverId(int);
   void setDeviceType(int);
 
-  void selectRow(gint, gint, GdkEvent *);
+  void selectRow();
   void unselectRow(gint, gint, GdkEvent *);
 
   void closeAction();
-  void resetAction();
   void applyAction();
+  void addDevice();
   void addDeviceAction();
   void deleteDeviceAction();
   void rescanAction();
 
-  void appendTableEntry(CdDevice *);
-  void import();
-  void importConfiguration(int);
-  void importStatus();
+  void importConfiguration(CdDevice *);
 
-  void exportData();
-  void exportConfiguration(int);
+  void exportConfiguration(CdDevice *);
 };
 
 #endif
