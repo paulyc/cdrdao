@@ -118,12 +118,12 @@ void DuplicateCDProject::start()
   DeviceList *targetList = CDTarget->getDeviceList();
 
   if (sourceList->selectionEmpty()) {
-    Gtk::MessageDialog(*this, "Please select one reader device", Gtk::MESSAGE_INFO);
+    Gtk::MessageDialog("Please select one reader device", Gtk::MESSAGE_INFO).run();
     return;
   }
 
   if (targetList->selectionEmpty()) {
-    Gtk::MessageDialog(*this, "Please select at least one recorder device", Gtk::MESSAGE_INFO);
+    Gtk::MessageDialog(*this, "Please select at least one recorder device", Gtk::MESSAGE_INFO).run();
     return;
   }
 
@@ -202,7 +202,7 @@ void DuplicateCDProject::start()
 
     if (writeDevice->duplicateDao(simulate, multiSession, burnSpeed,
         eject, reload, buffer, onTheFly, correction, sourceDev) != 0)
-      Gtk::MessageDialog(*this, "Cannot start disk-at-once duplication", Gtk::MESSAGE_ERROR);
+      Gtk::MessageDialog(*this, "Cannot start disk-at-once duplication", Gtk::MESSAGE_ERROR).run();
     else
       guiUpdate(UPD_CD_DEVICE_STATUS);
   }
