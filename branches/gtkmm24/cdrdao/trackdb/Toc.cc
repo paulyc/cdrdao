@@ -150,10 +150,13 @@ Toc *Toc::read(const char *filename)
 
   fclose(fp);
 
-  /*
-  if (ret != NULL)
-    ret->print(cout);
-    */
+  // Resolve all relative filenames to absoluate paths wrt to the toc
+  // file current directory.
+  std::string path = filename;
+  path = path.substr(0, path.rfind('/'));
+  if (path.empty()) path = ".";
+  for (TrackEntry* t = ret->tracks_; t != NULL; t = t->next)
+    t->track->resolveFilename(path.c_str());
 
   return ret;
 }

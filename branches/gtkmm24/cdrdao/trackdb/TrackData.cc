@@ -75,7 +75,7 @@ void TrackData::init(const char *filename, long offset,
     fileType_ = audioFileType(filename_);
   }
 
-  origFilename_ = NULL;
+  effFilename_ = NULL;
   offset_ = offset;
   startPos_ = start;
   swapSamples_ = 0;
@@ -93,7 +93,7 @@ TrackData::TrackData(unsigned long length)
   audioCutMode_ = 1;
 
   filename_ = NULL;
-  origFilename_ = NULL;
+  effFilename_ = NULL;
   fileType_ = RAW;
   startPos_ = 0;
   offset_ = 0;
@@ -110,7 +110,7 @@ TrackData::TrackData(Mode m, SubChannelMode sm, unsigned long length)
   audioCutMode_ = 0;
 
   filename_ = NULL;
-  origFilename_ = NULL;
+  effFilename_ = NULL;
   fileType_ = RAW;
   startPos_ = 0;
   offset_ = 0;
@@ -156,7 +156,7 @@ void TrackData::init(Mode m, SubChannelMode sm, const char *filename,
 
   offset_ = offset;
   length_ = length;
-  origFilename_ = NULL;
+  effFilename_ = NULL;
   startPos_ = 0;
   swapSamples_ = 0;
 }
@@ -173,7 +173,7 @@ TrackData::TrackData(Mode m, SubChannelMode sm, const char *filename,
   type_ = FIFO;
   fileType_ = RAW;
   filename_ = strdupCC(filename);
-  origFilename_ = NULL;
+  effFilename_ = NULL;
   offset_ = 0;
   length_ = length;
 
@@ -196,14 +196,14 @@ TrackData::TrackData(const TrackData &obj)
   case STDIN:
   case FIFO:
     filename_ = strdupCC(obj.filename_);
-    origFilename_ = (obj.origFilename_ ? strdupCC(obj.origFilename_) : NULL);
+    effFilename_ = (obj.effFilename_ ? strdupCC(obj.effFilename_) : NULL);
     startPos_ = obj.startPos_;
     fileType_ = obj.fileType_;
     break;
 
   case ZERODATA:
     filename_ = NULL;
-    origFilename_ = NULL;
+    effFilename_ = NULL;
     startPos_ = 0;
     fileType_ = RAW;
     break;
@@ -219,8 +219,8 @@ TrackData::~TrackData()
   if (filename_) {
     delete[] filename_;
   }
-  if (origFilename_)
-    delete[] origFilename_;
+  if (effFilename_)
+    delete[] effFilename_;
 }
 
 unsigned long TrackData::length() const
@@ -414,12 +414,12 @@ int TrackData::check(int trackNr) const
   return 0;
 }
 
-void TrackData::convertedFilename(const char* name)
+void TrackData::effectiveFilename(const char* name)
 {
-  if (origFilename_)
-    delete origFilename_;
+  if (effFilename_)
+    delete effFilename_;
 
-  origFilename_ = filename_;
+  effFilename_ = filename_;
   filename_ = strdupCC(name);
   fileType_ = audioFileType(filename_);
 }
@@ -444,8 +444,8 @@ void TrackData::print(std::ostream &out, bool conversions) const
     if (audioCutMode()) {
       if (type() == STDIN)
 	out << "FILE \"-\" ";
-      else if (origFilename_ && !conversions)
-	out << "FILE \"" << origFilename_ << "\" ";
+      else if (effFilename_ && !conversions)
+	out << "FILE \"" << effFilename_ << "\" ";
       else
 	out << "FILE \"" << filename_ << "\" ";
 
@@ -466,8 +466,8 @@ void TrackData::print(std::ostream &out, bool conversions) const
       // data mode
       if (type() == STDIN)
 	out << "DATAFILE \"-\" ";
-      else if (origFilename_ && !conversions)
-	out << "DATAFILE \"" << origFilename_ << "\" ";
+      else if (effFilename_ && !conversions)
+	out << "DATAFILE \"" << effFilename_ << "\" ";
       else
 	out << "DATAFILE \"" << filename_ << "\" ";
 

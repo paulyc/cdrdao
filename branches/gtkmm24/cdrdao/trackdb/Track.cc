@@ -561,8 +561,19 @@ void Track::markFileConversion(const char* src, const char* dst)
   for (st = subTracks_; st != NULL; st = st->next_) {
     const char* f = st->filename();
     if (f && strcmp(f, src) == 0) {
-      st->convertedFilename(dst);
+      st->effectiveFilename(dst);
     }
+  }
+}
+
+void Track::resolveFilename(const char* path)
+{
+  SubTrack* st;
+  for (st = subTracks_; st != NULL; st = st->next_) {
+    std::string rfilename;
+    const char* f = st->filename();
+    if (f && ::resolveFilename(rfilename, f, path))
+      st->effectiveFilename(rfilename.c_str());
   }
 }
 
