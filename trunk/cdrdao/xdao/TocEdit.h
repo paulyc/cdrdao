@@ -18,6 +18,17 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2000/09/21 02:07:07  llanero
+ * MDI support:
+ * Splitted AudioCDChild into same and AudioCDView
+ * Move Selections from TocEdit to AudioCDView to allow
+ *   multiple selections.
+ * Cursor animation in all the views.
+ * Can load more than one from from command line
+ * Track info, Toc info, Append/Insert Silence, Append/Insert Track,
+ *   they all are built for every child when needed.
+ * ...
+ *
  * Revision 1.2  2000/04/23 09:07:08  andreasm
  * * Fixed most problems marked with '//llanero'.
  * * Added audio CD edit menus to MDIWindow.
@@ -45,6 +56,7 @@ class Toc;
 class TrackData;
 class TrackDataScrap;
 class SampleManager;
+class TocEditView;
 
 class TocEdit {
 public:
@@ -89,10 +101,8 @@ public:
   int appendSilence(unsigned long);
   int insertSilence(unsigned long length, unsigned long pos);
 
-  int removeTrackData(int *sampleSelectionValid_,
-		unsigned long sampleSelectionMin_, unsigned long sampleSelectionMax_);
-  int insertTrackData(int sampleMarkerValid_, unsigned long sampleMarker_,
-  	  unsigned long *selStart, unsigned long *selEnd);
+  int removeTrackData(TocEditView *);
+  int insertTrackData(TocEditView *);
   
   void setTrackCopyFlag(int trackNr, int flag);
   void setTrackPreEmphasisFlag(int trackNr, int flag);
@@ -123,6 +133,8 @@ private:
 
   int createAudioData(const char *filename, TrackData **);
   int modifyAllowed() const;
+
+  friend class TocEditView;
 };
 
 #endif

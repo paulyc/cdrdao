@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2000/10/01 16:39:10  llanero
+ * applied Jason Lunz patch: "Close" instead of "Cancel" where appropiate.
+ *
  * Revision 1.3  2000/09/21 02:07:06  llanero
  * MDI support:
  * Splitted AudioCDChild into same and AudioCDView
@@ -47,28 +50,25 @@
 #include <gtk--.h>
 #include <gtk/gtk.h>
 
-class TocEdit;
-class AudioCDChild;
+class TocEditView;
 
 class AddFileDialog : public Gtk::FileSelection {
 public:
   enum Mode { M_APPEND_TRACK, M_APPEND_FILE, M_INSERT_FILE };
 
-  AddFileDialog(AudioCDChild *child);
+  AddFileDialog();
   ~AddFileDialog();
 
-  AudioCDChild *cdchild;
-  
-  void start(TocEdit *);
+  void start(TocEditView *);
   void stop();
 
   void mode(Mode);
-  void update(unsigned long level, TocEdit *);
+  void update(unsigned long level, TocEditView *);
 
   gint delete_event_impl(GdkEventAny*);
 
 private:
-  TocEdit *tocEdit_;
+  TocEditView *tocEditView_;
   int active_;
   Mode mode_;
 
