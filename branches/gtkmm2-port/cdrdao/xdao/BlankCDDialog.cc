@@ -254,14 +254,14 @@ int BlankCDDialog::checkEjectWarning(Gtk::Window *parent)
   if (getEject())
   {
     if (gnome_config_get_bool(SET_RECORD_EJECT_WARNING)) {
-      Ask3Box msg(parent, "Request", 1, 2, 
-    		"Ejecting a CD may block the SCSI bus and",
-  		  "cause buffer under runs when other devices",
-    		"are still recording.", "",
-  	  	"Keep the eject setting anyway?", NULL);
+      Glib::ustring s = "Ejecting a CD may block the SCSI bus and";
+      s += "cause buffer under runs when other devices";
+      s += "are still recording.";
+      Ask3Box msg(parent, "Request", true,
+        "Keep the eject setting?", s);
   
       switch (msg.run()) {
-      case 1: // keep eject setting
+      case Gtk::RESPONSE_YES: // keep eject setting
         if (msg.dontShowAgain())
         {
           gnome_config_set_bool(SET_RECORD_EJECT_WARNING, FALSE);
@@ -269,7 +269,7 @@ int BlankCDDialog::checkEjectWarning(Gtk::Window *parent)
         }
         return 1;
         break;
-      case 2: // don't keep eject setting
+      case Gtk::RESPONSE_NO: // don't keep eject setting
         ejectButton_->set_active(false);
         return 0;
         break;
@@ -297,14 +297,14 @@ int BlankCDDialog::checkReloadWarning(Gtk::Window *parent)
   if (getReload())
   {
     if (gnome_config_get_bool(SET_RECORD_RELOAD_WARNING)) {
-      Ask3Box msg(parent, "Request", 1, 2, 
-  		"Reloading a CD may block the SCSI bus and",
-  		"cause buffer under runs when other devices",
-  		"are still recording.", "",
-  		"Keep the reload setting anyway?", NULL);
+      Glib::ustring s = "Reloading a CD may block the SCSI bus and";
+      s += "cause buffer under runs when other devices";
+      s += "are still recording.";
+      Ask3Box msg(parent, "Request", true,
+        "Keep the reload setting?", s);
 
       switch (msg.run()) {
-      case 1: // keep reload setting
+      case Gtk::RESPONSE_YES: // keep reload setting
         if (msg.dontShowAgain())
         {
       	gnome_config_set_bool(SET_RECORD_RELOAD_WARNING, FALSE);
@@ -312,7 +312,7 @@ int BlankCDDialog::checkReloadWarning(Gtk::Window *parent)
         }
         return 1;
         break;
-      case 2: // don't keep reload setting
+      case GTK_RESPONSE_NO: // don't keep reload setting
         reloadButton_->set_active(false);
         return 0;
         break;
