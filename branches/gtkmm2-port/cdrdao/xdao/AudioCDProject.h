@@ -20,10 +20,6 @@
 #ifndef __AUDIOCDPROJECT_H__
 #define __AUDIOCDPROJECT_H__
 
-#include <gtk--.h>
-#include <gtk/gtk.h>
-#include <gnome--.h>
-
 class Toc;
 class Track;
 class Sample;
@@ -51,7 +47,7 @@ private:
   int playing_;
   int playAbort_;
 
-  int playCallback();
+  bool playCallback();
 
   AudioCDChild *audioCDChild_;
   TocInfoDialog *tocInfoDialog_;

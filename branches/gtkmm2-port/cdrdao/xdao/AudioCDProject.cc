@@ -17,6 +17,8 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include <libgnomeuimm.h>
+
 #include "Toc.h"
 #include "SoundIF.h"
 #include "AudioCDProject.h"
@@ -55,7 +57,10 @@ AudioCDProject::AudioCDProject(int number, const char *name, TocEdit *tocEdit)
   if (strlen(name) == 0)
   {
     char buf[20];
-    sprintf(buf, "unnamed-%i.toc", projectNumber_);
+    if (projectNumber_ == 0)
+      sprintf(buf, "unnamed.toc", projectNumber_);
+    else
+      sprintf(buf, "unnamed-%i.toc", projectNumber_);
     tocEdit_->filename(buf);
     new_ = true;
   }
@@ -66,12 +71,12 @@ AudioCDProject::AudioCDProject(int number, const char *name, TocEdit *tocEdit)
 
   // Menu Stuff
   {
-    using namespace Gnome::UI;
+    using namespace Gnome::UI::Items;
     vector<Info> menus, viewMenuTree;
 
-    menus.push_back(Item(Icon(GNOME_STOCK_MENU_PROP),
+    menus.push_back(Item(Icon(Gtk::Stock::PROPERTIES.id),
     				 N_("CD-TEXT..."),
-			      slot(this, &AudioCDProject::cdTextDialog),
+			      slot(*this, &AudioCDProject::cdTextDialog),
 			      N_("Edit CD-TEXT data")));
     insert_menus("Edit/Project Info...", menus);
   }
@@ -82,24 +87,25 @@ AudioCDProject::AudioCDProject(int number, const char *name, TocEdit *tocEdit)
 // seems to also show all the DockItems it contains!
   show();
 
-  add_docked(*viewSwitcher_, "viewSwitcher", GNOME_DOCK_ITEM_BEH_NORMAL,
-  		GNOME_DOCK_TOP, 2, 1, 0);
- 
-  get_dock_item_by_name("viewSwitcher")->show();
+  add_docked(*viewSwitcher_, "viewSwitcher", (BonoboDockItemBehavior)0,
+  		(BonoboDockPlacement)0, 2, 1, 0);
+
+//GTKMM2  get_dock_item_by_name("viewSwitcher")->show();
 
   playToolbar = new Gtk::Toolbar;
   playToolbar->set_border_width(2);
-  playToolbar->set_button_relief(GTK_RELIEF_NONE);
-  playToolbar->set_style(GTK_TOOLBAR_ICONS);
   playToolbar->show();
-  add_docked(*playToolbar, "playToolbar", GNOME_DOCK_ITEM_BEH_NORMAL,
-  		GNOME_DOCK_TOP, 2, 2, 0);
-  get_dock_item_by_name("playToolbar")->show();
+//GTKMM2  playToolbar->set_button_relief(Gtk::RELIEF_NONE);
+  playToolbar->set_toolbar_style(Gtk::TOOLBAR_ICONS);
+  add_docked(*playToolbar, "playToolbar", (BonoboDockItemBehavior)0,
+  		(BonoboDockPlacement)0, 2, 2, 0);
+//GTKMM2  get_dock_item_by_name("playToolbar")->show();
 
   audioCDChild_ = new AudioCDChild(this);
 
   newAudioCDView();
   guiUpdate(UPD_ALL);
+  show_all();
 }
 
 Gtk::Toolbar *AudioCDProject::getPlayToolbar()
@@ -109,7 +115,7 @@ Gtk::Toolbar *AudioCDProject::getPlayToolbar()
 
 void AudioCDProject::newAudioCDView()
 {
-  Gnome::StockPixmap *pixmap = new Gnome::StockPixmap(GNOME_STOCK_MENU_CDROM);
+  Gtk::Image *pixmap = new Gtk::Image(Gtk::StockID(Gtk::Stock::CDROM), Gtk::ICON_SIZE_MENU);
   Gtk::Label *label = new Gtk::Label("Track Editor");
   AudioCDView *audioCDView = audioCDChild_->newView();
   hbox->pack_start(*audioCDView, TRUE, TRUE);
@@ -195,7 +201,7 @@ void AudioCDProject::playStart(unsigned long start, unsigned long end)
   if (playStatus_ == PAUSED)
   {
     playStatus_ = PLAYING;
-    Gtk::Main::idle.connect(slot(this, &AudioCDProject::playCallback));
+    Glib::signal_idle().connect(slot(*this, &AudioCDProject::playCallback));
     return;
   }
 
@@ -251,7 +257,7 @@ void AudioCDProject::playStart(unsigned long start, unsigned long end)
 
   guiUpdate(level);
 
-  Gtk::Main::idle.connect(slot(this, &AudioCDProject::playCallback));
+  Glib::signal_idle().connect(slot(*this, &AudioCDProject::playCallback));
 }
 
 void AudioCDProject::playPause()
@@ -276,7 +282,7 @@ void AudioCDProject::playStop()
   }
 }
 
-int AudioCDProject::playCallback()
+bool AudioCDProject::playCallback()
 {
   unsigned long level = 0;
 
