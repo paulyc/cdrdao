@@ -60,24 +60,16 @@ public:
   gfloat percent_;
   gfloat percentStep_;
 
-  bool withGui_;
-  bool aborted_;
-
-  Gtk::ProgressBar* progressBar_;
-  Gtk::Button* abortButton_;
-  
   void getPeak(unsigned long start, unsigned long end,
 	       short *leftNeg, short *leftPos,
 	       short *rightNeg, short *rightPos);
-  int scanToc(unsigned long start, unsigned long end);
-  bool readSamples();
-  void abortAction();
+  int scanToc(unsigned long start, unsigned long end, bool blocking);
+
+  int  readSamples();
   void reallocSamples(unsigned long maxSample);
   void removeSamples(unsigned long start, unsigned long end, TrackDataScrap *);
   void insertSamples(unsigned long pos, unsigned long len,
 		     const TrackDataScrap *);
-  void setProgressBar(Gtk::ProgressBar* bar) { progressBar_ = bar; }
-  void setAbortButton(Gtk::Button*);
 };
 
 SampleManager::SampleManager(unsigned long blocking)
@@ -105,9 +97,15 @@ void SampleManager::setTocEdit(TocEdit *t)
 }
 
 
-int SampleManager::scanToc(unsigned long start, unsigned long end)
+int SampleManager::scanToc(unsigned long start, unsigned long end,
+                           bool blocking)
 {
-  return impl_->scanToc(start, end);
+  return impl_->scanToc(start, end, blocking);
+}
+
+int SampleManager::readSamples()
+{
+  return impl_->readSamples();
 }
 
 void SampleManager::getPeak(unsigned long start, unsigned long end,
@@ -129,16 +127,6 @@ void SampleManager::insertSamples(unsigned long pos, unsigned long len,
   impl_->insertSamples(pos, len, scrap);
 }
 
-void SampleManager::setProgressBar(Gtk::ProgressBar* b)
-{
-  impl_->setProgressBar(b);
-}
-
-void SampleManager::setAbortButton(Gtk::Button* b)
-{
-  impl_->setAbortButton(b);
-}
-
 SampleManagerImpl::SampleManagerImpl(unsigned long blocking) : tocReader_(NULL)
 {
   blocking_ = blocking;
@@ -153,20 +141,9 @@ SampleManagerImpl::SampleManagerImpl(unsigned long blocking) : tocReader_(NULL)
   block_ = new Sample[blocking_];
   actBlock_ = endBlock_ = burstBlock_ = 0;
   length_ = 0;
-  withGui_ = false;
 
   // allocate space in chunks of 40 minutes
   chunk_ = 40 * 60 * 75 * 588 / blocking;
-
-  progressBar_ = NULL;
-  abortButton_ = NULL;
-}
-
-void SampleManagerImpl::setAbortButton(Gtk::Button* button)
-{
-  abortButton_ = button;
-  button->signal_clicked().connect(mem_fun(*this,
-                                        &SampleManagerImpl::abortAction));
 }
 
 SampleManagerImpl::~SampleManagerImpl()
@@ -215,8 +192,13 @@ void SampleManagerImpl::getPeak(unsigned long start, unsigned long end,
   }
 }
 
+// Return values:
+//   0 : ok
+//   1 : incorrect parameters
+//   2 : unable to read from file
 
-int SampleManagerImpl::scanToc(unsigned long start, unsigned long end)
+int SampleManagerImpl::scanToc(unsigned long start, unsigned long end,
+                               bool blocking)
 {
   long i;
   const Toc *toc;
@@ -243,8 +225,6 @@ int SampleManagerImpl::scanToc(unsigned long start, unsigned long end)
     leftPosSamples_[i] = rightPosSamples_[i] = 16000;
   }
 
-  //message(0, "readSamples: %ld\n", endBlock_ - actBlock_ + 1);
-  
   if (tocReader_.openData() != 0)
     return 2;
 
@@ -258,54 +238,44 @@ int SampleManagerImpl::scanToc(unsigned long start, unsigned long end)
   if (len < 2000) {
     burstBlock_ = len;
     percentStep_ = 1.0;
-    withGui_ = false;
+    // withGui_ = false;
   }
   else if (len < 10000) {
     burstBlock_ = len / 100;
     percentStep_ = 0.01;
-    withGui_ = true;
+    // withGui_ = true;
   }
   else {
     burstBlock_ = 75;
     percentStep_ = gfloat(burstBlock_) / gfloat(len);
-    withGui_ = true;
+    // withGui_ = true;
   }
 
   if (burstBlock_ == 0) 
     burstBlock_ = 1;
 
   percent_ = 0;
-  aborted_ = false;
 
-  if (withGui_) {
-    if (progressBar_) progressBar_->set_fraction(0.0);
-    if (abortButton_) abortButton_->set_sensitive(true);
-    Glib::signal_idle().connect(mem_fun(*this,
-                                        &SampleManagerImpl::readSamples));
-    tocEdit_->blockEdit();
-  } else {
-    while (readSamples());
+  if (blocking) {
+    while (readSamples() == 0);
+    return 0;
   }
 
   return 0;
 }
 
-bool SampleManagerImpl::readSamples()
+// Returns:
+//   0 : in progress
+//   1 : done
+//  -1 : read error
+
+int SampleManagerImpl::readSamples()
 {
   int j;
   long n;
   short lpossum, rpossum, lnegsum, rnegsum;
   int ret;
   long burstEnd = actBlock_ + burstBlock_;
-
-  if (withGui_ && aborted_) {
-    tocReader_.closeData();
-    if (abortButton_) abortButton_->set_sensitive(false);
-    if (progressBar_) progressBar_->set_fraction(0.0);
-    tocEdit_->unblockEdit();
-    guiUpdate(UPD_SAMPLES);
-    return 0;
-  }
 
   for (; actBlock_ <= endBlock_ && actBlock_ < burstEnd && length_ > 0;
        actBlock_++) {
@@ -333,13 +303,8 @@ bool SampleManagerImpl::readSamples()
     else {
       message(-2, "Cannot read audio data: %ld - %ld.", n, ret);
       tocReader_.closeData();
-      if (withGui_) {
-        if (abortButton_) abortButton_->set_sensitive(false);
-        if (progressBar_) progressBar_->set_fraction(0.0);
-      }
-      tocEdit_->unblockEdit();
-      guiUpdate(UPD_SAMPLES);
-      return 0;
+      tocEdit_->signalProgressFraction(0.0);
+      return -1;
     }
     length_ -= n;
   }
@@ -347,29 +312,17 @@ bool SampleManagerImpl::readSamples()
   
   if (actBlock_ >= endBlock_ && actBlock_ < burstEnd) {
     tocReader_.closeData();
-    if (withGui_) {
-      if (abortButton_) abortButton_->set_sensitive(false);
-      if (progressBar_) progressBar_->set_fraction(0.0);
-    }
-    tocEdit_->unblockEdit();
-    guiUpdate(UPD_SAMPLES);
-    return 0;
+    tocEdit_->signalProgressFraction(0.0);
+    return 1;
   }
 
   percent_ += percentStep_;
   if (percent_ > 1.0) 
     percent_ = 1.0;
 
-  if (withGui_ && progressBar_) {
-    progressBar_->set_fraction(percent_);
-  }
+  tocEdit_->signalProgressFraction(percent_);
 
-  return 1;
-}
-
-void SampleManagerImpl::abortAction()
-{
-  aborted_ = true;
+  return 0;
 }
 
 void SampleManagerImpl::reallocSamples(unsigned long maxSample)

@@ -373,7 +373,10 @@ bool CdDevice::recordDao(Gtk::Window& parent, TocEdit *tocEdit, int simulate,
     return false;
   }
 
-  if (!tocEdit->toc()->write(fd)) {
+  // Write out temporary toc file containing all the converted wav
+  // files (don't want to rely on cdrdao doing the mp3->wav
+  // translation, besides it's already been done).
+  if (!tocEdit->toc()->write(fd, true)) {
     close(fd);
     message(-2, _("Cannot write temporary toc-file."));
     return false;

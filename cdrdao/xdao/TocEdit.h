@@ -22,9 +22,11 @@
 
 #include <string>
 #include <list>
+#include <sigc++/signal.h>
 
 #include "Toc.h"
 #include "CdTextItem.h"
+#include "FormatConverter.h"
 
 class Toc;
 class TrackData;
@@ -45,12 +47,12 @@ public:
 
   unsigned long lengthSample() const;
 
-  void tocDirty(int);
-  int tocDirty() const;
+  void tocDirty(bool);
+  bool tocDirty() const            { return tocDirty_; }
 
   void blockEdit();
   void unblockEdit();
-  bool editable() const;
+  bool editable() const            { return (editBlocked_ == 0); }
 
   // returns and resets update level
   unsigned long updateLevel();
@@ -68,13 +70,19 @@ public:
   int addIndexMarker(long lba);
   int addPregap(long lba);
 
-  int appendTrack(const char* filename);
-  int appendTracks(std::list<std::string>& tracks);
-  int appendFile(const char* filename);
-  int appendFiles(std::list<std::string>& tracks);
-  int insertFile(const char *fname, unsigned long pos, unsigned long *len);
-  int insertFiles(std::list<std::string>& tracks, unsigned long pos,
-                  unsigned long *len);
+  // Asynchronous interface.
+  void queueConversion(const char* filename);
+  void queueAppendTrack(const char* filename);
+  void queueAppendFile(const char* filename);
+  void queueInsertFile(const char* filename, unsigned long pos);
+  void queueScan(unsigned long start, unsigned long end);
+
+  // Abort all queued work.
+  void queueAbort();
+
+  // Is queue active
+  bool isQueueActive();
+
   int appendSilence(unsigned long);
   int insertSilence(unsigned long length, unsigned long pos);
 
@@ -94,6 +102,15 @@ public:
 
   void setCatalogNumber(const char *);
   void setTocType(Toc::TocType);
+
+  // Signals
+  sigc::signal0<void> signalProgressPulse;
+  sigc::signal1<void, double> signalProgressFraction;
+  sigc::signal1<void, const char*> signalStatusMessage;
+  sigc::signal0<void> signalFullView;
+  sigc::signal2<void, unsigned long, unsigned long> signalSampleSelection;
+  sigc::signal1<void, bool> signalCancelEnable;
+  sigc::signal1<void, const char*> signalError;
   
 private:
   Toc *toc_;
@@ -104,13 +121,37 @@ private:
 
   TrackDataScrap *trackDataScrap_;
 
-  int tocDirty_;
-  int editBlocked_;
+  bool tocDirty_;
+  int  editBlocked_;
 
   unsigned long updateLevel_;
 
-  int createAudioData(const char *filename, TrackData **);
-  int modifyAllowed() const;
+  class QueueJob {
+  public:
+    QueueJob(const char* o) { op = o; }
+    ~QueueJob() {}
+    std::string op;
+    std::string file;
+    std::string cfile;
+    unsigned long pos;
+    unsigned long end;
+    unsigned long len;
+  };
+
+  std::list<QueueJob*> queue_;
+  QueueJob* cur_;
+  bool threadActive_;
+  enum { TE_IDLE, TE_CONVERTING, TE_CONVERTED, TE_READING } curState_;
+  FormatSupport* curConv_;
+
+  bool curScan();
+  bool curAppendTrack();
+  bool curAppendFile();
+  bool curInsertFile();
+  int  curCreateAudioData(TrackData **);
+  void curSignalConversionError(FormatSupport::Status);
+  void activateQueue();
+  bool queueThread();
 
   friend class TocEditView;
 };

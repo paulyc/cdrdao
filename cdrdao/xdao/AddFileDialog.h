@@ -36,7 +36,7 @@ public:
   void stop();
 
   void mode(Mode);
-  void update(unsigned long level);
+  void update(unsigned long level) {}
 
   bool on_delete_event(GdkEventAny*);
 
