@@ -19,6 +19,9 @@
 
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2000/04/23 16:29:49  andreasm
+ * Updated to state of my private development environment.
+ *
  * Revision 1.3  1999/12/19 15:27:15  mueller
  * Removed copy protection flags in 'buildSizeInfoPacks'.
  *
@@ -41,7 +44,7 @@
 #include "CdTextItem.h"
 #include "PWSubChannel96.h"
 
-static char rcsid[] = "$Id: CdTextEncoder.cc,v 1.2 2000-04-23 16:29:49 andreasm Exp $";
+static char rcsid[] = "$Id: CdTextEncoder.cc,v 1.3 2000-12-17 10:51:22 andreasm Exp $";
 
 unsigned short CdTextEncoder::CRCTAB_[256] = {
   0x0000, 0x1021, 0x2042, 0x3063, 0x4084, 0x50A5, 0x60C6, 0x70E7, 0x8108,
@@ -180,10 +183,10 @@ int CdTextEncoder::encode()
   calcCrcs();
 
   if (packs_ != NULL) {
-    message(3, "\nCD-TEXT packs:");
+    message(4, "\nCD-TEXT packs:");
     CdTextPackEntry *prun;
     for (prun = packs_; prun != NULL; prun = prun->next_) {
-      message(3, "%02x %02x %02x %02x: %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x  CRC: %02x %02x", prun->pack.packType,
+      message(4, "%02x %02x %02x %02x: %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x  CRC: %02x %02x", prun->pack.packType,
 	      prun->pack.trackNumber, prun->pack.sequenceNumber,
 	      prun->pack.blockCharacter, prun->pack.data[0],
 	      prun->pack.data[1], prun->pack.data[2], prun->pack.data[3],

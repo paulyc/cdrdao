@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.1.1.1  2000/02/05 01:35:04  llanero
+ * Uploaded cdrdao 1.1.3 with pre10 patch applied.
+ *
  * Revision 1.2  1998/08/30 19:10:32  mueller
  * Added handling of Catalog Number and ISRC codes.
  *
@@ -45,6 +48,25 @@ struct CueSheetEntry {
 
 class PQChannelEncoder {
 public:
+  struct SessionInfo {
+    // required for all sessions
+    int sessionNr;
+    long leadInStart;
+    long leadInLen;
+    long leadOutLen;
+    
+    // required for all sessions of a multi session disk
+    Msf lastLeadoutStart;
+
+    // required for 1st session of a multi session disk
+    int cdrw;
+    Msf atipLeadinStart;
+    unsigned char optimumRecordingPower;
+
+    // required for a CD-RW for 1st session of a multi session disk
+    unsigned char atipA1[3];
+  };
+
   PQChannelEncoder();
   ~PQChannelEncoder();
 

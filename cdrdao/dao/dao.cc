@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2000/11/12 16:50:44  andreasm
+ * Fixes for compilation under Win32.
+ *
  * Revision 1.4  2000/10/08 16:39:41  andreasm
  * Remote progress message now always contain the track relative and total
  * progress and the total number of processed tracks.
@@ -68,7 +71,7 @@
  *
  */
 
-static char rcsid[] = "$Id: dao.cc,v 1.5 2000-11-12 16:50:44 andreasm Exp $";
+static char rcsid[] = "$Id: dao.cc,v 1.6 2000-12-17 10:51:23 andreasm Exp $";
 
 #include <config.h>
 
@@ -315,7 +318,7 @@ static int writer(const Toc *toc, CdrDriver *cdr, BufferHeader *header,
   }
 
   do {
-    //message(3, "Slave: waiting for master.");
+    //message(4, "Slave: waiting for master.");
 
     while (header->buffersWritten == header->buffersRead) {
       if (header->readerTerminated) {
@@ -406,7 +409,7 @@ static int writer(const Toc *toc, CdrDriver *cdr, BufferHeader *header,
       actTrackNr = buf.trackNr;
     }
 
-    //message(3, "Slave: writing buffer %p (%ld).", buf, len);
+    //message(4, "Slave: writing buffer %p (%ld).", buf, len);
 
 #if DEBUG_WRITE
     if (fp != NULL) {
@@ -492,7 +495,7 @@ static void *reader(void *args)
     }
     encodingMode = cdr->encodingMode();
   }
-  message(3, "Swap: %d", swap);
+  message(4, "Swap: %d", swap);
 
   TrackIterator itr(toc);
   TrackReader reader;
@@ -587,7 +590,7 @@ static void *reader(void *args)
     }
     
     // wait for writing process to finish writing of previous buffer
-    //message(3, "Reader: waiting for Writer.");
+    //message(4, "Reader: waiting for Writer.");
     while (header->buffersRead - header->buffersWritten 
 	   == header->nofBuffers &&
 	   header->terminateReader == 0) {
@@ -724,7 +727,7 @@ int writeDiskAtOnce(const Toc *toc, CdrDriver *cdr, int nofBuffers, int swap,
       if (mlockall(MCL_CURRENT|MCL_FUTURE) != 0) {
 	message(-1, "Cannot lock memory pages: %s", strerror(errno));
       }
-      message(3, "Reader process memory locked");
+      message(4, "Reader process memory locked");
     }
 #endif
 
@@ -749,7 +752,7 @@ int writeDiskAtOnce(const Toc *toc, CdrDriver *cdr, int nofBuffers, int swap,
     message(-1, "No super user permission to setup real time scheduling.");
     break;
   case 2:
-    message(1, "Real time scheduling not available.");
+    message(2, "Real time scheduling not available.");
     break;
   }
 
@@ -758,7 +761,7 @@ int writeDiskAtOnce(const Toc *toc, CdrDriver *cdr, int nofBuffers, int swap,
     if (mlockall(MCL_CURRENT|MCL_FUTURE) != 0) {
       message(-1, "Cannot lock memory pages: %s", strerror(errno));
     }
-    message(3, "Memory locked");
+    message(4, "Memory locked");
   }
 #endif
 
@@ -910,7 +913,7 @@ static int getSharedMemory(long nofBuffers,
   maxSegmentSize = 1 * 1024 * 1024; // 1 MB
 #endif
 
-  message(3, "Shm max segement size: %ld (%ld MB)", maxSegmentSize,
+  message(4, "Shm max segement size: %ld (%ld MB)", maxSegmentSize,
 	  maxSegmentSize >> 20);
 
   if (maxSegmentSize < sizeof(BufferHeader) + nofBuffers * sizeof(Buffer)) {
@@ -934,7 +937,7 @@ static int getSharedMemory(long nofBuffers,
 
   *shmSegments = new ShmSegment[*nofSegments];
 
-  message(3, "Using %ld shared memory segments.", *nofSegments);
+  message(4, "Using %ld shared memory segments.", *nofSegments);
 
   for (i = 0; i < *nofSegments; i++) {
     (*shmSegments)[i].id = -1;

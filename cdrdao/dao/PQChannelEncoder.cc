@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.1.1.1  2000/02/05 01:36:34  llanero
+ * Uploaded cdrdao 1.1.3 with pre10 patch applied.
+ *
  * Revision 1.3  1998/09/06 13:34:22  mueller
  * Use 'message()' for printing messages.
  *
@@ -29,7 +32,7 @@
  *
  */
 
-static char rcsid[] = "$Id: PQChannelEncoder.cc,v 1.1.1.1 2000-02-05 01:36:34 llanero Exp $";
+static char rcsid[] = "$Id: PQChannelEncoder.cc,v 1.2 2000-12-17 10:51:22 andreasm Exp $";
 
 #include <config.h>
 
@@ -185,7 +188,7 @@ int PQChannelEncoder::analyzeCueSheet()
 
     switch (ent->ctlAdr & 0x0f) {
     case 1:
-      if (ent->min > 89 || ent->sec > 59 || ent->frame > 74) {
+      if (ent->min > 99 || ent->sec > 59 || ent->frame > 74) {
 	message(-3, "Illegal time field value at cue sheet entry: %d",
 		i);
 	return 1;
@@ -324,7 +327,7 @@ const SubChannel *PQChannelEncoder::encodeSubChannel(long lba)
 
   if (lba == nextTransitionLba_) {
     // switch to next transition
-    //message(2, "Switching to next transition at lba: %ld", lba);
+    //message(3, "Switching to next transition at lba: %ld", lba);
     nextTransition();
     newTransition = 1;
   }

@@ -18,6 +18,10 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2000/10/08 16:39:40  andreasm
+ * Remote progress message now always contain the track relative and total
+ * progress and the total number of processed tracks.
+ *
  * Revision 1.2  2000/04/23 16:29:50  andreasm
  * Updated to state of my private development environment.
  *
@@ -44,7 +48,7 @@
  *
  */
 
-static char rcsid[] = "$Id: PlextorReaderScan.cc,v 1.3 2000-10-08 16:39:40 andreasm Exp $";
+static char rcsid[] = "$Id: PlextorReaderScan.cc,v 1.4 2000-12-17 10:51:22 andreasm Exp $";
 
 #include <config.h>
 
@@ -248,7 +252,7 @@ int PlextorReaderScan::readAudioRange(ReadDiskInfo *info, int fd, long start,
 	trackInfo[t].isrcCode[0] = 0;
 	readIsrc(t + 1, trackInfo[t].isrcCode);
 	if (trackInfo[t].isrcCode[0] != 0)
-	  message(1, "Found ISRC code.");
+	  message(2, "Found ISRC code.");
 
 	totalProgress = (t + 1) * 1000;
 	totalProgress /= info->tracks;

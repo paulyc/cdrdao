@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2000/11/12 16:50:44  andreasm
+ * Fixes for compilation under Win32.
+ *
  * Revision 1.1.1.1  2000/02/05 01:38:22  llanero
  * Uploaded cdrdao 1.1.3 with pre10 patch applied.
  *
@@ -26,7 +29,7 @@
  *
  */
 
-static char rcsid[] = "$Id: port.cc,v 1.2 2000-11-12 16:50:44 andreasm Exp $";
+static char rcsid[] = "$Id: port.cc,v 1.3 2000-12-17 10:51:23 andreasm Exp $";
 
 #include <config.h>
 
@@ -199,7 +202,7 @@ int setRealTimeScheduling(int priority)
     return 3;
   }
 
-  message(4, "Using WIN32 real time scheduling.");
+  message(5, "Using WIN32 real time scheduling.");
 
 #elif defined(USE_POSIX_THREADS) && defined(POSIX_SCHEDULING)
   struct sched_param schedp;
@@ -217,7 +220,7 @@ int setRealTimeScheduling(int priority)
     return 3;
   }
   else {
-    message(4, "Using pthread POSIX real time scheduling.");
+    message(5, "Using pthread POSIX real time scheduling.");
   }
 
 #elif defined(LINUX_QNX_SCHEDULING)
@@ -234,7 +237,7 @@ int setRealTimeScheduling(int priority)
     return 3;
   }
   else {
-    message(4, "Using Linux QNX real time scheduling.");
+    message(5, "Using Linux QNX real time scheduling.");
   }
 
 #elif defined POSIX_SCHEDULING
@@ -251,7 +254,7 @@ int setRealTimeScheduling(int priority)
     return 3;
   }
   else {
-    message(4, "Using POSIX real time scheduling.");
+    message(5, "Using POSIX real time scheduling.");
   }
 #else
   return 2;

@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.12  2000/11/19 17:49:32  andreasm
+ * Updated 'msinfo' command.
+ *
  * Revision 1.11  2000/11/05 19:20:59  andreasm
  * Unified progress messages sent from cdrdao to gcdmaster.
  *
@@ -118,7 +121,7 @@
  *
  */
 
-static char rcsid[] = "$Id: CdrDriver.cc,v 1.12 2000-11-19 17:49:32 andreasm Exp $";
+static char rcsid[] = "$Id: CdrDriver.cc,v 1.13 2000-12-17 10:51:22 andreasm Exp $";
 
 #include <config.h>
 
@@ -494,7 +497,7 @@ static int readDriverTable(const char *filename)
   if ((fp = fopen(filename, "r")) == NULL)
     return 1;
 
-  message(3, "Reading driver table from file \"%s\".", filename);
+  message(4, "Reading driver table from file \"%s\".", filename);
 
   while (fgets(buf, MAX_DRIVER_TABLE_LINE_LEN, fp) != NULL) {
     lineNr++;
@@ -608,7 +611,7 @@ static int readDriverTable(const char *filename)
 
   fclose(fp);
 
-  message(3, "Found %d valid driver table entries.", count);
+  message(4, "Found %d valid driver table entries.", count);
 
   return 0;
 }
@@ -1460,7 +1463,7 @@ CdToc *CdrDriver::getTocGeneric(int *cdTocLen)
   dataLen = (reqData[0] << 8) | reqData[1];
   dataLen += 2;
 
-  message(3, "getTocGeneric: data len %d", dataLen);
+  message(4, "getTocGeneric: data len %d", dataLen);
 
   if (dataLen < 12) {
     dataLen = (100 * 8) + 4;
@@ -1745,7 +1748,7 @@ CdToc *CdrDriver::getToc(int sessionNr, int *cdTocLen)
     return completeToc;
   }
 
-  message(3, "Raw toc contains %s values.", isBcd == 0 ? "HEX" : "BCD");
+  message(4, "Raw toc contains %s values.", isBcd == 0 ? "HEX" : "BCD");
 
   for (i = 0; i < rawTocLen; i++) {
     if (rawToc[i].sessionNr == sessionNr &&
@@ -2060,13 +2063,13 @@ Toc *CdrDriver::readDiskToc(int session, const char *dataFilename)
 
     Msf trackLength(elba - slba);
 
-    message(1, "Analyzing track %d (%s): start %s, ", i + 1, 
+    message(1, "Analyzing track %02d (%s): start %s, ", i + 1,
 	    TrackData::mode2String(trackInfos[i].mode),
 	    Msf(cdToc[i].start).str());
     message(1, "length %s...", trackLength.str());
 
     if (pregap > 0) {
-      message(1, "Found pre-gap: %s", Msf(pregap).str());
+      message(2, "Found pre-gap: %s", Msf(pregap).str());
     }
 
     isrcCode[0] = 0;
@@ -2097,7 +2100,7 @@ Toc *CdrDriver::readDiskToc(int session, const char *dataFilename)
     }
 
     if (isrcCode[0] != 0) {
-      message(1, "Found ISRC code.");
+      message(2, "Found ISRC code.");
       memcpy(trackInfos[i].isrcCode, isrcCode, 13);
     }
 
@@ -2119,7 +2122,7 @@ Toc *CdrDriver::readDiskToc(int session, const char *dataFilename)
       }
 
       if (ctlCheckOk) {
-	message(1, "Control nibbles of track match CD-TOC settings.");
+	message(2, "Control nibbles of track match CD-TOC settings.");
       }
     }
   }
@@ -2143,9 +2146,12 @@ Toc *CdrDriver::readDiskToc(int session, const char *dataFilename)
     readCdTextData(toc);
 
     if (readCatalog(toc, trackInfos[0].start, trackInfos[nofTracks].start)) {
-      message(1, "Found disk catalogue number.");
+      message(2, "Found disk catalogue number.");
     }
   }
+
+  // overwrite last time message
+  message (1, "        \t");
 
   delete[] cdToc;
   delete[] trackInfos;
@@ -2167,6 +2173,7 @@ int CdrDriver::analyzeTrackSearch(TrackData::Mode, int trackNr, long startLba,
   isrcCode[0] = 0;
   *ctl = 0;
 
+
   if (pregap != NULL) {
     *pregap = findIndex(trackNr + 1, 0, startLba, endLba - 1);
     if (*pregap >= endLba) {
@@ -2184,7 +2191,7 @@ int CdrDriver::analyzeTrackSearch(TrackData::Mode, int trackNr, long startLba,
 
   do {
     if ((indexLba = findIndex(trackNr, ind, indexLba, endLba - 1)) > 0) {
-      message(1, "Found index %d at %s", ind, Msf(indexLba).str());
+      message(2, "Found index %d at %s", ind, Msf(indexLba).str());
       if (*indexCnt < 98 && indexLba > startLba) {
 	index[*indexCnt] =  Msf(indexLba - startLba);
 	*indexCnt += 1;
@@ -2314,7 +2321,7 @@ int CdrDriver::analyzeTrackScan(TrackData::Mode, int trackNr, long startLba,
 	  }
 	  if (t == trackNr && chan->indexNr() == actIndex + 1) {
 	    actIndex = chan->indexNr();
-	    message(1, "Found index %d at: %s", actIndex, time.str());
+	    message(2, "Found index %d at: %s", actIndex, time.str());
 	    if ((*indexCnt) < 98) {
 	      index[*indexCnt] = time;
 	      *indexCnt += 1;
@@ -2325,7 +2332,7 @@ int CdrDriver::analyzeTrackScan(TrackData::Mode, int trackNr, long startLba,
 	      if (pregap != NULL)
 		*pregap = time.lba();
 	      if (crcErrCnt != 0)
-		message(1, "Found %ld Q sub-channels with CRC errors.",
+		message(2, "Found %ld Q sub-channels with CRC errors.",
 			crcErrCnt);
 	    
 	      return 0;
@@ -2343,11 +2350,11 @@ int CdrDriver::analyzeTrackScan(TrackData::Mode, int trackNr, long startLba,
 	crcErrCnt++;
 #if 0
 	if (chan->type() == SubChannel::QMODE1DATA) {
-	  message(1, "Q sub-channel data at %02d:%02d:%02d failed CRC check - ignored",
+	  message(2, "Q sub-channel data at %02d:%02d:%02d failed CRC check - ignored",
 		 chan->min(), chan->sec(), chan->frame());
 	}
 	else {
-	  message(1, "Q sub-channel data failed CRC check - ignored.");
+	  message(2, "Q sub-channel data failed CRC check - ignored.");
 	}
 	chan->print();
 #endif
@@ -2361,7 +2368,7 @@ int CdrDriver::analyzeTrackScan(TrackData::Mode, int trackNr, long startLba,
   }
 
   if (crcErrCnt != 0)
-    message(1, "Found %ld Q sub-channels with CRC errors.", crcErrCnt);
+    message(2, "Found %ld Q sub-channels with CRC errors.", crcErrCnt);
 
   return 0;
 }
@@ -2617,7 +2624,7 @@ unsigned char CdrDriver::sessionFormat()
     break;
   }
 
-  message(2, "Session format: %x", ret);
+  message(3, "Session format: %x", ret);
 
   return ret;
 }
@@ -2644,7 +2651,7 @@ CdTextPack *CdrDriver::readCdTextPacks(long *nofPacks)
 
   long len = ((reqData[0] << 8 ) | reqData[1]) + 2;
 
-  message(3, "CD-TEXT data len: %ld", len);
+  message(4, "CD-TEXT data len: %ld", len);
 
   if (len <= 4)
     return NULL;
@@ -2708,7 +2715,7 @@ int CdrDriver::readCdTextData(Toc *toc)
     CdTextPack &p = packs[i];
 
 #if 1
-    message(3, "%02x %02x %02x %02x: %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x  CRC: %02x %02x", p.packType, p.trackNumber,
+    message(4, "%02x %02x %02x %02x: %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x %02x  CRC: %02x %02x", p.packType, p.trackNumber,
 	    p.sequenceNumber, p.blockCharacter, p.data[0], p.data[1], 
 	    p.data[2], p.data[3], p.data[4], p.data[5], p.data[6], p.data[7], 
 	    p.data[8], p.data[9], p.data[10], p.data[11],
@@ -3129,7 +3136,7 @@ Toc *CdrDriver::readDisk(int session, const char *dataFilename)
     readCdTextData(toc);
 
     if (readCatalog(toc, trackInfos[0].start, trackInfos[nofTracks].start)) {
-      message(1, "Found disk catalogue number.");
+      message(2, "Found disk catalogue number.");
     }
   }
 
@@ -3728,7 +3735,7 @@ int CdrDriver::readAudioRangeParanoia(ReadDiskInfo *info, int fd, long start,
 
 
   if (paranoiaCrcCount_ != 0)
-    message(1, "Found %ld Q sub-channels with CRC errors.", paranoiaCrcCount_);
+    message(2, "Found %ld Q sub-channels with CRC errors.", paranoiaCrcCount_);
 
   return 0;
 }
@@ -3829,7 +3836,7 @@ long CdrDriver::paranoiaRead(Sample *buffer, long startLba, long len)
 	      chan->indexNr() == paranoiaActIndex_ + 1) {
 	  
 	    if (chan->indexNr() > 1) {
-	      message(1, "Found index %d at: %s", chan->indexNr(),
+	      message(2, "Found index %d at: %s", chan->indexNr(),
 		      time.str());
 	  
 	      if (paranoiaTrackInfo_[t].indexCnt < 98) {
@@ -3843,7 +3850,7 @@ long CdrDriver::paranoiaRead(Sample *buffer, long startLba, long len)
 	    //chan->print();
 	    if (chan->indexNr() == 0) {
 	      paranoiaTrackInfo_[t].pregap = time.lba();
-	      message(1, "Found pre-gap: %s", time.str());
+	      message(2, "Found pre-gap: %s", time.str());
 	    }
 	  }
 
@@ -3853,7 +3860,7 @@ long CdrDriver::paranoiaRead(Sample *buffer, long startLba, long len)
       }
       else if (chan->type() == SubChannel::QMODE3) {
 	if (paranoiaTrackInfo_[paranoiaActTrack_].isrcCode[0] == 0) {
-	  message(1, "Found ISRC code.");
+	  message(2, "Found ISRC code.");
 	  strcpy(paranoiaTrackInfo_[paranoiaActTrack_].isrcCode,
 		 chan->isrc());
 	}
