@@ -85,6 +85,10 @@ DeviceList::DeviceList(CdDevice::DeviceType filterType)
 
   switch (filterType_)
   {
+    case CdDevice::CD_ALL:
+                 infoLabel->set_label("<b><big>Available Devices</big></b>");
+                 treeView_.get_selection()->set_mode(Gtk::SELECTION_SINGLE);
+                 break;
     case CdDevice::CD_ROM:
                  infoLabel->set_label("<b><big>Available Reader Devices</big></b>");
                  treeView_.get_selection()->set_mode(Gtk::SELECTION_SINGLE);
@@ -103,6 +107,9 @@ DeviceList::DeviceList(CdDevice::DeviceType filterType)
 
   import();
   CdDevice::signal_statusChanged.connect(slot(*this, &DeviceList::importStatus));
+  CdDevice::signal_devicesChanged.connect(slot(*this, &DeviceList::import));
+  treeView_.get_selection()->signal_changed().connect(signal_changed.slot());
+
   show();
 }
 
@@ -142,6 +149,9 @@ void DeviceList::import()
   for (drun = CdDevice::first(); drun != NULL; drun = CdDevice::next(drun)) {
     switch (filterType_)
     {
+      case CdDevice::CD_ALL:
+                   appendTableEntry(drun);
+                   break;
       case CdDevice::CD_ROM:
                    if (drun->driverId() > 0 &&
 	               (drun->deviceType() == CdDevice::CD_ROM ||
@@ -276,7 +286,7 @@ bool DeviceList::selectionEmpty()
   return true;
 }
 
-std::list<CdDevice *> DeviceList::getAllSelected()
+std::list<CdDevice *> DeviceList::getAll(bool selected)
 {
   CdDevice *dev = 0;
   Gtk::TreeIter iter;
@@ -284,7 +294,7 @@ std::list<CdDevice *> DeviceList::getAllSelected()
   std::list<CdDevice *> devices;
 
   for (iter = listStore_->get_iter("0"); iter != 0; iter++) {
-    if (treeView_.get_selection()->is_selected(Gtk::TreePath(iter)))
+    if (treeView_.get_selection()->is_selected(Gtk::TreePath(iter)) || !selected)
     {
       row = *(iter);
       static_cast<void *>(dev) = row[modelColumns_.device];
