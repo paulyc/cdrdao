@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2004/03/23 18:46:07  poolshark
+ * MMC autodetect mode
+ *
  * Revision 1.1.1.1  2000/02/05 01:36:55  llanero
  * Uploaded cdrdao 1.1.3 with pre10 patch applied.
  *
@@ -77,6 +80,7 @@ int ScsiIf::testUnitReady()
 bool ScsiIf::checkMmc(bool *cd_r_read,  bool *cd_r_write,
                       bool *cd_rw_read, bool *cd_rw_write)
 {
+#ifdef USE_SCGLIB
   static const int MODE_SENSE_G1_CMD = 0x5a;
   static const int MODE_MAX_SIZE = 256;
   static const int MODE_PAGE_HEADER_SIZE = 8;
@@ -118,4 +122,13 @@ bool ScsiIf::checkMmc(bool *cd_r_read,  bool *cd_r_write,
   *cd_rw_read  = mp->cd_rw_read;
   *cd_rw_write = mp->cd_rw_write;
   return true;
+
+#else
+  *cd_r_read   = false;
+  *cd_r_write  = false;
+  *cd_rw_read  = false;
+  *cd_rw_write = false;
+  return true;
+ 
+#endif
 }
