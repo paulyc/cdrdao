@@ -18,6 +18,12 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2000/12/17 10:51:22  andreasm
+ * Default verbose level is now 2. Adaopted message levels to have finer
+ * grained control about the amount of messages printed by cdrdao.
+ * Added CD-TEXT writing support to the GenericMMCraw driver.
+ * Fixed CD-TEXT cue sheet creating for the GenericMMC driver.
+ *
  * Revision 1.1.1.1  2000/02/05 01:35:04  llanero
  * Uploaded cdrdao 1.1.3 with pre10 patch applied.
  *
@@ -56,6 +62,7 @@ public:
   void init(unsigned char *);
 
   void type(unsigned char); // set Q type
+  Type type() const;        // returns Q mode type
 
   long dataLength() const; // returns number of sub channel bytes
 
