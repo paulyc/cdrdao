@@ -91,7 +91,7 @@ public:
   int determineLength();
   int check(int trackNr) const;
 
-  void convertedFilename(const char*);
+  void effectiveFilename(const char*);
 
   void split(unsigned long, TrackData **part1, TrackData **part2);
   TrackData *merge(const TrackData *) const;
@@ -124,8 +124,8 @@ private:
 
   FileType fileType_; // only for audio mode data, type of file (raw, wave)
 
-  char *filename_; // used for object type 'FILE'
-  char *origFilename_; // if file was converted to WAV, name of MP3 file
+  char *filename_;    // used for object type 'FILE'
+  char *effFilename_; // effective filename (absolute path or converted file)
 
   long offset_; // byte offset into file
 

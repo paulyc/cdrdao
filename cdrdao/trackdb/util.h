@@ -21,6 +21,7 @@
 #define __UTIL_H__
 
 #include <stdio.h>
+#include <string>
 
 class Sample;
 
@@ -41,6 +42,8 @@ int bcd2int(unsigned char);
 const char *stripCwd(const char *fname);
 
 const char* fileExtension(const char* fname);
+
+bool resolveFilename(std::string& dest, const char* file, const char* path);
 
 void message(int level, const char *fmt, ...);
 

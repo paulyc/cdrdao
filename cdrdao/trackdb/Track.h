@@ -119,6 +119,7 @@ public:
 
   void collectFiles(std::set<std::string>& set);
   void markFileConversion(const char* src, const char* dst);
+  void resolveFilename(const char* path);
 
 private:
   friend class TocParserGram;
