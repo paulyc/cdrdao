@@ -18,6 +18,17 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2000/09/21 02:07:06  llanero
+ * MDI support:
+ * Splitted AudioCDChild into same and AudioCDView
+ * Move Selections from TocEdit to AudioCDView to allow
+ *   multiple selections.
+ * Cursor animation in all the views.
+ * Can load more than one from from command line
+ * Track info, Toc info, Append/Insert Silence, Append/Insert Track,
+ *   they all are built for every child when needed.
+ * ...
+ *
  * Revision 1.4  2000/05/14 16:54:59  andreasm
  * Adapted to gtkmm-1.2.0 and gnomemm-1.1.9
  *
@@ -42,7 +53,7 @@
  *
  */
 
-static char rcsid[] = "$Id: DeviceConfDialog.cc,v 1.5 2000-09-21 02:07:06 llanero Exp $";
+static char rcsid[] = "$Id: DeviceConfDialog.cc,v 1.6 2000-10-01 16:39:10 llanero Exp $";
 
 #include <stdio.h>
 #include <limits.h>
@@ -377,10 +388,10 @@ DeviceConfDialog::DeviceConfDialog()
   resetButton->show();
   resetButton->clicked.connect(SigC::slot(this,&DeviceConfDialog::resetAction));
 
-  Gtk::Button *cancelButton = new Gtk::Button(string(" Cancel "));
+  Gtk::Button *cancelButton = new Gtk::Button(string(" Close "));
   bbox->pack_start(*cancelButton);
   cancelButton->show();
-  cancelButton->clicked.connect(SigC::slot(this,&DeviceConfDialog::cancelAction));
+  cancelButton->clicked.connect(SigC::slot(this,&DeviceConfDialog::closeAction));
 
   get_action_area()->pack_start(*bbox);
   bbox->show();
@@ -437,7 +448,7 @@ gint DeviceConfDialog::delete_event_impl(GdkEventAny*)
   return 1;
 }
 
-void DeviceConfDialog::cancelAction()
+void DeviceConfDialog::closeAction()
 {
   stop();
 }

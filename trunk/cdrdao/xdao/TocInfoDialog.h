@@ -18,6 +18,17 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2000/09/21 02:07:07  llanero
+ * MDI support:
+ * Splitted AudioCDChild into same and AudioCDView
+ * Move Selections from TocEdit to AudioCDView to allow
+ *   multiple selections.
+ * Cursor animation in all the views.
+ * Can load more than one from from command line
+ * Track info, Toc info, Append/Insert Silence, Append/Insert Track,
+ *   they all are built for every child when needed.
+ * ...
+ *
  * Revision 1.3  2000/04/23 09:07:08  andreasm
  * * Fixed most problems marked with '//llanero'.
  * * Added audio CD edit menus to MDIWindow.
@@ -104,7 +115,7 @@ private:
 
   CdTextPage cdTextPages_[8];
 
-  void cancelAction();
+  void closeAction();
   void applyAction();
 
   void createCdTextLanguageMenu(int);

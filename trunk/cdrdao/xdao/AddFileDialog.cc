@@ -18,6 +18,10 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2000/09/22 00:21:13  llanero
+ * Added Drag and Drop ability to the AudioCDView, but just
+ * one file at a time, and when not playin, not reading, ...
+ *
  * Revision 1.3  2000/09/21 02:07:06  llanero
  * MDI support:
  * Splitted AudioCDChild into same and AudioCDView
@@ -41,7 +45,7 @@
  *
  */
 
-static char rcsid[] = "$Id: AddFileDialog.cc,v 1.4 2000-09-22 00:21:13 llanero Exp $";
+static char rcsid[] = "$Id: AddFileDialog.cc,v 1.5 2000-10-01 16:39:09 llanero Exp $";
 
 #include <stdio.h>
 #include <limits.h>
@@ -70,9 +74,10 @@ AddFileDialog::AddFileDialog(AudioCDChild *child) : Gtk::FileSelection(string(""
   cdchild = child;
 
   hide_fileop_buttons();
+  ((Gtk::Label *)get_cancel_button()->get_child())->set_text("Close");
 
   get_ok_button()->clicked.connect(SigC::slot(this,&AddFileDialog::applyAction));
-  get_cancel_button()->clicked.connect(SigC::slot(this,&AddFileDialog::cancelAction));
+  get_cancel_button()->clicked.connect(SigC::slot(this,&AddFileDialog::closeAction));
 }
 
 AddFileDialog::~AddFileDialog()
@@ -86,12 +91,15 @@ void AddFileDialog::mode(Mode m)
   switch (mode_) {
   case M_APPEND_TRACK:
     set_title(string("Append Track"));
+    ((Gtk::Label *)get_ok_button()->get_child())->set_text("Append");
     break;
   case M_APPEND_FILE:
     set_title(string("Append File"));
+    ((Gtk::Label *)get_ok_button()->get_child())->set_text("Append");
     break;
   case M_INSERT_FILE:
     set_title(string("Insert File"));
+    ((Gtk::Label *)get_ok_button()->get_child())->set_text("Insert");
     break;
   }
 }
@@ -142,7 +150,7 @@ gint AddFileDialog::delete_event_impl(GdkEventAny*)
   return 1;
 }
 
-void AddFileDialog::cancelAction()
+void AddFileDialog::closeAction()
 {
   stop();
 }
