@@ -17,8 +17,8 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include <libgnomeuimm.h>
 #include "GenericChild.h"
-
 
 GenericChild::GenericChild()
 {
@@ -34,5 +34,3 @@ TocEdit *GenericChild::tocEdit() const
 {
   return tocEdit_;
 }
-
-
