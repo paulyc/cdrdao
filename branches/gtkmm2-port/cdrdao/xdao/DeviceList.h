@@ -20,26 +20,23 @@
 #ifndef __DEVICE_LIST_H
 #define __DEVICE_LIST_H
 
-#include <gtk--.h>
-#include <gtk/gtk.h>
-
 class TocEdit;
-// class CdDevice;
 #include "CdDevice.h"
 
-class DeviceList : public Gtk::Frame {
+class DeviceList : public Gtk::VBox {
 public:
   DeviceList(CdDevice::DeviceType filterType);
   ~DeviceList();
 
-  Gtk::CList_Helpers::SelectionList selection();
-
-  struct DeviceData {
-    int bus, id, lun;
-  };
+  Glib::RefPtr<Gtk::TreeSelection> get_selection();
 
   void selectOne();
-  void selectOneBut(Gtk::CList_Helpers::SelectionList &);
+  void selectOneBut(CdDevice *target);
+
+  CdDevice *getFirstSelected();
+  bool isSelected(CdDevice *);
+
+  std::list<CdDevice *> getAllSelected();
 
 private:
   TocEdit *tocEdit_;
@@ -47,16 +44,26 @@ private:
   int speed_;
   CdDevice::DeviceType filterType_;
 
-  Gtk::CList *list_;
-
-  void selection_changed_emit(gint p0, gint p1, GdkEvent* p2);
-
 public:
 
   void appendTableEntry(CdDevice *);
   void import();
   void importStatus();
 
+private:
+  Gtk::TreeView treeView_;
+  Glib::RefPtr<Gtk::ListStore> listStore_;
+
+  struct ModelColumns : public Gtk::TreeModelColumnRecord
+  {
+    Gtk::TreeModelColumn<Glib::ustring> name;
+    Gtk::TreeModelColumn<Glib::ustring> status;
+    Gtk::TreeModelColumn<void *> device;
+
+    ModelColumns() { add(name); add(status); add(device); }
+  };
+
+  const ModelColumns modelColumns_;
 };
 
 #endif
