@@ -1915,6 +1915,15 @@ long TrackReader::readSamples(Sample *buf, long len)
   return ret;
 }
 
+const char* TrackReader::curFilename()
+{
+  const TrackData* td = reader.trackData();
+
+  if (td)
+    return td->filename();
+  else
+    return NULL;
+}
 
 SubTrackIterator::SubTrackIterator(const Track *t)
 {
