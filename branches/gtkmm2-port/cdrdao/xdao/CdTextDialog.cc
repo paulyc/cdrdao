@@ -17,9 +17,7 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "CdTextDialog.h"
-
-#include <gnome--.h>
+#include <libgnomeuimm.h>
 
 #include <stddef.h>
 #include <string.h>
@@ -29,6 +27,7 @@
 #include "util.h"
 
 #include "guiUpdate.h"
+#include "CdTextDialog.h"
 
 CdTextDialog::CdTextDialog()
 {
@@ -36,7 +35,6 @@ CdTextDialog::CdTextDialog()
   Gtk::VBox *contents = new Gtk::VBox;
   char buf[20];
 
-  active_ = 0;
   tocEdit_ = NULL;
   trackEntries_ = 0;
 
@@ -55,7 +53,7 @@ CdTextDialog::CdTextDialog()
 
     page_[i].performerButton = new Gtk::CheckButton("Enable Perfomer Entries");
     page_[i].performerButton->set_active(TRUE);
-    page_[i].performerButton->toggled.connect(bind(slot(this, &CdTextDialog::activatePerformerAction), i));
+    page_[i].performerButton->signal_toggled().connect(bind(slot(*this, &CdTextDialog::activatePerformerAction), i));
 
     page_[i].adjust = new Gtk::Adjustment(0.0, 0.0, 0.0);
 
@@ -68,7 +66,7 @@ CdTextDialog::CdTextDialog()
       Gtk::HBox *hbox = new Gtk::HBox;
       hbox->pack_end(*(new Gtk::Label("Album")));
 
-      page_[i].table->attach(*hbox, 0, 1, 1, 2, GTK_FILL);
+      page_[i].table->attach(*hbox, 0, 1, 1, 2, Gtk::FILL);
       page_[i].table->attach(*(page_[i].title), 2, 3, 1, 2);
       page_[i].table->attach(*(page_[i].performer), 1, 2, 1, 2);
     }
@@ -87,8 +85,8 @@ CdTextDialog::CdTextDialog()
       hbox1->pack_start(*(page_[i].table), TRUE, TRUE, 5);
       vbox1->pack_start(*hbox1, FALSE, FALSE, 5);
 
-      Gtk::Viewport *vport = new Gtk::Viewport;
-      vport->set_vadjustment(*(page_[i].adjust));
+      Gtk::Adjustment *hadjust = new Gtk::Adjustment(0.0, 0.0, 0.0);
+      Gtk::Viewport *vport = new Gtk::Viewport(*hadjust, *(page_[i].adjust));
       vport->add(*vbox1);
 
       Gtk::HBox  *hbox2 = new Gtk::HBox;
@@ -112,34 +110,29 @@ CdTextDialog::CdTextDialog()
     get_vbox()->pack_start(*hbox, TRUE, TRUE, 10);
   }
 
-  Gtk::HButtonBox *bbox = new Gtk::HButtonBox(GTK_BUTTONBOX_SPREAD);
+  Gtk::HButtonBox *bbox = new Gtk::HButtonBox(Gtk::BUTTONBOX_SPREAD);
   
-  applyButton_ = new Gnome::StockButton(GNOME_STOCK_BUTTON_APPLY);
+  applyButton_ = new Gtk::Button(Gtk::Stock::APPLY);
   bbox->pack_start(*applyButton_);
-  applyButton_->clicked.connect(slot(this, &CdTextDialog::applyAction));
+  applyButton_->signal_clicked().connect(slot(*this, &CdTextDialog::applyAction));
   
   Gtk::Button *fillButton = new Gtk::Button(" Fill Performer ");
   bbox->pack_start(*fillButton);
-  fillButton->clicked.connect(slot(this, &CdTextDialog::fillPerformerAction));
+  fillButton->signal_clicked().connect(slot(*this, &CdTextDialog::fillPerformerAction));
 
-  Gtk::Button *cancelButton = new Gnome::StockButton(GNOME_STOCK_BUTTON_CLOSE);
+  Gtk::Button *cancelButton = new Gtk::Button(Gtk::Stock::CLOSE);
   bbox->pack_start(*cancelButton);
-  cancelButton->clicked.connect(slot(this, &CdTextDialog::stop));
+  cancelButton->signal_clicked().connect(slot(*this, &CdTextDialog::hide));
 
   get_action_area()->pack_start(*bbox);
 
   set_title("CD-TEXT Entry");
-  set_usize(0, 400);
+  set_default_size(0, 400);
+  show_all();
 }
 
 CdTextDialog::~CdTextDialog()
 {
-}
-
-gint CdTextDialog::delete_event_impl(GdkEventAny*)
-{
-  stop();
-  return 1;
 }
 
 void CdTextDialog::updateTabLabels()
@@ -150,8 +143,8 @@ void CdTextDialog::updateTabLabels()
   for (l = 0; l < 8; l++) {
     const char *s = CdTextContainer::languageName(toc->cdTextLanguage(l));
 
-    if (page_[l].tabLabel->get() != s)
-      page_[l].tabLabel->set(s);
+    if (page_[l].tabLabel->get_text() != s)
+      page_[l].tabLabel->set_text(s);
   }
 }
 
@@ -199,7 +192,7 @@ void CdTextDialog::adjustTableEntries(int n)
 	page_[l].tracks[i].hbox->pack_end(*(page_[l].tracks[i].label), FALSE);
 
 	page_[l].table->attach(*(page_[l].tracks[i].hbox),
-			       0, 1, i + 3, i + 4, GTK_FILL);
+			       0, 1, i + 3, i + 4, Gtk::FILL);
 	page_[l].table->attach(*(page_[l].tracks[i].title),
 			       2, 3, i + 3, i + 4);
 	page_[l].table->attach(*(page_[l].tracks[i].performer),
@@ -241,25 +234,10 @@ void CdTextDialog::update(unsigned long level, TocEdit *view)
   }
 }
 
-void CdTextDialog::start(TocEdit *view)
+void CdTextDialog::setTocEdit(TocEdit *view)
 {
-  if (active_) {
-    get_window().raise();
-    return;
-  }
-
-  active_ = 1;
-
+  tocEdit_ = view;
   update(UPD_ALL, view);
-  show_all();
-}
-
-void CdTextDialog::stop()
-{
-  if (active_) {
-    hide();
-    active_ = 0;
-  }
 }
 
 void CdTextDialog::applyAction()
@@ -274,7 +252,7 @@ void CdTextDialog::applyAction()
 
 void CdTextDialog::fillPerformerAction()
 {
-  int l = languages_->get_current_page_num();
+  int l = languages_->get_current_page();
 
   if (l >= 0 && l <= 7) {
     int i;
@@ -420,4 +398,3 @@ const char *CdTextDialog::checkString(const std::string &str)
   
   return s;
 }
-
