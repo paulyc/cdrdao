@@ -23,54 +23,89 @@
 #include "FormatOgg.h"
 
 
-FormatOgg::FormatOgg()
+FormatSupport::Status FormatOgg::convert(const char* from, const char* to)
 {
+  src_file_ = from;
+  dst_file_ = to;
+
+  Status err = oggInit();
+  if (err != FS_SUCCESS)
+    return err;
+
+  while ((err = oggDecodeFrame()) == FS_IN_PROGRESS);
+
+  oggExit();
+
+  return err;
 }
 
-int FormatOgg::convert(const char* from, const char* to)
+FormatSupport::Status FormatOgg::convertStart(const char* from, const char* to)
 {
-  FILE* fin = fopen(from, "r");
-  if (!fin) {
-    message(-2, "Could not open input file \"%s\": %s", from,
+  src_file_ = from;
+  dst_file_ = to;
+
+  return oggInit();
+}
+
+FormatSupport::Status FormatOgg::convertContinue()
+{
+  Status err = oggDecodeFrame();
+
+  if (err != FS_IN_PROGRESS)
+    oggExit();
+
+  return err;
+}
+
+FormatSupport::Status FormatOgg::oggInit()
+{
+  fin_ = fopen(src_file_, "r");
+  if (!fin_) {
+    message(-2, "Could not open input file \"%s\": %s", src_file_,
             strerror(errno));
-    return 1;
+    return FS_INPUT_PROBLEM;
   }
 
-  int ovret = ov_open(fin, &vorbisFile_, NULL, 0);
+  int ovret = ov_open(fin_, &vorbisFile_, NULL, 0);
   if (ovret != 0) {
-      message(-2, "Could not open Ogg Vorbis file \"%s\"", from);
-      return 3;
+    message(-2, "Could not open Ogg Vorbis file \"%s\"", src_file_);
+      return FS_WRONG_FORMAT;
   }
 
   outFormat_.bits = 16;
   outFormat_.rate = 44100;
   outFormat_.channels = 2;
   outFormat_.byte_format = AO_FMT_NATIVE;
-  aoDev_ = ao_open_file(ao_driver_id("wav"), to, 1, &outFormat_, NULL);
+  aoDev_ = ao_open_file(ao_driver_id("wav"), dst_file_, 1, &outFormat_, NULL);
   if (!aoDev_) {
-    message(-2, "Could not create output file \"%s\": %s", to,
+    message(-2, "Could not create output file \"%s\": %s", dst_file_,
             strerror(errno));
-    return 2;
+    return FS_OUTPUT_PROBLEM;
   }
+  return FS_SUCCESS;
+}
 
-  // Decoding loop
+FormatSupport::Status FormatOgg::oggDecodeFrame()
+{
+  int sec;
+  int size = ov_read(&vorbisFile_, buffer_, sizeof(buffer_), 0, 2, 1, &sec);
 
-  while (1) {
-    int sec;
-    int size = ov_read(&vorbisFile_, buffer, sizeof(buffer), 0, 2, 1, &sec);
+  if (!size)
+    return FS_SUCCESS;
 
-    if (!size)
-      break;
+  if (ao_play(aoDev_, buffer_, size) == 0)
+    return FS_DISK_FULL;
 
-    ao_play(aoDev_, buffer, size);
-  }
+  return FS_IN_PROGRESS;
+}
 
-  // Done, close things
+FormatSupport::Status FormatOgg::oggExit()
+{
   ov_clear(&vorbisFile_);
-  fclose(fin);
+  fclose(fin_);
   ao_close(aoDev_);
 
-  return 0;
+  return FS_SUCCESS;
 }
 
 // ----------------------------------------------------------------

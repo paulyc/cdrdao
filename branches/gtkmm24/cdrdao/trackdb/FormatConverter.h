@@ -31,13 +31,31 @@
 class FormatSupport
 {
  public:
-  // Convert source file to destination WAV or RAW
+  typedef enum {
+    FS_SUCCESS,
+    FS_IN_PROGRESS,
+    FS_WRONG_FORMAT,
+    FS_INPUT_PROBLEM,
+    FS_OUTPUT_PROBLEM,
+    FS_DISK_FULL,
+    FS_DECODE_ERROR,
+    FS_OTHER_ERROR,
+  } Status;
+
+  // Convert source file to destination WAV or RAW. This is a blocking
+  // call until conversion is finished.
   // Return values:
   //   0: success
   //   1: problem with input file
   //   2: problem with output file
   //   3: problem with conversion
-  virtual int convert(const char* from, const char* to) = 0;
+  virtual Status convert(const char* from, const char* to) = 0;
+
+  // Same as above, but asynchronous interface. Call start, then call
+  // continue in a busy loop until it no longer returns
+  // FS_IN_PROGRESS.
+  virtual Status convertStart(const char* from, const char* to) = 0;
+  virtual Status convertContinue() = 0;
   
   // Specify what this object converts to. Should only returns either
   // TrackData::WAVE or TrackData::RAW

@@ -35,68 +35,125 @@
 
 FormatMp3::FormatMp3()
 {
-    memset(&dither_, 0, sizeof(dither_));
+  memset(&dither_, 0, sizeof(dither_));
 }
 
-int FormatMp3::convert(const char* from, const char* to)
+FormatSupport::Status FormatMp3::convert(const char* from, const char* to)
+{
+  src_file_ = from;
+  dst_file_ = to;
+
+  Status err = madInit();
+  if (err != FS_SUCCESS)
+    return err;
+
+  while ((err = madDecodeFrame()) == FS_IN_PROGRESS);
+
+  madExit();
+
+  return err;
+}
+
+FormatSupport::Status FormatMp3::convertStart(const char* from, const char* to)
+{
+  src_file_ = from;
+  dst_file_ = to;
+
+  return madInit();
+}
+
+FormatSupport::Status FormatMp3::convertContinue()
+{
+  Status err = madDecodeFrame();
+
+  if (err != FS_IN_PROGRESS)
+    madExit();
+
+  return err;
+}
+
+FormatSupport::Status FormatMp3::madInit()
 {
   struct stat st;
 
-  if (stat(from, &st) != 0 || st.st_size == 0) {
-    message(-2, "Could not stat input file \"%s\": %s", from,
+  if (stat(src_file_, &st) != 0 || st.st_size == 0) {
+    message(-2, "Could not stat input file \"%s\": %s", src_file_,
             strerror(errno));
-    return 1;
+    return FS_INPUT_PROBLEM;
   }
 
-  int fd = open(from, O_RDONLY);
-  if (!fd) {
-    message(-2, "Could not open input file \"%s\": %s", from,
+  mapped_fd_ = open(src_file_, O_RDONLY);
+  if (!mapped_fd_) {
+    message(-2, "Could not open input file \"%s\": %s", src_file_,
             strerror(errno));
-    return 1;
+    return FS_INPUT_PROBLEM;
   }
 
-  void* fdm = mmap(0, st.st_size, PROT_READ, MAP_SHARED, fd, 0);
-  if (fdm == MAP_FAILED) {
-    message(-2, "Could not map file \"%s\" into memory: %s", from,
+  length_ = st.st_size;
+  start_ = mmap(0, st.st_size, PROT_READ, MAP_SHARED, mapped_fd_, 0);
+  if (start_ == MAP_FAILED) {
+    message(-2, "Could not map file \"%s\" into memory: %s", src_file_,
             strerror(errno));
-    return 1;
+    return FS_INPUT_PROBLEM;
   }
 
+  // Initialize libao for WAV output;
   ao_sample_format out_format;
   out_format.bits = 16;
   out_format.rate = 44100;
   out_format.channels = 2;
   out_format.byte_format = AO_FMT_NATIVE;
 
-  out_ = ao_open_file(ao_driver_id("wav"), to, 1, &out_format,
-                      NULL);
+  out_ = ao_open_file(ao_driver_id("wav"), dst_file_, 1, &out_format, NULL);
+
   if (!out_) {
-    message(-2, "Could not create output file \"%s\": %s", to,
+    message(-2, "Could not create output file \"%s\": %s", dst_file_,
             strerror(errno));
-    return 2;
+    return FS_OUTPUT_PROBLEM;
   }
 
-  // Decoding loop
-  start_ = (unsigned char const*)fdm;
-  length_ = st.st_size;
+  // Initialize libmad input stream.
+  mad_stream_init(&stream_);
+  mad_frame_init(&frame_);
+  mad_synth_init(&synth_);
+  mad_stream_options(&stream_, 0);
+  mad_stream_buffer(&stream_, (unsigned char*)start_, length_);
 
-  mad_decoder_init(&decoder_, this, FormatMp3::madinput, 0, 0,
-                   FormatMp3::madoutput, FormatMp3::maderror, 0);
+  return FS_SUCCESS;
+}
 
-  int result = mad_decoder_run(&decoder_, MAD_DECODER_MODE_SYNC);
+FormatSupport::Status FormatMp3::madDecodeFrame()
+{
+  if (mad_frame_decode(&frame_, &stream_) == -1) {
 
-  mad_decoder_finish(&decoder_);
+    if (stream_.error != MAD_ERROR_BUFLEN &&
+        stream_.error != MAD_ERROR_LOSTSYNC) {
+      message(-1, "Decoding error 0x%04x (%s) at byte offset %u",
+              stream_.error, mad_stream_errorstr(&stream_),
+              stream_.this_frame - (unsigned char*)start_);
+    }
 
-  // Done, close things
-  munmap(fdm, st.st_size);
-  close(fd);
+    if (stream_.error == MAD_ERROR_BUFLEN)
+      return FS_SUCCESS;
 
+    if (!MAD_RECOVERABLE(stream_.error))
+      return FS_DECODE_ERROR;
+  }
+
+  mad_synth_frame(&synth_, &frame_);
+  madOutput();
+  return FS_IN_PROGRESS;
+}
+
+void FormatMp3::madExit()
+{
+  mad_synth_finish(&synth_);
+  mad_frame_finish(&frame_);
+  mad_stream_finish(&stream_);
+
+  munmap(start_, length_);
+  close(mapped_fd_);
   ao_close(out_);
-
-  if (result != MAD_ERROR_NONE)
-    return 3;
-
-  return 0;
 }
 
 unsigned long FormatMp3::prng(unsigned long state)
@@ -158,99 +215,65 @@ signed long FormatMp3::audio_linear_dither(unsigned int bits,
   return output >> scalebits;
 }
 
-enum mad_flow FormatMp3::madoutput(void* data, struct mad_header const* header,
-                                   struct mad_pcm* pcm)
+FormatSupport::Status FormatMp3::madOutput()
 {
-  FormatMp3* fmp3 = (FormatMp3*)data;
-  ao_device* playdevice = fmp3->out_;
+  struct mad_pcm* pcm = &synth_.pcm;
   register int nsamples = pcm->length;
   mad_fixed_t const *left_ch = pcm->samples[0], *right_ch = pcm->samples[1];
     
-  register char* ptr = fmp3->stream_;
+  register char* ptr = buffer_;
   register signed int sample;
   register mad_fixed_t tempsample;
 
   if (pcm->channels == 2) {
     while (nsamples--) {
       tempsample = (mad_fixed_t)(*left_ch++);
-      sample = (signed int) audio_linear_dither(16, tempsample,
-                                                &fmp3->dither_);
+      sample = (signed int)audio_linear_dither(16, tempsample,&dither_);
 
 #ifndef WORDS_BIGENDIAN
-      *ptr++ = (unsigned char) (sample >> 0);
-      *ptr++ = (unsigned char) (sample >> 8);
+      *ptr++ = (unsigned char)(sample >> 0);
+      *ptr++ = (unsigned char)(sample >> 8);
 #else
-      *ptr++ = (unsigned char) (sample >> 8);
-      *ptr++ = (unsigned char) (sample >> 0);
+      *ptr++ = (unsigned char)(sample >> 8);
+      *ptr++ = (unsigned char)(sample >> 0);
 #endif
             
       tempsample = (mad_fixed_t)(*right_ch++);
-      sample = (signed int) audio_linear_dither(16, tempsample,
-                                                &fmp3->dither_);
+      sample = (signed int)audio_linear_dither(16, tempsample, &dither_);
 #ifndef WORDS_BIGENDIAN
-      *ptr++ = (unsigned char) (sample >> 0);
-      *ptr++ = (unsigned char) (sample >> 8);
+      *ptr++ = (unsigned char)(sample >> 0);
+      *ptr++ = (unsigned char)(sample >> 8);
 #else
-      *ptr++ = (unsigned char) (sample >> 8);
-      *ptr++ = (unsigned char) (sample >> 0);
+      *ptr++ = (unsigned char)(sample >> 8);
+      *ptr++ = (unsigned char)(sample >> 0);
 #endif
     }
 
-    ao_play(playdevice, fmp3->stream_, pcm->length * 4);
+    if (ao_play(out_, buffer_, pcm->length * 4) == 0)
+      return FS_DISK_FULL;
 
   } else {
     while (nsamples--) {
       tempsample = (mad_fixed_t)((*left_ch++)/MAD_F_ONE);
-      sample = (signed int) audio_linear_dither(16, tempsample,
-                                                &fmp3->dither_);
+      sample = (signed int)audio_linear_dither(16, tempsample, &dither_);
             
       /* Just duplicate the sample across both channels. */
 #ifndef WORDS_BIGENDIAN
-      *ptr++ = (unsigned char) (sample >> 0);
-      *ptr++ = (unsigned char) (sample >> 8);
-      *ptr++ = (unsigned char) (sample >> 0);
-      *ptr++ = (unsigned char) (sample >> 8);
+      *ptr++ = (unsigned char)(sample >> 0);
+      *ptr++ = (unsigned char)(sample >> 8);
+      *ptr++ = (unsigned char)(sample >> 0);
+      *ptr++ = (unsigned char)(sample >> 8);
 #else
-      *ptr++ = (unsigned char) (sample >> 8);
-      *ptr++ = (unsigned char) (sample >> 0);
-      *ptr++ = (unsigned char) (sample >> 8);
-      *ptr++ = (unsigned char) (sample >> 0);
+      *ptr++ = (unsigned char)(sample >> 8);
+      *ptr++ = (unsigned char)(sample >> 0);
+      *ptr++ = (unsigned char)(sample >> 8);
+      *ptr++ = (unsigned char)(sample >> 0);
 #endif
     }
 
-    ao_play(playdevice, fmp3->stream_, pcm->length * 4);
+    if (ao_play(out_, buffer_, pcm->length * 4) == 0)
+      return FS_DISK_FULL;
   }
-
-  return MAD_FLOW_CONTINUE;        
-}
-
-enum mad_flow FormatMp3::madinput(void* data, struct mad_stream* stream)
-{
-  FormatMp3* fmp3 = (FormatMp3*)data;
-
-  if (!fmp3->length_)
-    return MAD_FLOW_STOP;
-
-  mad_stream_buffer(stream, fmp3->start_, fmp3->length_);
-  fmp3->length_ = 0;
-
-  return MAD_FLOW_CONTINUE;
-}
-
-enum mad_flow FormatMp3::maderror(void* data, struct mad_stream* stream,
-                                  struct mad_frame* frame)
-{
-  FormatMp3* fmp3 = (FormatMp3*)data;
-
-  // Don't print out loss of synchronizations
-  if (stream->error != MAD_ERROR_LOSTSYNC) {
-      message(-1, "Decoding error 0x%04x (%s) at byte offset %u",
-              stream->error, mad_stream_errorstr(stream),
-              stream->this_frame - fmp3->start_);
-      return MAD_FLOW_BREAK;
-  }
-
-  return MAD_FLOW_CONTINUE;
 }
 
 // ----------------------------------------------------------------
