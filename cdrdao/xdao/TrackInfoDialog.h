@@ -18,6 +18,10 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2000/02/20 23:34:54  llanero
+ * fixed scsilib directory (files mising ?-()
+ * ported xdao to 1.1.8 / gnome (MDI) app
+ *
  * Revision 1.1.1.1  2000/02/05 01:38:55  llanero
  * Uploaded cdrdao 1.1.3 with pre10 patch applied.
  *
@@ -35,10 +39,11 @@
 class Toc;
 class TocEdit;
 class TextEdit;
+class AudioCDChild;
 
 class TrackInfoDialog : public Gtk::Dialog {
 public:
-  TrackInfoDialog();
+  TrackInfoDialog(AudioCDChild *child);
   ~TrackInfoDialog();
 
   gint delete_event_impl(GdkEventAny*);
@@ -53,6 +58,8 @@ private:
   int active_;
 
   int selectedTrack_;
+
+  AudioCDChild *cdchild;
 
   Gtk::Button *applyButton_;
 

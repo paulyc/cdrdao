@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2000/05/17 21:15:55  llanero
+ * Beginings of Record Generic Dialog
+ *
  * Revision 1.3  2000/05/01 18:15:00  andreasm
  * Switch to gnome-config settings.
  * Adapted Message Box to Gnome look, unfortunately the Gnome::MessageBox is
@@ -44,14 +47,7 @@
 #define __XCDRDAO_H__
 
 extern class MDIWindow *MDI_WINDOW;
-extern class TrackInfoDialog *TRACK_INFO_DIALOG;
-extern class TocInfoDialog *TOC_INFO_DIALOG;
-extern class AddSilenceDialog *ADD_SILENCE_DIALOG;
-extern class AddFileDialog *ADD_FILE_DIALOG;
 extern class DeviceConfDialog *DEVICE_CONF_DIALOG;
-extern class ExtractDialog *EXTRACT_DIALOG;
-extern class ExtractProgressDialogPool *EXTRACT_PROGRESS_POOL;
-extern class RecordDialog *RECORD_DIALOG;
 extern class ProcessMonitor *PROCESS_MONITOR;
 extern class RecordProgressDialogPool *RECORD_PROGRESS_POOL;
 extern class RecordGenericDialog *RECORD_GENERIC_DIALOG;

@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2000/05/14 16:54:59  andreasm
+ * Adapted to gtkmm-1.2.0 and gnomemm-1.1.9
+ *
  * Revision 1.3  2000/04/23 09:07:08  andreasm
  * * Fixed most problems marked with '//llanero'.
  * * Added audio CD edit menus to MDIWindow.
@@ -39,7 +42,7 @@
  *
  */
 
-static char rcsid[] = "$Id: DeviceConfDialog.cc,v 1.4 2000-05-14 16:54:59 andreasm Exp $";
+static char rcsid[] = "$Id: DeviceConfDialog.cc,v 1.5 2000-09-21 02:07:06 llanero Exp $";
 
 #include <stdio.h>
 #include <limits.h>
@@ -394,7 +397,7 @@ DeviceConfDialog::~DeviceConfDialog()
 }
 
 
-void DeviceConfDialog::start(TocEdit *tocEdit)
+void DeviceConfDialog::start()
 {
   if (active_) {
     get_window().raise();
@@ -403,7 +406,7 @@ void DeviceConfDialog::start(TocEdit *tocEdit)
 
   active_ = 1;
 
-  update(UPD_CD_DEVICES, tocEdit);
+  update(UPD_CD_DEVICES);
 
   show();
 }
@@ -416,7 +419,7 @@ void DeviceConfDialog::stop()
   }
 }
 
-void DeviceConfDialog::update(unsigned long level, TocEdit *)
+void DeviceConfDialog::update(unsigned long level)
 {
   if (!active_)
     return;

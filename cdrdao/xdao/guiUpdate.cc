@@ -18,6 +18,10 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2000/07/31 01:55:49  llanero
+ * got rid of old Extract dialog and Record dialog.
+ * both are using RecordProgressDialog now.
+ *
  * Revision 1.4  2000/07/17 22:08:33  llanero
  * DeviceList is now a class
  * RecordGenericDialog and RecordCDTarget first implemented.
@@ -43,7 +47,7 @@
  *
  */
 
-static char rcsid[] = "$Id: guiUpdate.cc,v 1.5 2000-07-31 01:55:49 llanero Exp $";
+static char rcsid[] = "$Id: guiUpdate.cc,v 1.6 2000-09-21 02:07:07 llanero Exp $";
 
 #include "guiUpdate.h"
 
@@ -61,44 +65,40 @@ static char rcsid[] = "$Id: guiUpdate.cc,v 1.5 2000-07-31 01:55:49 llanero Exp $
 #include "CdDevice.h"
 
 #include "util.h"
+#include "GenericChild.h"
 
 void guiUpdate(unsigned long level)
 {
-  if (MDI_WINDOW == NULL)
+  if (MDI_WINDOW == 0)
     return;
 
-  TocEdit *tocEdit = MDI_WINDOW->tocEdit();
+  if (MDI_WINDOW->gtkobj()->children)
+  {
+    Gnome::MDIChild *child = MDI_WINDOW->get_active_child();
 
-  level |= tocEdit->updateLevel();
+    static_cast <GenericChild *>(child)->update(level);
+  }
+
+//  level |= tocEdit->updateLevel();
 
   MDI_WINDOW->update(level);
 
-  if (TRACK_INFO_DIALOG != NULL)
-    TRACK_INFO_DIALOG->update(level, tocEdit);
+//  if (ADD_SILENCE_DIALOG != NULL)
+//    ADD_SILENCE_DIALOG->update(level, tocEdit);
 
-  if (TOC_INFO_DIALOG != NULL)
-    TOC_INFO_DIALOG->update(level, tocEdit);
-
-  if (ADD_SILENCE_DIALOG != NULL)
-    ADD_SILENCE_DIALOG->update(level, tocEdit);
-
-  if (ADD_FILE_DIALOG != NULL)
-    ADD_FILE_DIALOG->update(level, tocEdit);
+//  if (ADD_FILE_DIALOG != NULL)
+//    ADD_FILE_DIALOG->update(level, tocEdit);
 
   if (DEVICE_CONF_DIALOG != NULL)
-    DEVICE_CONF_DIALOG->update(level, tocEdit);
+    DEVICE_CONF_DIALOG->update(level);
 
   if (RECORD_GENERIC_DIALOG != NULL)
-    RECORD_GENERIC_DIALOG->update(level, tocEdit);
+    RECORD_GENERIC_DIALOG->update(level);
+//    RECORD_GENERIC_DIALOG->update(level, tocEdit);
 
   if (RECORD_PROGRESS_POOL != NULL)
-    RECORD_PROGRESS_POOL->update(level, tocEdit);
-
-//  if (EXTRACT_DIALOG != NULL)
-//    EXTRACT_DIALOG->update(level, tocEdit);
-
-//  if (EXTRACT_PROGRESS_POOL != NULL)
-//    EXTRACT_PROGRESS_POOL->update(level, tocEdit);
+    RECORD_PROGRESS_POOL->update(level);
+//    RECORD_PROGRESS_POOL->update(level, tocEdit);
 }
 
 int guiUpdatePeriodic()
