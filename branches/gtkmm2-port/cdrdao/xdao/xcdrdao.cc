@@ -22,12 +22,7 @@
 #include <signal.h>
 #include <stdlib.h>
 
-#include <gnome.h>
-
-#include <gtk--.h>
-#include <gtk/gtk.h>
-
-#include <gnome--.h>
+#include <libgnomeuimm.h>
 
 #include "config.h"
 
@@ -125,10 +120,9 @@ static RETSIGTYPE signalHandler(int sig)
 
 int main (int argc, char* argv[])
 {
-  Gnome::Main application("GnomeCDMaster", VERSION, argc, argv);
+  Gnome::Main application("GnomeCDMaster", VERSION,
+	Gnome::UI::module_info_get(), argc, argv);
    
-  Gtk::ButtonBox::set_child_size_default(50, 10);
-
   // settings
   CdDevice::importSettings();
 
@@ -137,7 +131,7 @@ int main (int argc, char* argv[])
   installSignalHandler(SIGCHLD, signalHandler);
 
   // setup periodic GUI updates
-  application.timeout.connect(SigC::slot(&guiUpdatePeriodic), 2000);
+  Glib::signal_timeout().connect(SigC::slot(&guiUpdatePeriodic), 2000);
 
   installSignalHandler(SIGPIPE, SIG_IGN);
 
@@ -161,7 +155,7 @@ int main (int argc, char* argv[])
     {
       std::string message("Error loading ");
       message += argv[1];
-      Gnome::Dialogs::error(*(gcdmaster->newChooserWindow2()), message);
+      Gtk::MessageDialog(*(gcdmaster->newChooserWindow2()), message, Gtk::MESSAGE_ERROR).run();
     }
     argv++;
     argc--;
