@@ -7,14 +7,15 @@ Group:		Applications/Multimedia
 BuildRoot:      %{_builddir}/%{name}-buildroot
 Source:		%{name}-%{version}.tar.gz
 
+Requires:	lame >= 3
 Requires:	gtkmm2 >= 2.2.0
 Requires:	libgnomeuimm >= 2.0
 Requires:	GConf2 >= 2.0.0
-Requires:	lame >= 3
 
+BuildRequires:	lame-devel >= 3
+BuildRequires:	cdrecord-devel
 BuildRequires:	gtkmm2-devel >= 2.2.0
 BuildRequires:	libgnomeuimm-devel >= 2.0
-BuildRequires:	lame-devel >= 3
 
 %description
 
@@ -22,14 +23,14 @@ Writes audio CD-Rs in disc-at-once (DAO) mode allowing control over
 pre-gaps (length down to 0, nonzero audio data) and sub-channel
 information like ISRC codes. All data that is written to the disc must
 be specified with a text file. Audio data may be in WAVE or raw
-format. Gcdmaster is the Gnome2 GUI front-end to cdrdao.
+format.
 
 %prep
 %setup -q
 
 %build
 
-%configure
+%configure --with-scglib-inc=/usr/include/schily --with-scglib-lib=/usr/lib
 
 make %{?_smp_mflags}
 
