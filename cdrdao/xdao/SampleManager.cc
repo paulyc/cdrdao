@@ -56,6 +56,7 @@ public:
   long actBlock_;
   long endBlock_;
   long burstBlock_;
+  const char* curFilename_;
   unsigned long length_;
   gfloat percent_;
   gfloat percentStep_;
@@ -205,6 +206,7 @@ int SampleManagerImpl::scanToc(unsigned long start, unsigned long end,
 
   actBlock_ = start / blocking_;
   endBlock_ = end / blocking_;
+  curFilename_ = NULL;
 
   if (tocEdit_ == NULL || endBlock_ < actBlock_)
     return 1;
@@ -276,6 +278,16 @@ int SampleManagerImpl::readSamples()
   short lpossum, rpossum, lnegsum, rnegsum;
   int ret;
   long burstEnd = actBlock_ + burstBlock_;
+
+  const char* cf = tocReader_.curFilename();
+  if (cf && cf != curFilename_) {
+    std::string msg = "Scanning audio data \"";
+    msg += cf;
+    msg += "\"";
+    tocEdit_->signalStatusMessage(msg.c_str());
+    curFilename_ = cf;
+    guiUpdate(UPD_SAMPLES);
+  }
 
   for (; actBlock_ <= endBlock_ && actBlock_ < burstEnd && length_ > 0;
        actBlock_++) {
