@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.7  2000/07/30 14:25:53  llanero
+ * fixed bug with --device not receiving the right device
+ *
  * Revision 1.6  2000/07/30 02:41:03  llanero
  * started CD to CD copy. Still not functional.
  *
@@ -65,6 +68,8 @@ public:
 		DEV_NO_DISK, DEV_BLANKING, DEV_FAULT, DEV_UNKNOWN };
   enum DeviceType { CD_R, CD_RW, CD_ROM };
 
+  enum Action { A_RECORD, A_READ, A_NONE };
+
   CdDevice(int bus, int id, int lun, const char *vendor,
 	   const char *product);
   ~CdDevice();
@@ -85,6 +90,8 @@ public:
 
   void status(Status);
   int updateStatus();
+
+  Action action() const;
 
   void updateProgress(int fd, GdkInputCondition);
 
@@ -177,6 +184,8 @@ private:
   ScsiIf *scsiIf_;
   int scsiIfInitFailed_;
   Status status_;
+
+  Action action_;
 
   int exitStatus_;
 
