@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2000/03/04 01:28:52  llanero
+ * SampleDisplay.{cc,h} are fixed now = gtk 1.1.8 compliant.
+ *
  * Revision 1.3  2000/02/28 23:29:55  llanero
  * fixed Makefile.in to include glade-gnome
  *
@@ -189,7 +192,8 @@ glade_gnome_init ();
 // perhaps the declaration os guiUpdatePeriodic must be changed in some way?
 // In C I would do it this way: (it works ;)
   gtk_timeout_add(2000, (GtkFunction)guiUpdatePeriodic, NULL);
-  
+
+
   installSignalHandler(SIGPIPE, SIG_IGN);
 
   // scan for SCSI devices
