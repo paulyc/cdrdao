@@ -42,6 +42,8 @@ DuplicateCDProject::DuplicateCDProject()
   vbox->pack_start(*hbox, false, false);
   set_contents(*vbox);
 
+  moreOptionsDialog_ = 0;
+
   // menu stuff
   miSave_->set_sensitive(false);
   miSaveAs_->set_sensitive(false);
@@ -49,6 +51,20 @@ DuplicateCDProject::DuplicateCDProject()
   miRecord_->set_sensitive(false);
   tiSave_->set_sensitive(false);
   tiRecord_->hide();
+
+  {
+    using namespace Gnome::UI::Items;
+    vector<Info> menus, duplicateMenuTree;
+
+    duplicateMenuTree.push_back(Item(Icon(Gtk::Stock::PROPERTIES),
+    				 N_("Options"),
+  			      slot(*this, &DuplicateCDProject::projectOptions),
+  			      N_("Advanced duplication options")));
+
+    menus.push_back(Gnome::UI::Items::Menu(N_("_Duplicate"), duplicateMenuTree));
+
+    insert_menus("Edit", menus);
+  }
 
   CDSource = new RecordCDSource(this);
   CDSource->show();
@@ -103,6 +119,10 @@ DuplicateCDProject::DuplicateCDProject()
 
   install_menu_hints();
 
+  pixmap = manage(new Gtk::Image(Gtk::StockID(Gtk::Stock::PROPERTIES), Gtk::ICON_SIZE_LARGE_TOOLBAR));
+  toolbar_->tools().push_back(Gtk::Toolbar_Helpers::ButtonElem("Options", *pixmap,
+  		slot(*this, &DuplicateCDProject::projectOptions), "Project options", ""));
+
   CdDevice::signal_statusChanged.connect(slot(*this, &DuplicateCDProject::devicesStatusChanged));
 }
 
@@ -142,13 +162,13 @@ void DuplicateCDProject::start()
       // we can't do on the fly copying. More complex situations with
       // multiple target devices are not handled
       if (gnome_config_get_bool(SET_DUPLICATE_ONTHEFLY_WARNING)) {
-        Ask2Box msg(this, "Request", 1, 2, 
-  		  "To duplicate a CD using the same device for reading and writing",
-  		  "you need to copy the CD to disk before burning", "",
-  	  	"Proceed and copy to disk before burning?", NULL);
+        Glib::ustring s = "To duplicate a CD using the same device for reading and writing";
+        s += " you need to copy the CD to disk before burning";
+        Ask2Box msg(this, "Request", true,
+  		  "Proceed and copy to disk before burning?", s);
 
         switch (msg.run()) {
-        case 1: // proceed without on the fly
+        case Gtk::RESPONSE_YES: // proceed without on the fly
           CDSource->setOnTheFly(false);
           onTheFly = 0;
           if (msg.dontShowAgain())
@@ -209,6 +229,30 @@ void DuplicateCDProject::start()
 bool DuplicateCDProject::closeProject()
 {
   return true;  // Close the project
+}
+
+void DuplicateCDProject::projectOptions()
+{
+  if (!moreOptionsDialog_)
+  {
+    moreOptionsDialog_ = new Gtk::Dialog("Duplication options",
+                                         *this, false, false);
+
+    Gtk::Button *button = moreOptionsDialog_->add_button(Gtk::StockID(Gtk::Stock::CLOSE), Gtk::RESPONSE_CLOSE);
+    button->signal_clicked().connect(slot(*moreOptionsDialog_, &Gtk::Widget::hide));
+
+    Gtk::VBox *vbox = moreOptionsDialog_->get_vbox();
+    Gtk::HBox *hbox = new Gtk::HBox();
+    hbox->show();
+    vbox->pack_start(*hbox);
+    vbox->set_border_width(10);
+    vbox->set_spacing(5);
+
+    hbox->pack_start(*CDSource->moreOptions());
+    hbox->pack_start(*CDTarget->moreOptions());
+  }
+
+  moreOptionsDialog_->show();
 }
 
 void DuplicateCDProject::devicesStatusChanged()

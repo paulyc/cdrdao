@@ -38,9 +38,12 @@ private:
   Gtk::RadioButton *simulateBurn_rb;
   Gtk::RadioButton *burn_rb;
 
+  Gtk::Dialog *moreOptionsDialog_;
+
   void start();
   void recordToc2CD() {}
   void projectInfo() {}
+  void projectOptions();
   void devicesStatusChanged();
 };
 #endif
