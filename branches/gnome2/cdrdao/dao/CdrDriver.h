@@ -262,6 +262,10 @@ public:
 
   virtual int readCapacity(long *length, int showMessage = 1);
 
+  virtual bool readBufferCapacity(long* total, long* available) {
+    return false;
+  }
+
   // CD-RW specific commands
   
   enum BlankingMode { BLANK_FULL, BLANK_MINIMAL };
