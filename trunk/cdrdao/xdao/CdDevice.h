@@ -18,6 +18,10 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2000/04/24 12:49:06  andreasm
+ * Changed handling or message from remote processes to use the
+ * Gtk::Main::input mechanism.
+ *
  * Revision 1.3  1999/12/15 20:34:18  mueller
  * CD image extraction added by Manuel Clos.
  *
@@ -88,7 +92,7 @@ public:
 		int eject, int reload);
   void abortDaoRecording();
 
-  int extractDao(char *tocFileName);
+  int extractDao(char *tocFileName, int correction);
   void abortDaoReading();
     
   int progressStatusChanged();
