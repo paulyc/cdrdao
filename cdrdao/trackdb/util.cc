@@ -259,3 +259,14 @@ const char *stripCwd(const char *fname)
 
   return buf;
 }
+
+const char* fileExtension(const char* fname)
+{
+  const char* e;
+
+  if (fname && (e = strrchr(fname, '.')))
+    return e + 1;
+  else
+    return NULL;
+}
+                                           
