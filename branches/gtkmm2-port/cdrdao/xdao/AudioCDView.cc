@@ -29,9 +29,9 @@
 #include "TocEditView.h"
 #include "util.h"
 
-#include "AudioCDProject.h"
 #include "AudioCDChild.h"
 #include "AudioCDView.h"
+#include "AudioCDProject.h"
 #include "Project.h"
 #include "TrackInfoDialog.h"
 #include "AddFileDialog.h"
@@ -44,9 +44,6 @@ AudioCDView::AudioCDView(AudioCDChild *child, AudioCDProject *project)
   cdchild = child;
   project_ = project;
   tocEditView_ = new TocEditView(project->tocEdit());
-
-  widgetList = new std::list<Gtk::Widget *>;
-  widgetList->push_back(this);
 
 // These are not created until first needed, for faster startup
 // and less memory usage.
@@ -135,89 +132,7 @@ AudioCDView::AudioCDView(AudioCDChild *child, AudioCDProject *project)
   sprintf(buf, "selectionBox-%i", viewNumber);
   project->add_docked(*selectionInfoBox, buf, (BonoboDockItemBehavior)8,
   		(BonoboDockPlacement)2, 1, 1, 0);
-//GTKMM2  widgetList->push_back(project->get_dock_item_by_name(buf));
   selectionInfoBox->show();
-
-  Gtk::Toolbar *playToolbar = project->getPlayToolbar();
-  Gtk::Image *pixmap;
-  Gtk::RadioButton_Helpers::Group playGroup;
-  Gtk::Widget* tool;
-
-  pixmap = manage(new Gtk::Image(PIXMAPS_DIR "/stock_media-play.png"));
-  playToolbar->tools().push_back(Gtk::Toolbar_Helpers::RadioElem(playGroup, "Play", *pixmap,
-  		slot(*this, &AudioCDView::playStart), "Play", ""));
-  playStartButton_ = static_cast <Gtk::RadioButton *>(playToolbar->tools().back().get_widget());
-  playStartButton_->hide();
-  widgetList->push_back(playStartButton_);
-
-  pixmap = manage(new Gtk::Image(PIXMAPS_DIR "/stock_media-pause.png"));
-  playToolbar->tools().push_back(Gtk::Toolbar_Helpers::RadioElem(playGroup, "Pause", *pixmap,
-  		slot(*this, &AudioCDView::playPause), "Pause", ""));
-  playPauseButton_ = static_cast <Gtk::RadioButton *>(playToolbar->tools().back().get_widget());
-  playPauseButton_->hide();
-  widgetList->push_back(playPauseButton_);
-
-  pixmap = manage(new Gtk::Image(PIXMAPS_DIR "/stock_media-stop.png"));
-  playToolbar->tools().push_back(Gtk::Toolbar_Helpers::RadioElem(playGroup, "Stop", *pixmap,
-  	    slot(*this, &AudioCDView::playStop), "Stop", ""));
-  playStopButton_ = static_cast <Gtk::RadioButton *>(playToolbar->tools().back().get_widget());
-  playStopButton_->set_active(true);
-  // We need to connect the signal after we set it, so no signal is emitted.
-//GTKMM2  playStopButton_->signal_toggled().connect(slot(*this, &AudioCDView::playStop));
-  playStopButton_->hide();
-  widgetList->push_back(playStopButton_);
-
-  setMode(SELECT);
-
-  Gtk::Toolbar *zoomToolbar = child->getZoomToolbar();
-  Gtk::RadioButton_Helpers::Group toolGroup;
-
-  widgetList->push_back(zoomToolbar);
-
-//GTKMM2  pixmap = manage(new Gnome::Pixmap(Gnome::Pixmap::find_file("gcdmaster/pixmap_cursor-tool.xpm")));
-  pixmap = manage(new Gtk::Image(PIXMAPS_DIR "/pixmap_cursor-tool.xpm"));
-  zoomToolbar->tools().push_back(Gtk::Toolbar_Helpers::RadioElem(toolGroup, "Select", *pixmap,
-  		bind(slot(*this, &AudioCDView::setMode), SELECT), "Selection tool", ""));
-  tool = zoomToolbar->tools().back().get_widget();
-  tool->hide();
-  widgetList->push_back(tool);
-
-//GTKMM2  pixmap = manage(new Gnome::Pixmap(Gnome::Pixmap::find_file("gcdmaster/pixmap_zoom-tool.xpm")));
-  pixmap = manage(new Gtk::Image(PIXMAPS_DIR "/pixmap_zoom-tool.xpm"));
-  zoomToolbar->tools().push_back(Gtk::Toolbar_Helpers::RadioElem(toolGroup, "Zoom", *pixmap,
-  		bind(slot(*this, &AudioCDView::setMode), ZOOM), "Zoom tool", ""));
-  tool = zoomToolbar->tools().back().get_widget();
-  tool->hide();
-  widgetList->push_back(tool);
-
-  pixmap = manage(new Gtk::Image(Gtk::StockID(Gtk::Stock::ZOOM_IN), Gtk::ICON_SIZE_LARGE_TOOLBAR));
-  zoomToolbar->tools().push_back(Gtk::Toolbar_Helpers::ButtonElem("Zoom +", *pixmap,
-  		slot(*this, &AudioCDView::zoomx2), "Zoom In", ""));
-  tool = zoomToolbar->tools().back().get_widget();
-  tool->hide();
-  widgetList->push_back(tool);
-
-  pixmap = manage(new Gtk::Image(Gtk::StockID(Gtk::Stock::ZOOM_OUT), Gtk::ICON_SIZE_LARGE_TOOLBAR));
-  zoomToolbar->tools().push_back(Gtk::Toolbar_Helpers::ButtonElem("Zoom -", *pixmap,
-  		slot(*this, &AudioCDView::zoomOut), "Zoom Out", ""));
-  tool = zoomToolbar->tools().back().get_widget();
-  tool->hide();
-  widgetList->push_back(tool);
-
-  pixmap = manage(new Gtk::Image(Gtk::StockID(Gtk::Stock::ZOOM_FIT), Gtk::ICON_SIZE_LARGE_TOOLBAR));
-  zoomToolbar->tools().push_back(Gtk::Toolbar_Helpers::ButtonElem("Fit", *pixmap,
-  		slot(*this, &AudioCDView::fullView), "Full View", ""));
-  tool = zoomToolbar->tools().back().get_widget();
-  tool->hide();
-  widgetList->push_back(tool);
-
-  pixmap = manage(new Gtk::Image(Gtk::StockID(Gtk::Stock::ZOOM_100), Gtk::ICON_SIZE_LARGE_TOOLBAR));
-  zoomToolbar->tools().push_back(Gtk::Toolbar_Helpers::ButtonElem("Fit Sel", *pixmap,
-  		slot(*this, &AudioCDView::zoomIn), "Zoom to fit the selection", ""));
-  tool = zoomToolbar->tools().back().get_widget();
-  tool->hide();
-  widgetList->push_back(tool);
-
 
   sampleDisplay_->markerSet.connect(slot(*this,
   			&AudioCDView::markerSetCallback));
@@ -323,8 +238,6 @@ AudioCDView::AudioCDView(AudioCDChild *child, AudioCDProject *project)
     for (i = 0; i < menus.size(); i ++)
     {
       Gtk::Widget *menuitem = arrayInfo[i].get_widget();
-      menuitem->hide();
-      widgetList->push_back(menuitem);
     }
   }
 }
@@ -339,6 +252,23 @@ AudioCDView::~AudioCDView()
 
   if (addSilenceDialog_)
     delete addSilenceDialog_;
+}
+
+void AudioCDView::setMode(Mode m)
+{
+  mode_ = m;
+}
+
+void AudioCDView::getSelection(unsigned long &start, unsigned long &end)
+{
+  if (!tocEditView_->sampleSelection(&start, &end))
+    tocEditView_->sampleView(&start, &end);
+}
+
+void AudioCDView::updatePlayPos(unsigned long pos)
+{
+  sampleDisplay_->setCursor(1, pos);
+  cursorPos_->set_text(cdchild->sample2string(pos));
 }
 
 void AudioCDView::update(unsigned long level)
@@ -397,29 +327,6 @@ void AudioCDView::update(unsigned long level)
     }
   }
 
-  if (level & UPD_PLAY_STATUS) {
-    switch (project_->getPlayStatus()) {
-      case AudioCDProject::PLAYING:
-        playStartButton_->set_active(true);
-        sampleDisplay_->setCursor(1, project_->playPosition() - project_->getDelay());
-// FIXME: What about using a separate cursor for playing?
-        cursorPos_->set_text(cdchild->sample2string(project_->playPosition() - project_->getDelay()));
-        break;
-      case AudioCDProject::PAUSED:
-        playPauseButton_->set_active(true);
-        sampleDisplay_->setCursor(1, project_->playPosition() - project_->getDelay());
-// FIXME: What about using a separate cursor for playing?
-        cursorPos_->set_text(cdchild->sample2string(project_->playPosition() - project_->getDelay()));
-        break;
-      case AudioCDProject::STOPPED:
-        playStopButton_->set_active(true);
-        sampleDisplay_->setCursor(0, 0);
-        break;
-      default:
-        std::cerr << "invalid play status" << std::endl;
-    }
-  }
-
   if (trackInfoDialog_ != 0)
     trackInfoDialog_->update(level, tocEditView_);
 
@@ -429,110 +336,6 @@ void AudioCDView::update(unsigned long level)
   if (addSilenceDialog_ != 0)
     addSilenceDialog_->update(level, tocEditView_);
 
-}
-
-void AudioCDView::zoomIn()
-{
-  unsigned long start, end;
-
-  if (tocEditView_->sampleSelection(&start, &end)) {
-    tocEditView_->sampleView(start, end);
-    guiUpdate();
-  }
-}
-
-void AudioCDView::zoomx2()
-{
-  unsigned long start, end, len, center;
-
-  tocEditView_->sampleView(&start, &end);
-
-  len = end - start + 1;
-  center = start + len / 2;
-
-  start = center - len / 4;
-  end = center + len / 4;
-
-  tocEditView_->sampleView(start, end);
-  guiUpdate();
-}
-
-void AudioCDView::zoomOut()
-{
-  unsigned long start, end, len, center;
-
-  tocEditView_->sampleView(&start, &end);
-
-  len = end - start + 1;
-  center = start + len / 2;
-
-  if (center > len)
-    start = center - len;
-  else 
-    start = 0;
-
-  end = center + len;
-  if (end >= tocEditView_->tocEdit()->toc()->length().samples())
-    end = tocEditView_->tocEdit()->toc()->length().samples() - 1;
-
-  tocEditView_->sampleView(start, end);
-  guiUpdate();
-}
-
-void AudioCDView::fullView()
-{
-  tocEditView_->sampleViewFull();
-
-  guiUpdate();
-}
-
-void AudioCDView::playStart()
-{
-  unsigned long start, end;
-
-  if (!playStartButton_->get_active())
-    return;
-
-  if (project_->getPlayStatus() == AudioCDProject::PLAYING)
-    return;
-
-  if (!(project_->getPlayStatus() == AudioCDProject::PAUSED))
-  {
-    if (!tocEditView_->sampleSelection(&start, &end))
-      tocEditView_->sampleView(&start, &end);
-  }
-
-  project_->playStart(start, end);
-}
-
-void AudioCDView::playPause()
-{
-  if (!playPauseButton_->get_active())
-    return;
-
-  if (project_->getPlayStatus() == AudioCDProject::PAUSED)
-    return;
-
-  if (project_->getPlayStatus() == AudioCDProject::STOPPED)
-  {
-    playStopButton_->set_active(true);
-    return;
-  }
-
-  project_->playPause();
-}
-
-void AudioCDView::playStop()
-{
-  unsigned long start, end;
-
-  if (!playStopButton_->get_active())
-    return;
-
-  if (project_->getPlayStatus() == AudioCDProject::STOPPED)
-    return;
-
-  project_->playStop();
 }
 
 int AudioCDView::getMarker(unsigned long *sample)
@@ -572,8 +375,6 @@ void AudioCDView::selectionSetCallback(unsigned long start,
     tocEditView_->sampleSelection(start, end);
   }
 
-  //cout << "selectionSetCallback called" << endl;
-
   guiUpdate();
 }
 
@@ -586,11 +387,6 @@ void AudioCDView::viewModifiedCallback(unsigned long start, unsigned long end)
 {
   tocEditView_->sampleView(start, end);
   guiUpdate();
-}
-
-void AudioCDView::setMode(Mode m)
-{
-  mode_ = m;
 }
 
 void AudioCDView::markerSet()
@@ -658,7 +454,8 @@ void AudioCDView::trackInfo()
     if (trackInfoDialog_ == 0)
       trackInfoDialog_ = new TrackInfoDialog();
   
-    trackInfoDialog_->start(tocEditView_);
+    trackInfoDialog_->setView(tocEditView_);
+	trackInfoDialog_->present();
   }
   else
   {
@@ -905,7 +702,8 @@ void AudioCDView::appendTrack()
     addFileDialog_ = new AddFileDialog(project_);
 
   addFileDialog_->mode(AddFileDialog::M_APPEND_TRACK);
-  addFileDialog_->start(tocEditView_);
+  addFileDialog_->setView(tocEditView_);
+  addFileDialog_->present();
 }
 
 void AudioCDView::appendFile()
@@ -914,7 +712,8 @@ void AudioCDView::appendFile()
     addFileDialog_ = new AddFileDialog(project_);
 
   addFileDialog_->mode(AddFileDialog::M_APPEND_FILE);
-  addFileDialog_->start(tocEditView_);
+  addFileDialog_->setView(tocEditView_);
+  addFileDialog_->present();
 }
 
 void AudioCDView::insertFile()
@@ -923,7 +722,8 @@ void AudioCDView::insertFile()
     addFileDialog_ = new AddFileDialog(project_);
 
   addFileDialog_->mode(AddFileDialog::M_INSERT_FILE);
-  addFileDialog_->start(tocEditView_);
+  addFileDialog_->setView(tocEditView_);
+  addFileDialog_->present();
 }
 
 void AudioCDView::appendSilence()
@@ -932,7 +732,8 @@ void AudioCDView::appendSilence()
     addSilenceDialog_ = new AddSilenceDialog();
 
   addSilenceDialog_->mode(AddSilenceDialog::M_APPEND);
-  addSilenceDialog_->start(tocEditView_);
+  addSilenceDialog_->setView(tocEditView_);
+  addSilenceDialog_->present();
 }
 
 void AudioCDView::insertSilence()
@@ -941,5 +742,6 @@ void AudioCDView::insertSilence()
     addSilenceDialog_ = new AddSilenceDialog();
 
   addSilenceDialog_->mode(AddSilenceDialog::M_INSERT);
-  addSilenceDialog_->start(tocEditView_);
+  addSilenceDialog_->setView(tocEditView_);
+  addSilenceDialog_->present();
 }

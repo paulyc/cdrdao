@@ -42,8 +42,6 @@ public:
   bool closeProject();
   void update(unsigned long level);
 
-  Gtk::Toolbar *getZoomToolbar();
-
   const char *sample2string(unsigned long sample);
   unsigned long string2sample(const char *s);
 
@@ -56,7 +54,5 @@ private:
   void saveAsTocCallback(int);
 
   void tocBlockedMsg(const char *);
-
-  Gtk::Toolbar *zoomToolbar;
 };
 #endif
