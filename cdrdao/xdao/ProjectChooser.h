@@ -20,6 +20,7 @@
 #ifndef __PROJECT_CHOOSER_H__
 #define __PROJECT_CHOOSER_H__
 
+#include <libglademm/xml.h>
 #include <gtkmm.h>
 
 class ProjectChooser : public Gtk::Window
@@ -37,4 +38,3 @@ class ProjectChooser : public Gtk::Window
   Gtk::Button copyCDButton;
 };
 #endif
-
