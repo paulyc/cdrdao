@@ -65,6 +65,7 @@ char *CdDevice::DRIVER_NAMES_[DRIVER_IDS] = {
 };
 
 SigC::Signal0<void> CdDevice::signal_statusChanged;
+SigC::Signal0<void> CdDevice::signal_devicesChanged;
 
 
 CdDevice::CdDevice(int bus, int id, int lun, const char *vendor,
@@ -197,8 +198,10 @@ int CdDevice::driverId() const
 
 void CdDevice::driverId(int id)
 {
-  if (id >= 0 && id < DRIVER_IDS) 
+  if (id >= 0 && id < DRIVER_IDS)
+  {
     driverId_ = id;
+  }
 }
 
 const char *CdDevice::specialDevice() const
@@ -1173,6 +1176,7 @@ CdDevice *CdDevice::add(int bus, int id, int lun, const char *vendor,
     DEVICE_LIST_ = ent;
   }
 
+  signal_devicesChanged();
   return ent;
 }
 
@@ -1352,6 +1356,7 @@ void CdDevice::remove(int bus, int id, int lun)
 	DEVICE_LIST_ = run->next_;
 
       delete run;
+      signal_devicesChanged();
       return;
     }
   }
