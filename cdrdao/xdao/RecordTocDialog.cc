@@ -150,7 +150,7 @@ void RecordTocDialog::startAction()
 
   DeviceList *targetList = CDTarget->getDeviceList();
  
-  if (!targetList->selection()) {
+  if (targetList->selection().empty()) {
     Gtk::MessageDialog md(*this, "Please select at least one recorder device",
                           Gtk::MESSAGE_INFO);
     md.run();
@@ -216,17 +216,15 @@ void RecordTocDialog::startAction()
   int buffer = CDTarget->getBuffer();
 
   DeviceList* target = CDTarget->getDeviceList();
-  if (target->selection() == NULL) {
+  if (target->selection().empty()) {
     Gtk::MessageDialog d(*this, "Please select a writer device",
                          Gtk::MESSAGE_INFO);
     d.run();
     return;
   }
 
-  DeviceList::DeviceData* targetData = target->selection();
-
-  CdDevice *writeDevice = CdDevice::find(targetData->bus, targetData->id,
-                                         targetData->lun);
+  std::string targetData = target->selection();
+  CdDevice *writeDevice = CdDevice::find(targetData.c_str());
   
   if (writeDevice) {
     if (!writeDevice->recordDao(*this, tocEdit_, simulate, multiSession,
