@@ -18,6 +18,10 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2000/02/20 23:34:53  llanero
+ * fixed scsilib directory (files mising ?-()
+ * ported xdao to 1.1.8 / gnome (MDI) app
+ *
  * Revision 1.1.1.1  2000/02/05 01:38:46  llanero
  * Uploaded cdrdao 1.1.3 with pre10 patch applied.
  *
@@ -63,10 +67,8 @@ private:
   Gtk::CList *list_;
   Gtk::Button *applyButton_;
 
-//llanero  Gtk::ItemFactory::Menu *driverMenuFactory_;
   Gtk::OptionMenu *driverMenu_;
 
-//llanero  Gtk::ItemFactory::Menu *devtypeMenuFactory_;
   Gtk::OptionMenu *devtypeMenu_;
 
   Gtk::SpinButton *busEntry_, *idEntry_, *lunEntry_;

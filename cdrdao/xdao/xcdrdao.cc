@@ -1,6 +1,6 @@
 /*  cdrdao - write audio CD-Rs in disc-at-once mode
  *
- *  Copyright (C) 1998  Andreas Mueller <mueller@daneb.ping.de>
+ *  Copyright (C) 1998-2000  Andreas Mueller <mueller@daneb.ping.de>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,6 +18,10 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2000/04/14 13:22:02  llanero
+ * changed the MDI object to GnomeApp until gnome-- MDI is done.
+ * Also catched a bug in SampleDisplay.cc:1000.
+ *
  * Revision 1.5  2000/03/05 22:25:52  llanero
  * more code translated to gtk-- 1.1.8
  *
@@ -52,8 +56,6 @@
 
 #include "config.h"
 
-#include "AudioCDChild.h"
-
 #include "xcdrdao.h"
 #include "MDIWindow.h"
 #include "TocEdit.h"
@@ -74,11 +76,7 @@
 
 #include "port.h"
 
-//only for testing:
-AudioCDChild *AUDIOCD_CHILD = NULL;
-
 MDIWindow *MDI_WINDOW = NULL;
-MainWindow *MAIN_WINDOW = NULL;
 TrackInfoDialog *TRACK_INFO_DIALOG = NULL;
 TocInfoDialog *TOC_INFO_DIALOG = NULL;
 AddSilenceDialog *ADD_SILENCE_DIALOG = NULL;
@@ -166,13 +164,13 @@ int main (int argc, char* argv[])
 {
   const char *s;
   string settingsPath;
-//llanero  Gtk::Main application(&argc, &argv);
+
   Gnome::Main application("StillNoName", "0.0", argc, argv);
    
   Gtk::ButtonBox::set_child_size_default(50, 10);
 
 //not needed by now...
-glade_gnome_init ();
+  //glade_gnome_init ();
 
   // settings
   SETTINGS = new Settings;
@@ -189,12 +187,7 @@ glade_gnome_init ();
   installSignalHandler(SIGCHLD, signalHandler);
 
   // setup periodic GUI updates
-//llanero  connect_to_function(application.timeout(2000), &guiUpdatePeriodic);
-// this seems to be no longer valid!
-// and I can't make it work as application.timeout.connect(...) :(
-// perhaps the declaration os guiUpdatePeriodic must be changed in some way?
-// In C I would do it this way: (it works ;)
-  gtk_timeout_add(2000, (GtkFunction)guiUpdatePeriodic, NULL);
+  application.timeout.connect(SigC::slot(&guiUpdatePeriodic), 2000);
 
 
   installSignalHandler(SIGPIPE, SIG_IGN);
@@ -203,13 +196,13 @@ glade_gnome_init ();
   CdDevice::scan();
 
   TRACK_INFO_DIALOG = new TrackInfoDialog;
-//llanero  TOC_INFO_DIALOG = new TocInfoDialog;
+  TOC_INFO_DIALOG = new TocInfoDialog;
   ADD_SILENCE_DIALOG = new AddSilenceDialog;
   ADD_FILE_DIALOG = new AddFileDialog;
-//llanero  DEVICE_CONF_DIALOG = new DeviceConfDialog;
+  DEVICE_CONF_DIALOG = new DeviceConfDialog;
   EXTRACT_DIALOG = new ExtractDialog;
   EXTRACT_PROGRESS_POOL = new ExtractProgressDialogPool;
-//llanero  RECORD_DIALOG = new RecordDialog;
+  RECORD_DIALOG = new RecordDialog;
   RECORD_PROGRESS_POOL = new RecordProgressDialogPool;
 
   // create TocEdit object
@@ -220,20 +213,12 @@ glade_gnome_init ();
       exit(1);
   }
   
-//llanero  MAIN_WINDOW = new MainWindow(tocEdit);
-//llanero  MAIN_WINDOW->show();
-
-  MDI_WINDOW = new MDIWindow();
+  MDI_WINDOW = new MDIWindow(tocEdit);
 //FIXME: MDI STUFF  MDI_WINDOW->open_toplevel();
+
   MDI_WINDOW->show();
 
-  AUDIOCD_CHILD = new AudioCDChild(tocEdit);
-
-//FIXME: MDI STUFF  MDI_WINDOW->add_child(*AUDIOCD_CHILD);
-//FIXME: MDI STUFF  MDI_WINDOW->add_view(*AUDIOCD_CHILD);
-  MDI_WINDOW->set_contents(*AUDIOCD_CHILD->vbox_);
-
-//llanero  guiUpdate();
+  guiUpdate();
 
 {
 /*

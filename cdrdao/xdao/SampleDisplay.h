@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2000/03/04 01:28:52  llanero
+ * SampleDisplay.{cc,h} are fixed now = gtk 1.1.8 compliant.
+ *
  * Revision 1.2  2000/02/20 23:34:54  llanero
  * fixed scsilib directory (files mising ?-()
  * ported xdao to 1.1.8 / gnome (MDI) app
@@ -158,20 +161,13 @@ public:
   void updateTrackMarks();
   void setCursor(int, unsigned long);
 
-  void updateToc();
+  void updateToc(unsigned long, unsigned long);
 
-//llanero: Should be removed if works
-//  Signal1<unsigned long> markerSet;
-//  Signal1<unsigned long> cursorMoved;
-//  Signal2<unsigned long, unsigned long> selectionSet;
-//  Signal3<const Track *, int, int> trackMarkSelected;
-//  Signal4<const Track *, int, int, unsigned long> trackMarkMoved;
-// the first "parameter" is the return type
-  SigC::Signal1 <void, unsigned long> markerSet;
-  SigC::Signal1 <void, unsigned long> cursorMoved;
-  SigC::Signal2 <void, unsigned long, unsigned long> selectionSet;
-  SigC::Signal3 <void, const Track *, int, int> trackMarkSelected;
-  SigC::Signal4 <void, const Track *, int, int, unsigned long> trackMarkMoved;
+  SigC::Signal1<void, unsigned long> markerSet;
+  SigC::Signal1<void, unsigned long> cursorMoved;
+  SigC::Signal2<void, unsigned long, unsigned long> selectionSet;
+  SigC::Signal3<void, const Track *, int, int> trackMarkSelected;
+  SigC::Signal4<void, const Track *, int, int, unsigned long> trackMarkMoved;
   
 protected:
   int handle_configure_event (GdkEventConfigure *);
