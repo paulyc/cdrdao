@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2000/10/25 20:33:28  andreasm
+ * Added BURN Proof support (submitted by ITOH Yasufumi and Martin Buck).
+ *
  * Revision 1.4  2000/10/08 16:39:40  andreasm
  * Remote progress message now always contain the track relative and total
  * progress and the total number of processed tracks.
@@ -88,6 +91,7 @@
 #include "Msf.h"
 #include "TrackData.h"
 #include "SubChannel.h"
+#include "remote.h"
 
 class Toc;
 class Track;
@@ -334,7 +338,9 @@ public:
   virtual long blockSize(TrackData::Mode) const;
 
   // sends a status message to the driving application if in remote mode
-  enum WriteCdProgressType { WCD_LEADIN = 1, WCD_DATA = 2, WCD_LEADOUT = 3 };
+  enum WriteCdProgressType { WCD_LEADIN = PGSMSG_WCD_LEADIN,
+			     WCD_DATA = PGSMSG_WCD_DATA,
+			     WCD_LEADOUT = PGSMSG_WCD_LEADOUT };
   int sendWriteCdProgressMsg(WriteCdProgressType type, int totalTracks,
 			     int track, int trackProgress, int totalProgress,
 			     int bufferFillRate);
@@ -579,7 +585,8 @@ protected:
 
   void printCdToc(CdToc *toc, int tocLen);
 
-  enum ReadCdProgressType { RCD_ANALYZING = 1, RCD_EXTRACTING = 2 };
+  enum ReadCdProgressType { RCD_ANALYZING = PGSMSG_RCD_ANALYZING,
+			    RCD_EXTRACTING = PGSMSG_RCD_EXTRACTING };
   void sendReadCdProgressMsg(ReadCdProgressType, int totalTracks, int track,
 			     int trackProgress, int totalProgress);
 
