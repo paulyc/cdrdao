@@ -18,6 +18,11 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.8  2000/05/01 18:15:00  andreasm
+ * Switch to gnome-config settings.
+ * Adapted Message Box to Gnome look, unfortunately the Gnome::MessageBox is
+ * not implemented in gnome--, yet.
+ *
  * Revision 1.7  2000/04/23 09:07:08  andreasm
  * * Fixed most problems marked with '//llanero'.
  * * Added audio CD edit menus to MDIWindow.
@@ -80,6 +85,7 @@
 #include "ExtractProgressDialog.h"
 #include "RecordDialog.h"
 #include "RecordProgressDialog.h"
+#include "RecordGenericDialog.h"
 #include "guiUpdate.h"
 #include "CdDevice.h"
 #include "ProcessMonitor.h"
@@ -97,6 +103,7 @@ RecordDialog *RECORD_DIALOG = NULL;
 ProcessMonitor *PROCESS_MONITOR = NULL;
 RecordProgressDialogPool *RECORD_PROGRESS_POOL = NULL;
 ExtractProgressDialogPool *EXTRACT_PROGRESS_POOL = NULL;
+RecordGenericDialog *RECORD_GENERIC_DIALOG = NULL;
 
 static int VERBOSE = 0;
 static int PROCESS_MONITOR_SIGNAL_BLOCKED = 0;
@@ -203,6 +210,7 @@ int main (int argc, char* argv[])
   EXTRACT_PROGRESS_POOL = new ExtractProgressDialogPool;
   RECORD_DIALOG = new RecordDialog;
   RECORD_PROGRESS_POOL = new RecordProgressDialogPool;
+  RECORD_GENERIC_DIALOG = new RecordGenericDialog;
 
   // create TocEdit object
   TocEdit *tocEdit = new TocEdit(NULL, NULL);
