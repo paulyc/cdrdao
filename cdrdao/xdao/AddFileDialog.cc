@@ -43,7 +43,7 @@ AddFileDialog::AddFileDialog(AudioCDProject *project)
   set_filename("*.wav");
   show_fileop_buttons();
   set_select_multiple(true);
-  set_transient_for(*project);
+  set_transient_for(*project->getParentWindow ());
   mode(M_APPEND_TRACK);
 
   Gtk::Button* cancel = get_cancel_button();
