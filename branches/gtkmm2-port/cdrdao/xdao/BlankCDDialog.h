@@ -20,33 +20,27 @@
 #ifndef __BLANK_CD_DIALOG_H
 #define __BLANK_CD_DIALOG_H
 
-#include <gnome--.h>
-
 class DeviceList;
 
 class BlankCDDialog : public Gtk::Window {
 public:
   BlankCDDialog();
 
-  void start();
-  void update(unsigned long level);
-
 private:
   DeviceList *Devices;
 
-  int active_;
   int speed_;
 
   Gtk::RadioButton *fastBlank_rb;
   Gtk::RadioButton *fullBlank_rb;
-  Gnome::Dialog *moreOptionsDialog_;
+  Gtk::Dialog *moreOptionsDialog_;
   Gtk::CheckButton *ejectButton_;
   Gtk::CheckButton *reloadButton_;
 
   Gtk::SpinButton *speedSpinButton_;
   Gtk::CheckButton *speedButton_;
 
-  void stop();
+  void devicesStatusChanged();
   void startAction();
   void moreOptions();
   void speedButtonChanged();
@@ -56,8 +50,6 @@ private:
   bool getReload();
   int checkReloadWarning(Gtk::Window *);
   int getSpeed();
-
-  gint delete_event_impl(GdkEventAny*);
 };
 
 #endif
