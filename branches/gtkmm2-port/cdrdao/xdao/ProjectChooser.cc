@@ -20,7 +20,6 @@
 #include <libgnomeuimm.h>
 
 #include "xcdrdao.h"
-#include "gcdmaster.h"
 #include "guiUpdate.h"
 #include "ProjectChooser.h"
 
