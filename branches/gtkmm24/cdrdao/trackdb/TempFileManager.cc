@@ -76,9 +76,8 @@ bool TempFileManager::setTempDirectory(const char* path)
 bool TempFileManager::getTempFile(std::string& tempname, const char* key,
                                   const char* extension)
 {
-  if (refs_[key] > 0) {
+  if (!map_[key].empty()) {
     tempname = map_[key];
-    refs_[key]++;
     return true;
   }
 
@@ -120,29 +119,12 @@ bool TempFileManager::getTempFile(std::string& tempname, const char* key,
   } while(1);
 
   close(fd);
-  refs_[key] = 1;
   map_[key] = fname;
   tempname = map_[key];
 
   message(3, "Created temp file \"%s\" for file \"%s\"", fname.c_str(), key);
     
   return false;
-}
-
-
-void TempFileManager::releaseTempFile(const char* key)
-{
-  if (refs_[key] <= 0) {
-    message(-3, "Release unknown temp file %s.", key);
-    return;
-  }
-
-  refs_[key]--;
-
-  if (refs_[key] == 0) {
-    if (!keepTemps_)
-      unlink(map_[key].c_str());
-  }
 }
 
 TempFileManager tempFileManager;

@@ -42,15 +42,10 @@ class TempFileManager {
     bool getTempFile(std::string& name, const char* key,
                      const char* extension = NULL);
 
-    // Release a temp file. The file is deleted when its ref count
-    // drop to zero (and the setKeepTemps flag is false).
-    void releaseTempFile(const char* key);
-
  private:
     std::string path_;
     std::string prefix_;
     std::map<std::string, std::string> map_;
-    std::map<std::string, int> refs_;
     bool keepTemps_;
 };
 
