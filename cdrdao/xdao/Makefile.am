@@ -78,6 +78,7 @@ gcdmaster_SOURCES = \
 	Settings.h
 
 EXTRA_gcdmaster_SOURCES =	\
+	SoundIF-ao.cc 		\
 	SoundIF-linux.cc 	\
 	SoundIF-none.cc 	\
 	SoundIF-solaris.cc
@@ -94,12 +95,16 @@ gcdmaster_LDADD =					\
 	@scsilib_libs@					\
 	@LIBGUIMM2_LIBS@ @GTKMM2_LIBS@
 
+AM_CXXFLAGS = @GTKMM2_CFLAGS@ @LIBGUIMM2_CFLAGS@ @AO_CFLAGS@
+
 if COND_MP3
 gcdmaster_LDADD += @MAD_LIBS@
+AM_CXXFLAGS += @MAD_CFLAGS@
 endif
 
 if COND_OGG
 gcdmaster_LDADD += @VORBISFILE_LIBS@
+AM_CXXFLAGS += @VORBISFILE_CFLAGS@
 endif
 
 gcdmaster_LDADD += @AO_LIBS@
@@ -116,12 +121,13 @@ INCLUDES =					\
 	-I$(srcdir)/../dao			\
 	-DCDRDAO_GLADEDIR=\""$(gladedir)"\"
 
-AM_CXXFLAGS = @GTKMM2_CFLAGS@ @LIBGUIMM2_CFLAGS@
-
 man1_MANS = gcdmaster.man
 
 mimeinfodir = $(datadir)/mime-info
 mimeinfo_DATA = gcdmaster.keys gcdmaster.mime
+
+freedesktopdir = $(datadir)/mime/packages
+freedesktop_DATA = gcdmaster.xml
 
 desktopdir = $(datadir)/applications
 desktop_DATA = gcdmaster.desktop
@@ -135,5 +141,6 @@ EXTRA_DIST = \
 	$(mimeinfo_DATA)\
 	$(desktop_DATA)	\
 	$(icon_DATA)	\
+	$(freedesktop_DATA)	\
 	BUGS TASKS
 
