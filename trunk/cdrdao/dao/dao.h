@@ -18,6 +18,10 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2000/10/08 16:39:41  andreasm
+ * Remote progress message now always contain the track relative and total
+ * progress and the total number of processed tracks.
+ *
  * Revision 1.1.1.1  2000/02/05 01:35:20  llanero
  * Uploaded cdrdao 1.1.3 with pre10 patch applied.
  *
@@ -37,6 +41,6 @@
 #include "CdrDriver.h"
 
 int writeDiskAtOnce(const Toc *, CdrDriver *, int nofBuffers, int swap,
-		    int testMode);
+		    int testMode, int speed);
 
 #endif
