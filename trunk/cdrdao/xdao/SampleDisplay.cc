@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2000/03/05 22:25:52  llanero
+ * more code translated to gtk-- 1.1.8
+ *
  * Revision 1.3  2000/03/04 01:28:52  llanero
  * SampleDisplay.{cc,h} are fixed now = gtk 1.1.8 compliant.
  *
@@ -44,7 +47,7 @@
  *
  */
 
-static char rcsid[] = "$Id: SampleDisplay.cc,v 1.4 2000-03-05 22:25:52 llanero Exp $";
+static char rcsid[] = "$Id: SampleDisplay.cc,v 1.5 2000-04-14 13:22:02 llanero Exp $";
 
 #include <stdio.h>
 #include <limits.h>
@@ -851,10 +854,20 @@ void SampleDisplay::updateSamples()
     }
   }
 
+g_print("DEBUG: %s\n", "Inside UpdateSamples");
+
   drawGc_.set_foreground(sampleColor_);
+
+g_print("DEBUG: %s %i\n", "bres =", bres);
+g_print("DEBUG: %s %i\n", "maxSample =", maxSample_);
+g_print("DEBUG: %s %i\n", "res =", res);
+g_print("DEBUG: %s %i\n", "minSample =", minSample_);
+g_print("DEBUG: %s %i\n", "toc =", toc);
 
   if (bres > 0) {
     //message(0, "Draw 1");
+
+g_print("DEBUG: %s\n", "Inside Draw 1!?");
 
     for (s = minSample_, i = sampleStartX_;
 	 s < maxSample_ && i <= sampleEndX_;
@@ -899,6 +912,9 @@ void SampleDisplay::updateSamples()
     }
   }
   else if (maxSample_ > 0 && res >= 1) {
+
+g_print("DEBUG: %s\n", "Inside Draw 2!?");
+
     //message(0, "Draw 2: %ld < %ld", res,
     //        tocEdit_->sampleManager()->blocking());
     TocReader reader(toc);
@@ -972,15 +988,23 @@ void SampleDisplay::updateSamples()
   else if (toc != NULL && maxSample_ > minSample_ + 1) {
     //message(0, "Draw 3");
 
+g_print("DEBUG: %s\n", "Inside Draw 3!?");
+
     TocReader reader(toc);
+
+g_print("DEBUG: %s %i\n", "Readed toc =", toc);
 
     if (reader.openData() == 0) {
       long len = maxSample_ - minSample_ + 1;
+g_print("DEBUG: %s\n", "we get HERE!!");
       Sample *sampleBuf = new Sample[len];
+g_print("DEBUG: %s\n", "but NOT HERE!!");
+
       double pres = double(sampleWidthX_ - 1) / double(len - 1);
       double di;
       gint pos1;
       gint lastPosLeft, lastPosRight;
+
 
       //printf("Drawing exact, res=%ld pres=%g %ld-%ld\n", res, pres, minSample_, maxSample_);
 
