@@ -411,6 +411,7 @@ Specifies the directory in which to store temporary data files created from deco
 .TP
 .BI \--keep
 Upon exit from cdrdao, do not delete temporary WAV files created from MP3 and Ogg Vorbis files.
+.TP
 .BI \--save
 Saves some of the current options to the settings file
 "$HOME/.cdrdao". See section \'SETTINGS\' for more details.
