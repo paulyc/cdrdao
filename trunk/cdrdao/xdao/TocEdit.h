@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2004/02/12 01:13:32  poolshark
+ * Merge from gnome2 branch
+ *
  * Revision 1.4.6.2  2004/01/19 18:17:51  poolshark
  * Support for multiple selections in add track dialog
  *
@@ -84,7 +87,7 @@ public:
   TocEdit(Toc *, const char *);
   ~TocEdit();
 
-  void toc(Toc *, const char *);
+  int  toc(Toc *, const char *);
   Toc *toc() const;
 
   SampleManager *sampleManager();
