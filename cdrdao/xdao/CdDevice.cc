@@ -38,10 +38,10 @@
 #include "ProgressDialog.h"
 #include "Settings.h"
 
+#include "config.h"
 #include "remote.h"
 #include "ScsiIf.h"
 #include "CdrDriver.h"
-
 #include "util.h"
 #include "Toc.h"
 
@@ -67,11 +67,12 @@ char *CdDevice::DRIVER_NAMES_[DRIVER_IDS] = {
   
 
 CdDevice::CdDevice(int bus, int id, int lun, const char *vendor,
-		   const char *product)
+		   const char *product, bool is_atapi)
 {
   bus_ = bus;
   id_ = id;
   lun_ = lun;
+  is_atapi_ = is_atapi;
 
   vendor_ = strdupCC(vendor);
   product_ = strdupCC(product);
@@ -164,45 +165,10 @@ char *CdDevice::settingString() const
   return strdupCC(s.c_str());
 }
 
-int CdDevice::bus() const
-{
-  return bus_;
-}
-
-int CdDevice::id() const
-{
-  return id_;
-}
-
-int CdDevice::lun() const
-{
-  return lun_;
-}
-
-const char *CdDevice::vendor() const
-{
-  return vendor_;
-}
-
-const char *CdDevice::product() const
-{
-  return product_;
-}
-
-int CdDevice::driverId() const
-{
-  return driverId_;
-}
-
 void CdDevice::driverId(int id)
 {
   if (id >= 0 && id < DRIVER_IDS) 
     driverId_ = id;
-}
-
-const char *CdDevice::specialDevice() const
-{
-  return specialDevice_;
 }
 
 void CdDevice::specialDevice(const char *s)
@@ -223,29 +189,9 @@ void CdDevice::specialDevice(const char *s)
   status_ = DEV_UNKNOWN;
 }
 
-int CdDevice::manuallyConfigured() const
-{
-  return manuallyConfigured_;
-}
-
 void CdDevice::manuallyConfigured(int f)
 {
   manuallyConfigured_ = (f != 0) ? 1 : 0;
-}
-
-CdDevice::Status CdDevice::status() const
-{
-  return status_;
-}
-
-CdDevice::Action CdDevice::action() const
-{
-  return action_;
-}
-
-Process *CdDevice::process() const
-{
-  return process_;
 }
 
 void CdDevice::status(Status s)
@@ -1161,7 +1107,7 @@ void CdDevice::exportSettings()
 }
 
 CdDevice *CdDevice::add(int bus, int id, int lun, const char *vendor,
-			const char *product)
+			const char *product, bool is_atapi)
 {
   CdDevice *run, *pred, *ent;
 
@@ -1172,12 +1118,13 @@ CdDevice *CdDevice::add(int bus, int id, int lun, const char *vendor,
 	(bus == run->bus() && id == run->id() && lun < run->lun())) {
       break;
     }
-    else if (bus == run->bus() && id == run->id() && lun == run->lun()) {
+    else if (bus == run->bus() && id == run->id() && lun == run->lun()
+             && is_atapi == run->is_atapi()) {
       return run;
     }
   }
 
-  ent = new CdDevice(bus, id, lun, vendor, product);
+  ent = new CdDevice(bus, id, lun, vendor, product, is_atapi);
 
   if (pred != NULL) {
     ent->next_ = pred->next_;
@@ -1340,14 +1287,22 @@ void CdDevice::scan()
   int i, len;
   ScsiIf::ScanData *sdata = ScsiIf::scan(&len);
 
-  if (sdata == NULL)
-    return;
+  if (sdata) {
+    for (i = 0; i < len; i++)
+      CdDevice::add(sdata[i].bus, sdata[i].id, sdata[i].lun,
+                    sdata[i]._vendor, sdata[i]._product);
+    delete[] sdata;
+  }
 
-  for (i = 0; i < len; i++)
-    CdDevice::add(sdata[i].bus, sdata[i].id, sdata[i].lun, sdata[i].vendor,
-		  sdata[i].product);
-
-  delete[] sdata;
+#ifdef SCSI_ATAPI
+  sdata = ScsiIf::scan(&len, "ATAPI");
+  if (sdata) {
+    for (i = 0; i < len; i++)
+      CdDevice::add(sdata[i].bus, sdata[i].id, sdata[i].lun,
+                    sdata[i]._vendor, sdata[i]._product, sdata[i].is_atapi);
+    delete[] sdata;
+  }
+#endif
 }
 
 void CdDevice::remove(int bus, int id, int lun)

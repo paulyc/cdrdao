@@ -28,9 +28,10 @@
 #include "util.h"
 
 #include "xconfig.h"
-#include "standard.h"
-#include "scg/scgcmd.h"
-#include "scg/scsitransp.h"
+#include <schily/standard.h>
+#include <scg/scgcmd.h>
+#include <scg/scsitransp.h>
+#include <scg/scsireg.h>
 
 static void printVersionInfo(SCSI *scgp);
 
@@ -287,6 +288,8 @@ static int scanInquiry(SCSI *scgp, unsigned char *buf, ScsiIf::ScanData *sdata)
   struct scg_cmd *cmd = scgp->scmd;
   int i;
 
+  int dev_sense = scg_sense_key(scgp);
+
   memset(buf, 0, 36);
   memset(cmd, 0, sizeof(struct scg_cmd));
 
@@ -301,31 +304,40 @@ static int scanInquiry(SCSI *scgp, unsigned char *buf, ScsiIf::ScanData *sdata)
   scgp->silent = 1;
   scgp->cmdname = "inquiry";
 
-  if (scg_cmd(scgp) == 0) {
-    if ((buf[0] & 0x1f) == 0x04 || (buf[0] & 0x1f) == 0x05) {
+#ifdef SCSI_ATAPI
+  int is_atapi = scg_isatapi(scgp);
+#else
+  int is_atapi = 0;
+#endif
+  int cmd_status = scg_cmd(scgp);
+
+  if (cmd_status == 0 || (is_atapi && dev_sense >= 0)) {
+    struct scsi_inquiry* inq = (struct scsi_inquiry*)buf;
+    if (inq->type == INQ_OPTD || inq->type == INQ_ROMD) {
       sdata->bus = scg_scsibus(scgp);
       sdata->id = scg_target(scgp);
       sdata->lun = scg_lun(scgp);
+      sdata->is_atapi = is_atapi;
 
-      strncpy(sdata->vendor, (char *)(buf + 0x08), 8);
-      sdata->vendor[8] = 0;
+      strncpy(sdata->_vendor, (char *)(buf + 0x08), 8);
+      sdata->_vendor[8] = 0;
 
-      strncpy(sdata->product, (char *)(buf + 0x10), 16);
-      sdata->product[16] = 0;
+      strncpy(sdata->_product, (char *)(buf + 0x10), 16);
+      sdata->_product[16] = 0;
 
-      strncpy(sdata->revision, (char *)(buf + 0x20), 4);
-      sdata->revision[4] = 0;
+      strncpy(sdata->_revision, (char *)(buf + 0x20), 4);
+      sdata->_revision[4] = 0;
 
-      for (i = 7; i >= 0 && sdata->vendor[i] == ' '; i--) {
-	sdata->vendor[i] = 0;
+      for (i = 7; i >= 0 && sdata->_vendor[i] == ' '; i--) {
+	sdata->_vendor[i] = 0;
       }
 
-      for (i = 15; i >= 0 && sdata->product[i] == ' '; i--) {
-	sdata->product[i] = 0;
+      for (i = 15; i >= 0 && sdata->_product[i] == ' '; i--) {
+	sdata->_product[i] = 0;
       }
 
-      for (i = 3; i >= 0 && sdata->revision[i] == ' '; i--) {
-	sdata->revision[i] = 0;
+      for (i = 3; i >= 0 && sdata->_revision[i] == ' '; i--) {
+	sdata->_revision[i] = 0;
       }
 
       return 1;
@@ -335,7 +347,7 @@ static int scanInquiry(SCSI *scgp, unsigned char *buf, ScsiIf::ScanData *sdata)
   return 0;
 }
 
-ScsiIf::ScanData *ScsiIf::scan(int *len)
+ScsiIf::ScanData *ScsiIf::scan(int *len, char* scsi_dev)
 {
   ScanData *sdata = NULL;
   SCSI *scgp;
@@ -344,9 +356,7 @@ ScsiIf::ScanData *ScsiIf::scan(int *len)
 
   *len = 0;
 
-  //set_progname("cdrdao");
-
-  if ((scgp = scg_open(NULL, errstr, sizeof(errstr), 0, 0)) == NULL)
+  if ((scgp = scg_open(scsi_dev, errstr, sizeof(errstr), 0, 0)) == NULL)
     return NULL;
 
   printVersionInfo(scgp);

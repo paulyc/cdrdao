@@ -39,33 +39,33 @@ public:
   enum Action { A_RECORD, A_READ, A_DUPLICATE, A_BLANK, A_NONE };
 
   CdDevice(int bus, int id, int lun, const char *vendor,
-	   const char *product);
+	   const char *product, bool is_atapi = false);
   ~CdDevice();
 
   char *settingString() const;
 
-  int bus() const; 
-  int id() const;
-  int lun() const;
+  int bus() const                    { return bus_; }
+  int id() const                     { return id_; }
+  int lun() const                    { return lun_; }
+  const char *vendor() const         { return vendor_; }
+  const char *product() const        { return product_; }
+  bool is_atapi() const              { return is_atapi_; }
 
-  const char *vendor() const;
-  const char *product() const;
-
-  Status status() const;
-  Process *process() const;
+  Status status() const              { return status_; }
+  Process *process() const           { return process_; }
 
   int exitStatus() const;
 
   void status(Status);
   int updateStatus();
 
-  Action action() const;
+  Action action() const              { return action_; }
 
   bool updateProgress(Glib::IOCondition, int fd);
 
   int autoSelectDriver();
 
-  int driverId() const;
+  int driverId() const                 { return driverId_; }
   void driverId(int);
 
   DeviceType deviceType() const;
@@ -74,10 +74,10 @@ public:
   unsigned long driverOptions() const;
   void driverOptions(unsigned long);
 
-  const char *specialDevice() const;
+  const char *specialDevice() const    { return specialDevice_; }
   void specialDevice(const char *);
 
-  int manuallyConfigured() const;
+  int manuallyConfigured() const       { return manuallyConfigured_; }
   void manuallyConfigured(int);
 
   bool recordDao(Gtk::Window& parent, TocEdit *, int simulate,
@@ -113,7 +113,7 @@ public:
   static void exportSettings();
 
   static CdDevice *add(int bus, int id, int lun, const char *vendor,
-		       const char *product);
+		       const char *product, bool is_atapi = false);
 
   static CdDevice *add(const char *setting);
 
@@ -142,7 +142,7 @@ private:
   int bus_; // SCSI bus
   int id_;  // SCSI id
   int lun_; // SCSI logical unit
-
+  bool is_atapi_;
   char *vendor_;
   char *product_;
 

@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.1.1.1  2000/02/05 01:35:11  llanero
+ * Uploaded cdrdao 1.1.3 with pre10 patch applied.
+ *
  * Revision 1.4  1999/04/02 16:44:30  mueller
  * Removed 'revisionDate' because it is not available in general.
  *
@@ -33,6 +36,8 @@
 
 #ifndef __SCSIIF_H__
 #define __SCSIIF_H__
+
+#include <stdlib.h>
 
 class ScsiIfImpl;
 
@@ -69,17 +74,19 @@ public:
   int testUnitReady();
 
   struct ScanData {
+    bool is_atapi;
     int bus;
     int id;
     int lun;
-
-    char vendor[9];
-    char product[17];
-    char revision[5];
+    // This is crazy, but the schily header #define vendor, product
+    // and revision. Talk about namespace pollution...
+    char _vendor[9];
+    char _product[17];
+    char _revision[5];
   };
 
   // scans for all SCSI devices and returns a newly allocated 'ScanData' array.
-  static ScanData *scan(int *len);
+  static ScanData *scan(int *len, char* scsi_dev = NULL);
 
 private:
   char vendor_[9];
