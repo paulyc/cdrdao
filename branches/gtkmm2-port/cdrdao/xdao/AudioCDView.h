@@ -45,7 +45,7 @@ public:
   enum Mode { ZOOM, SELECT };
 
   void setMode(Mode m);
-  void updatePlayPos(unsigned long pos);
+  void updatePlayPos(bool managed, unsigned long pos);
   void getSelection(unsigned long &start, unsigned long &end);
 
   void update(unsigned long level);
@@ -70,9 +70,12 @@ private:
   Mode mode_;
 
   void markerSetCallback(unsigned long);
+  void markerSetUpdate();
   void cursorMovedCallback(unsigned long);
   void selectionSetCallback(unsigned long, unsigned long);
+  void selectionSetUpdate();
   void trackMarkSelectedCallback(const Track *, int trackNr, int indexNr);
+  void trackMarkSelectedUpdate();
   void trackMarkMovedCallback(const Track *, int trackNr, int indexNr,
 			      unsigned long sample);
   void viewModifiedCallback(unsigned long, unsigned long);
@@ -94,6 +97,7 @@ private:
   void appendFile();
   void insertFile();
 
+  void samplesUpdate();
   int getMarker(unsigned long *sample);
   void markerSet();
 
