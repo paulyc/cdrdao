@@ -117,6 +117,9 @@
 /* Define as the return type of signal handlers (`int' or `void'). */
 #undef RETSIGTYPE
 
+/* "Allow ATAPI support device" */
+#undef SCSI_ATAPI
+
 /* The size of a `int', as computed by sizeof. */
 #undef SIZEOF_INT
 
