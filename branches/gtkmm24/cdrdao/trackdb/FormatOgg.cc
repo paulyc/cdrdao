@@ -113,7 +113,6 @@ FormatSupport::Status FormatOgg::oggDecodeFrame()
 FormatSupport::Status FormatOgg::oggExit()
 {
   ov_clear(&vorbisFile_);
-  fclose(fin_);
   ao_close(aoDev_);
 
   return FS_SUCCESS;
