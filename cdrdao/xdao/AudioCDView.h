@@ -28,6 +28,8 @@ class Project;
 class TrackInfoDialog;
 class AddFileDialog;
 class AddSilenceDialog;
+class AudioCDChild;
+class AudioCDProject;
 
 enum {
   TARGET_URI_LIST,
@@ -40,8 +42,13 @@ public:
   ~AudioCDView();
   SigC::Signal0<void> add_view;
 
+  enum Mode { ZOOM, SELECT };
+
+  void setMode(Mode m);
+  void updatePlayPos(unsigned long pos);
+  void getSelection(unsigned long &start, unsigned long &end);
+
   void update(unsigned long level);
-  std::list<Gtk::Widget *> *widgetList;
 
 private:
   friend class AudioCDChild;
@@ -51,26 +58,16 @@ private:
   AddFileDialog *addFileDialog_;
   AddSilenceDialog *addSilenceDialog_;
 
-  enum Mode { ZOOM, SELECT };
-
   AudioCDChild *cdchild;
-
-  Mode mode_;
 
   SampleDisplay *sampleDisplay_;
 
-  Gtk::RadioButton *zoomButton_;
-  Gtk::RadioButton *selectButton_;
-  Gtk::RadioButton *playStartButton_;
-  Gtk::RadioButton *playPauseButton_;
-  Gtk::RadioButton *playStopButton_;
-    
   Gtk::Entry *markerPos_;
   Gtk::Entry *cursorPos_;
   Gtk::Entry *selectionStartPos_;
   Gtk::Entry *selectionEndPos_;
 
-  void setMode(Mode);
+  Mode mode_;
 
   void markerSetCallback(unsigned long);
   void cursorMovedCallback(unsigned long);
@@ -80,14 +77,6 @@ private:
 			      unsigned long sample);
   void viewModifiedCallback(unsigned long, unsigned long);
   int snapSampleToBlock(unsigned long sample, long *block);
-
-  void zoomIn();
-  void zoomx2();
-  void zoomOut();
-  void fullView();
-  void playStart();
-  void playPause();
-  void playStop();
 
   void trackInfo();
   void cutTrackData();

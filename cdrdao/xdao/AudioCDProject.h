@@ -33,9 +33,6 @@ class TocEdit;
 
 class AudioCDProject : public Project
 {
-public:
-  enum PlayStatus {PLAYING, PAUSED, STOPPED};
-
 private:
   TocReader tocReader;
 
@@ -50,6 +47,7 @@ private:
   bool playCallback();
 
   AudioCDChild *audioCDChild_;
+  AudioCDView *audioCDView_;
   TocInfoDialog *tocInfoDialog_;
   CdTextDialog *cdTextDialog_;
   void recordToc2CD();
@@ -58,20 +56,40 @@ private:
   void update(unsigned long level);
 
   Gtk::Toolbar *playToolbar;
-  enum PlayStatus playStatus_;
  
 public:
   AudioCDProject(int number, const char *name, TocEdit *tocEdit);
-  void newAudioCDView(); 
   bool closeProject();
   Gtk::Toolbar *getPlayToolbar();
 
-  void playStart(unsigned long start, unsigned long end);
-  void playPause();
-  void playStop();
-  enum PlayStatus getPlayStatus();
   unsigned long playPosition();
   unsigned long getDelay();
+
+private:
+  Gtk::Widget *playStartButton_;
+  Gtk::Widget *playPauseButton_;
+  Gtk::Widget *playStopButton_;
+  Gtk::Widget *selectButton_;
+  Gtk::Widget *zoomButton_;
+  Gtk::Widget *zoomInButton_;
+  Gtk::Widget *zoomOutButton_;
+  Gtk::Widget *zoomFullButton_;
+  Gtk::Widget *zoomSelectionButton_;
+
+  void setMode(enum AudioCDView::Mode);
+
+  enum PlayStatus {PLAYING, PAUSED, STOPPED};
+  enum PlayStatus playStatus_;
+  void playStart();
+  void playPause();
+  void playStop();
+
+  TocEditView *tocEditView_;
+  void zoomx2();
+  void zoomOut();
+  void fullView();
+  void zoomIn();
+
 };
 #endif
 

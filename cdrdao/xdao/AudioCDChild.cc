@@ -44,24 +44,10 @@ AudioCDChild::AudioCDChild(AudioCDProject *project)
     using namespace Gnome::UI::Items;
     vector<Info> menus, viewMenuTree;
 
-    viewMenuTree.push_back(Item(Icon(Gtk::Stock::ADD),
-			      N_("Add new track editor view"),
-			      slot(*project, &AudioCDProject::newAudioCDView),
-			      N_("Add new view of current project")));
-
     menus.push_back(Gnome::UI::Menus::View(viewMenuTree));
 
-    project->insert_menus("Edit", menus);
+//GTKMM2    project->insert_menus("Edit", menus);
   }
-
-  zoomToolbar = new Gtk::Toolbar;
-  zoomToolbar->set_border_width(2);
-//GTKMM2  zoomToolbar->set_button_relief(Gtk::RELIEF_NONE);
-  zoomToolbar->show();
-  project->add_docked(*zoomToolbar, "zoomToolbar", (BonoboDockItemBehavior)0,
-  		(BonoboDockPlacement)0, 1, 2, 0);
-//GTKMM2  project->get_dock_item_by_name("zoomToolbar")->show();
-
 }
 
 AudioCDChild::~AudioCDChild()
@@ -78,11 +64,6 @@ AudioCDChild::~AudioCDChild()
   delete view;
 }
 
-Gtk::Toolbar *AudioCDChild::getZoomToolbar()
-{
-	return zoomToolbar;
-}
-
 bool AudioCDChild::closeProject()
 {
 
@@ -92,17 +73,26 @@ bool AudioCDChild::closeProject()
   }
 
   if (tocEdit_->tocDirty()) {
-//FIXME: This should be Ask3Box: Save changes? "yes" "no" "cancel"
-    gchar *message;
-    
-    message = g_strdup_printf("Project %s not saved.", tocEdit_->filename());
+    Glib::ustring s = "Save changes to project \"";
+    s += tocEdit_->filename();
+    s += "\"?";
 
-    Ask2Box msg(project_, "Close", 0, 2, message, "",
-		"Continue?", NULL);
-    g_free(message);
-
-    if (msg.run() != 1)
-      return false;
+//FIXME //GTKMM2
+    Ask3Box msg(project_, "Close", false, s);
+    switch (msg.run())
+	{
+      case Gtk::RESPONSE_YES:
+        break;
+      case Gtk::RESPONSE_NO:
+        break;
+      case Gtk::RESPONSE_CANCEL:
+        return false;
+        break;
+      default:
+        cout << "invalid response" << endl;
+        return false;
+        break;
+    }
   }
 
   return true;
