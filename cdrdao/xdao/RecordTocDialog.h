@@ -20,8 +20,6 @@
 #ifndef __RECORD_TOC_DIALOG_H
 #define __RECORD_TOC_DIALOG_H
 
-#include <gnome--.h>
-
 class TocEdit;
 class RecordTocSource;
 class RecordCDTarget;
@@ -47,6 +45,7 @@ private:
 
   void stop();
   void startAction();
+  void devicesStatusChanged();
 
   gint delete_event_impl(GdkEventAny*);
 };
