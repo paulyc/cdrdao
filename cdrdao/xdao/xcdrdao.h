@@ -18,6 +18,15 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2003/12/13 02:29:44  denis
+ * Fixed font issues with sample display
+ *
+ * Revision 1.1.1.1  2003/12/09 05:32:28  denis
+ * Fooya
+ *
+ * Revision 1.12  2001/08/18 19:11:03  llanero
+ * removed RECORD_GENERIC_DIALOG declaration
+ *
  * Revision 1.11  2001/04/23 00:15:11  llanero
  * Dialogs will update title with project name + app name.
  *
@@ -82,7 +91,7 @@
 #define __XCDRDAO_H__
 
 extern class GCDMaster *gcdmaster;
-extern class DeviceConfDialog *DEVICE_CONF_DIALOG;
+extern class DeviceConfDialog *deviceConfDialog;
 extern class ProcessMonitor *PROCESS_MONITOR;
 extern class ProgressDialogPool *PROGRESS_POOL;
 

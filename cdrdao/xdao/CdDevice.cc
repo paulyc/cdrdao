@@ -27,6 +27,7 @@
 #include <ctype.h>
 #include <assert.h>
 
+#include <gtkmm.h>
 #include <gnome.h>
 
 #include "TocEdit.h"
@@ -341,7 +342,7 @@ int CdDevice::updateStatus()
   return 0;
 }
 
-void CdDevice::updateProgress(int fd, GdkInputCondition cond)
+bool CdDevice::updateProgress(Glib::IOCondition cond, int fd)
 {
   static char msgSync[4] = { 0xff, 0x00, 0xff, 0x00 };
   fd_set fds;
@@ -349,19 +350,11 @@ void CdDevice::updateProgress(int fd, GdkInputCondition cond)
   char buf[10];
   struct timeval timeout = { 0, 0 };
 
-  //message(0, "Rcvd msg");
-
   if (process_ == NULL)
-    return;
+    return false;
 
-  if (!(cond & GDK_INPUT_READ))
-    return;
-
-  if (fd < 0 || fd != process_->commFd()) {
-    message(-3,
-	    "CdDevice::updateProgress called with illegal fild descriptor.");
-    return;
-  }
+  if (!(cond & Gdk::INPUT_READ))
+    return false;
 
   FD_ZERO(&fds);
   FD_SET(fd, &fds);
@@ -376,7 +369,7 @@ void CdDevice::updateProgress(int fd, GdkInputCondition cond)
     while (state < 4) {
       if (read(fd, buf, 1) != 1) {
 	//message(-2, "Reading of msg sync failed.");
-	return;
+	return false;
       }
 
       if (buf[0] == msgSync[state]) {
@@ -394,13 +387,8 @@ void CdDevice::updateProgress(int fd, GdkInputCondition cond)
     ProgressMsg msg;
 
     if (read(fd, (char *)&msg, sizeof(msg)) == sizeof(msg)) {
-      /*
-	message(0, "progress: %d %d %d %d", msg.status, msg.track,
-	msg.totalProgress, msg.bufferFillRate);
-      */
       if (msg.status >= PGSMSG_MIN && msg.status <= PGSMSG_MAX &&
-	  msg.track >= 0 && msg.track <= 0xaa &&
-	  msg.trackProgress >= 0 && msg.trackProgress <= 1000 &&
+	  msg.track >= 0 &&
 	  msg.totalProgress >= 0 && msg.totalProgress <= 1000 &&
 	  msg.bufferFillRate >= 0 && msg.bufferFillRate <= 100) {
 	progressStatus_ = msg.status;
@@ -421,7 +409,7 @@ void CdDevice::updateProgress(int fd, GdkInputCondition cond)
   if (progressStatusChanged_)
     guiUpdate(UPD_PROGRESS_STATUS);
 
-  return;
+  return true;
 }
 
 CdDevice::DeviceType CdDevice::deviceType() const
@@ -444,14 +432,13 @@ void CdDevice::driverOptions(unsigned long o)
   options_ = o;
 }
 
-// Starts a 'cdrdao' for recording given toc.
-// Return: 0: OK, process succesfully launched
-//         1: error occured
-int CdDevice::recordDao(TocEdit *tocEdit, int simulate, int multiSession,
-			int speed, int eject, int reload, int buffer,
-			int overburn)
+// Starts a 'cdrdao' for recording given toc. Returns false if an
+// error occured and the process was not successfully launched.
+bool CdDevice::recordDao(Gtk::Window& parent, TocEdit *tocEdit, int simulate,
+                        int multiSession, int speed, int eject, int reload,
+                        int buffer, int overburn)
 {
-  char *tocFileName;
+  char tocFileName[30];
   char *args[30];
   int n = 0;
   char devname[30];
@@ -463,18 +450,22 @@ int CdDevice::recordDao(TocEdit *tocEdit, int simulate, int multiSession,
   int remoteFdArgNum = 0;
 
   if (status_ != DEV_READY || process_ != NULL)
-    return 1;
+    return false;
 
-  if ((tocFileName = tempnam(NULL, "toc")) == NULL) {
+  sprintf(tocFileName, "/tmp/gcdm.toc.XXXXXX");
+  int fd = mkstemp(tocFileName);
+  if (!fd) {
     message(-2, "Cannot create temporary toc-file: %s", strerror(errno));
-    return 1;
+    return false;
   }
 
-  if (tocEdit->toc()->write(tocFileName) != 0) {
+  if (!tocEdit->toc()->write(fd)) {
+    close(fd);
     message(-2, "Cannot write temporary toc-file.");
-    return 1;
+    return false;
   }
 
+  close(fd);
   if ((s = gnome_config_get_string(SET_CDRDAO_PATH)) != NULL)
     execName = strdupCC(s);
   else
@@ -541,7 +532,7 @@ int CdDevice::recordDao(TocEdit *tocEdit, int simulate, int multiSession,
   
   assert(n <= 20);
   
-  PROGRESS_POOL->start(this, tocEdit);
+  PROGRESS_POOL->start(parent, this, tocEdit->filename());
 
   // Remove the SCSI interface of this device to avoid problems with double
   // usage of device nodes.
@@ -550,26 +541,24 @@ int CdDevice::recordDao(TocEdit *tocEdit, int simulate, int multiSession,
 
   process_ = PROCESS_MONITOR->start(execName, args, remoteFdArgNum);
 
-  delete[] execName;
-
+  delete execName;
   if (process_ != NULL) {
     status_ = DEV_RECORDING;
     action_ = A_RECORD;
-    free(tocFileName);
 
     if (process_->commFd() >= 0) {
-      Gtk::Main::instance()->input.connect(slot(this,
-						&CdDevice::updateProgress),
-					   process_->commFd(),
-					   (GdkInputCondition)(GDK_INPUT_READ|GDK_INPUT_EXCEPTION));
+        Glib::signal_io().connect(bind(slot(*this, &CdDevice::updateProgress),
+                                       process_->commFd()),
+                                  process_->commFd(),
+                                  Glib::IO_IN | Glib::IO_HUP);
     }
 
-    return 0;
+    return true;
   }
   else {
     unlink(tocFileName);
     free(tocFileName);
-    return 1;
+    return false;
   }
 }
 
@@ -605,14 +594,13 @@ void CdDevice::progress(int *status, int *totalTracks, int *track,
 // Starts a 'cdrdao' for reading whole cd.
 // Return: 0: OK, process succesfully launched
 //         1: error occured
-int CdDevice::extractDao(const char *tocFileName, int correction,
-			 int readSubChanMode)
+int CdDevice::extractDao(Project& parent, const char *tocFileName,
+                         int correction, int readSubChanMode)
 {
   char *args[30];
   int n = 0;
   char devname[30];
   char drivername[50];
-  //char speedbuf[20];
   char *execName;
   const char *s; 
   char correctionbuf[20];
@@ -681,7 +669,7 @@ int CdDevice::extractDao(const char *tocFileName, int correction,
   
   assert(n <= 20);
   
-  PROGRESS_POOL->start(this, tocFileName, false);
+  PROGRESS_POOL->start(parent, this, tocFileName, false, false);
 
   // Remove the SCSI interface of this device to avoid problems with double
   // usage of device nodes.
@@ -697,10 +685,11 @@ int CdDevice::extractDao(const char *tocFileName, int correction,
     action_ = A_READ;
 
     if (process_->commFd() >= 0) {
-      Gtk::Main::instance()->input.connect(slot(this,
-					       &CdDevice::updateProgress),
-					  process_->commFd(),
-					  (GdkInputCondition)(GDK_INPUT_READ|GDK_INPUT_EXCEPTION));
+        Glib::signal_io().connect(bind(slot(*this, &CdDevice::updateProgress),
+                                       process_->commFd()),
+                                  process_->commFd(),
+                                  Glib::IO_IN | Glib::IO_PRI |
+                                  Glib::IO_ERR | Glib::IO_HUP);
     }
     return 0;
   }
@@ -720,9 +709,9 @@ void CdDevice::abortDaoReading()
 // Starts a 'cdrdao' for duplicating a CD.
 // Return: 0: OK, process succesfully launched
 //         1: error occured
-int CdDevice::duplicateDao(int simulate, int multiSession, int speed,
-			   int eject, int reload, int buffer, int onthefly,
-			   int correction, int readSubChanMode, 
+int CdDevice::duplicateDao(Project& parent, int simulate, int multiSession,
+                           int speed, int eject, int reload, int buffer,
+                           int onthefly, int correction, int readSubChanMode, 
 			   CdDevice *readdev)
 {
   char *args[30];
@@ -845,7 +834,7 @@ int CdDevice::duplicateDao(int simulate, int multiSession, int speed,
   
   assert(n <= 25);
   
-  PROGRESS_POOL->start(this, "CD to CD copy");
+  PROGRESS_POOL->start(parent, this, "CD to CD copy");
 
   // Remove the SCSI interface of this device to avoid problems with double
   // usage of device nodes.
@@ -856,7 +845,6 @@ int CdDevice::duplicateDao(int simulate, int multiSession, int speed,
 
   delete[] execName;
 
-
   if (process_ != NULL) {
     slaveDevice_ = readdev;
     slaveDevice_->status(DEV_READING);
@@ -865,9 +853,10 @@ int CdDevice::duplicateDao(int simulate, int multiSession, int speed,
     action_ = A_DUPLICATE;
 
     if (process_->commFd() >= 0) {
-      Gtk::Main::instance()->input.connect(slot(this, &CdDevice::updateProgress),
-					   process_->commFd(),
-					   (GdkInputCondition)(GDK_INPUT_READ|GDK_INPUT_EXCEPTION));
+        Glib::signal_io().connect(bind(slot(*this, &CdDevice::updateProgress),
+                                       process_->commFd()),
+                                  process_->commFd(),
+                                  Glib::IO_IN | Glib::IO_HUP);
     }
 
     return 0;
@@ -887,7 +876,8 @@ void CdDevice::abortDaoDuplication()
 // Starts a 'cdrdao' for blanking a CD.
 // Return: 0: OK, process succesfully launched
 //         1: error occured
-int CdDevice::blank(int fast, int speed, int eject, int reload)
+int CdDevice::blank(Project* parent, int fast, int speed, int eject,
+                    int reload)
 {
   char *args[20];
   int n = 0;
@@ -956,7 +946,10 @@ int CdDevice::blank(int fast, int speed, int eject, int reload)
   
   assert(n <= 20);
   
-  PROGRESS_POOL->start(this, "Blanking CDRW", false, false);
+  if (parent)
+    PROGRESS_POOL->start(*parent, this, "Blanking CDRW", false, false);
+  else
+    PROGRESS_POOL->start(this, "Blanking CDRW", false, false);
 
   // Remove the SCSI interface of this device to avoid problems with double
   // usage of device nodes.
@@ -972,10 +965,10 @@ int CdDevice::blank(int fast, int speed, int eject, int reload)
     action_ = A_BLANK;
 
     if (process_->commFd() >= 0) {
-      Gtk::Main::instance()->input.connect(slot(this,
-						&CdDevice::updateProgress),
-					   process_->commFd(),
-					   (GdkInputCondition)(GDK_INPUT_READ|GDK_INPUT_EXCEPTION));
+        Glib::signal_io().connect(bind(slot(*this, &CdDevice::updateProgress),
+                                       process_->commFd()),
+                                  process_->commFd(),
+                                  Glib::IO_IN | Glib::IO_HUP);
     }
     return 0;
   }
@@ -1431,52 +1424,3 @@ int CdDevice::updateDeviceStatus()
 
   return newStatus;
 }
-
-
-#if 0
-/* not used anymore since Gtk::Main::input signal will call
- * CdDevice::updateProgress directly.
- */
-int CdDevice::updateDeviceProgress()
-{
-  int progress = 0;
-  int fd;
-  fd_set fds;
-  int maxFd = -1;
-  CdDevice *run;
-  struct timeval timeout = { 0, 0 };
-
-  blockProcessMonitorSignals();
-
-  FD_ZERO(&fds);
-
-  // collect set of file descriptors for 'select'
-  for (run = DEVICE_LIST_; run != NULL; run = run->next_) {
-    if (run->process_ != NULL && (fd = run->process_->commFd()) >= 0) {
-      FD_SET(fd, &fds);
-      if (fd > maxFd)
-	maxFd = fd;
-    }
-  }
-
-  if (maxFd < 0) {
-    unblockProcessMonitorSignals();
-    return 0;
-  }
-
-  if (select(maxFd + 1, &fds, NULL, NULL, &timeout) > 0) {
-    for (run = DEVICE_LIST_; run != NULL; run = run->next_) {
-      if (run->process_ != NULL && (fd = run->process_->commFd()) >= 0) {
-	if (FD_ISSET(fd, &fds)) {
-	  if (run->updateProgress())
-	    progress = 1;
-	}
-      }
-    }
-  }
-
-  unblockProcessMonitorSignals();
-
-  return progress;
-}
-#endif

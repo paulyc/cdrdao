@@ -20,10 +20,11 @@
 #ifndef __AUDIO_CD_VIEW_H__
 #define __AUDIO_CD_VIEW_H__
 
-#include <gtk--.h>
+#include <gtkmm.h>
 #include <gtk/gtk.h>
-#include <gnome--.h>
+#include <libgnomeuimm.h>
 
+#include "AddFileDialog.h"
 #include "GenericView.h"
 #include <list>
 
@@ -45,36 +46,31 @@ public:
   SigC::Signal0<void> add_view;
 
   void update(unsigned long level);
-  std::list<Gtk::Widget *> *widgetList;
+
+  enum Mode { ZOOM, SELECT };
+  void setMode(Mode);
+
+  void zoomIn();
+  void zoomx2();
+  void zoomOut();
+  void fullView();
 
 private:
   friend class AudioCDChild;
   AudioCDProject *project_;
 
-  TrackInfoDialog *trackInfoDialog_;
-  AddFileDialog *addFileDialog_;
-  AddSilenceDialog *addSilenceDialog_;
-
-  enum Mode { ZOOM, SELECT };
+  TrackInfoDialog*  trackInfoDialog_;
+  AddFileDialog     addFileDialog_;
+  AddSilenceDialog* addSilenceDialog_;
 
   AudioCDChild *cdchild;
-
   Mode mode_;
-
   SampleDisplay *sampleDisplay_;
 
-  Gtk::RadioButton *zoomButton_;
-  Gtk::RadioButton *selectButton_;
-  Gtk::RadioButton *playStartButton_;
-  Gtk::RadioButton *playPauseButton_;
-  Gtk::RadioButton *playStopButton_;
-    
-  Gtk::Entry *markerPos_;
-  Gtk::Entry *cursorPos_;
-  Gtk::Entry *selectionStartPos_;
-  Gtk::Entry *selectionEndPos_;
-
-  void setMode(Mode);
+  Gtk::Entry*  markerPos_;
+  Gtk::Label*  cursorPos_;
+  Gtk::Entry*  selectionStartPos_;
+  Gtk::Entry*  selectionEndPos_;
 
   void markerSetCallback(unsigned long);
   void cursorMovedCallback(unsigned long);
@@ -84,14 +80,6 @@ private:
 			      unsigned long sample);
   void viewModifiedCallback(unsigned long, unsigned long);
   int snapSampleToBlock(unsigned long sample, long *block);
-
-  void zoomIn();
-  void zoomx2();
-  void zoomOut();
-  void fullView();
-  void playStart();
-  void playPause();
-  void playStop();
 
   void trackInfo();
   void cutTrackData();
@@ -114,8 +102,9 @@ private:
 
   void selectionSet();
 
-  void drag_data_received_cb(GdkDragContext *context, gint x, gint y,
-         GtkSelectionData *selection_data, guint info, guint time);
+  void drag_data_received_cb(const Glib::RefPtr<Gdk::DragContext>& context,
+                             gint x, gint y, GtkSelectionData *selection_data,
+                             guint info, guint time);
 
 };
 

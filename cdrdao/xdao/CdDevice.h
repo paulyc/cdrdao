@@ -23,11 +23,14 @@
 #include <sigc++/object.h>
 #include <gdk/gdk.h>
 
+#include "Project.h"
+
 class TocEdit;
 class Process;
 class ScsiIf;
 
-class CdDevice : public SigC::Object {
+class CdDevice : public SigC::Object
+{
 public:
   enum Status { DEV_READY, DEV_RECORDING, DEV_READING, DEV_WAITING, DEV_BUSY,
 		DEV_NO_DISK, DEV_BLANKING, DEV_FAULT, DEV_UNKNOWN };
@@ -58,7 +61,7 @@ public:
 
   Action action() const;
 
-  void updateProgress(int fd, GdkInputCondition);
+  bool updateProgress(Glib::IOCondition, int fd);
 
   int autoSelectDriver();
 
@@ -77,19 +80,21 @@ public:
   int manuallyConfigured() const;
   void manuallyConfigured(int);
 
-  int recordDao(TocEdit *, int simulate, int multiSession, int speed,
-		int eject, int reload, int buffer, int overburn);
+  bool recordDao(Gtk::Window& parent, TocEdit *, int simulate,
+                 int multiSession, int speed, int eject, int reload,
+                 int buffer, int overburn);
   void abortDaoRecording();
 
-  int extractDao(const char *tocFileName, int correction, int readSubChanMode);
+  int extractDao(Project& parent, const char *tocFileName, int correction,
+                 int readSubChanMode);
   void abortDaoReading();
 
-  int duplicateDao(int simulate, int multiSession, int speed,
+  int duplicateDao(Project& parent, int simulate, int multiSession, int speed,
 		   int eject, int reload, int buffer, int onthefly,
 		   int correction, int readSubChanMode, CdDevice *readdev);
   void abortDaoDuplication();
 
-  int blank(int fast, int speed, int eject, int reload);
+  int blank(Project* parent, int fast, int speed, int eject, int reload);
   void abortBlank();
     
   int progressStatusChanged();

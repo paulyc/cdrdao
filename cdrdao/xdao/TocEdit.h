@@ -18,6 +18,18 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2003/12/12 02:49:36  denis
+ * AudioCDProject and AudioCDView cleanup.
+ *
+ * Revision 1.1.1.1  2003/12/09 05:32:28  denis
+ * Fooya
+ *
+ * Revision 1.4  2000/11/05 12:24:41  andreasm
+ * Improved handling of TocEdit views. Introduced a new class TocEditView that
+ * holds all view data (displayed sample range, selected sample range,
+ * selected tracks/index marks, sample marker). This class is passed now to
+ * most of the update functions of the dialogs.
+ *
  * Revision 1.3  2000/09/21 02:07:07  llanero
  * MDI support:
  * Splitted AudioCDChild into same and AudioCDView
@@ -75,7 +87,7 @@ public:
 
   void blockEdit();
   void unblockEdit();
-  int editable() const;
+  bool editable() const;
 
   // returns and resets update level
   unsigned long updateLevel();

@@ -18,6 +18,16 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2003/12/13 02:29:44  denis
+ * Fixed font issues with sample display
+ *
+ * Revision 1.1.1.1  2003/12/09 05:32:28  denis
+ * Fooya
+ *
+ * Revision 1.5  2001/01/21 13:46:11  andreasm
+ * 'update()' functions of all dialogs require a 'TocEditView' object now.
+ * CD TEXT table entry is now a non modal dialog on its own.
+ *
  * Revision 1.4  2000/04/23 09:07:08  andreasm
  * * Fixed most problems marked with '//llanero'.
  * * Added audio CD edit menus to MDIWindow.
@@ -48,7 +58,9 @@
 #ifndef __SAMPLE_DISPLAY_H
 #define __SAMPLE_DISPLAY_H
 
-#include <gtk--.h>
+#include <gtkmm.h>
+#include <gdkmm.h>
+#include <pangomm.h>
 #include <gtk/gtk.h>
 
 #include "TrackManager.h"
@@ -63,22 +75,20 @@ private:
 
   Gtk::Adjustment *adjustment_;
 
-  Gdk_Pixmap pixmap_;
-  Gdk_Pixmap trackMarkerPixmap_;
-  Gdk_Pixmap indexMarkerPixmap_;
-  Gdk_Pixmap trackMarkerSelectedPixmap_;
-  Gdk_Pixmap indexMarkerSelectedPixmap_;
-  Gdk_Pixmap trackExtendPixmap_;
-  Gdk_Pixmap indexExtendPixmap_;
+  Glib::RefPtr<Gdk::Pixmap> pixmap_;
+  Glib::RefPtr<Gdk::Pixmap> trackMarkerPixmap_;
+  Glib::RefPtr<Gdk::Pixmap> indexMarkerPixmap_;
+  Glib::RefPtr<Gdk::Pixmap> trackMarkerSelectedPixmap_;
+  Glib::RefPtr<Gdk::Pixmap> indexMarkerSelectedPixmap_;
+  Glib::RefPtr<Gdk::Pixmap> trackExtendPixmap_;
+  Glib::RefPtr<Gdk::Pixmap> indexExtendPixmap_;
 
-  Gdk_GC drawGc_;
-  Gdk_Color sampleColor_;
-  Gdk_Color middleLineColor_;
-  Gdk_Color cursorColor_;
-  Gdk_Color markerColor_;
-  Gdk_Color selectionBackgroundColor_;
-
-  Gdk_Font timeTickFont_;
+  Glib::RefPtr<Gdk::GC> drawGc_;
+  Gdk::Color sampleColor_;
+  Gdk::Color middleLineColor_;
+  Gdk::Color cursorColor_;
+  Gdk::Color markerColor_;
+  Gdk::Color selectionBackgroundColor_;
 
   gint width_;
   gint height_;
@@ -93,7 +103,6 @@ private:
   gint trackLineHeight_;
   gint trackLineY_;
   gint trackMarkerWidth_;
-  Gdk_Font trackMarkerFont_;
   const TrackManager::Entry *pickedTrackMarker_;
 
   gint chanSep_;
@@ -140,15 +149,13 @@ private:
   void updateSamples();
   void drawCursor(gint);
   void undrawCursor();
-  void getColor(const char *, Gdk_Color *);
+  void getColor(const char *, Gdk::Color *);
   unsigned long pixel2sample(gint x);
   gint sample2pixel(unsigned long);
   void drawMarker();
   void removeMarker();
   void drawTimeTick(gint x, gint y, unsigned long sample);
-  gint timeTickWidth();
   void drawTimeLine();
-  gint trackMarkerWidth();
   void drawTrackMarker(int mode, gint x, int trackNr, int indexNr,
 		       int selected, int extend);
   void drawTrackLine();
@@ -180,13 +187,13 @@ public:
   SigC::Signal2<void, unsigned long, unsigned long> viewModified;
   
 protected:
-  int handle_configure_event (GdkEventConfigure *);
-  int handle_expose_event (GdkEventExpose *event);
-  int handle_motion_notify_event (GdkEventMotion *event);
-  int handleButtonPressEvent(GdkEventButton*);
-  int handleButtonReleaseEvent(GdkEventButton*);
-  int handleEnterEvent(GdkEventCrossing*);
-  int handleLeaveEvent(GdkEventCrossing*);
+  bool handle_configure_event (GdkEventConfigure *);
+  bool handle_expose_event (GdkEventExpose *event);
+  bool handle_motion_notify_event (GdkEventMotion *event);
+  bool handleButtonPressEvent(GdkEventButton*);
+  bool handleButtonReleaseEvent(GdkEventButton*);
+  bool handleEnterEvent(GdkEventCrossing*);
+  bool handleLeaveEvent(GdkEventCrossing*);
 };
 
 #endif

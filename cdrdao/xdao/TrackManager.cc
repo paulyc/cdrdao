@@ -18,6 +18,12 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.1.1.1  2003/12/09 05:32:28  denis
+ * Fooya
+ *
+ * Revision 1.1.1.1  2000/02/05 01:40:19  llanero
+ * Uploaded cdrdao 1.1.3 with pre10 patch applied.
+ *
  * Revision 1.2  1999/05/24 18:10:25  mueller
  * Adapted to new reading interface of 'trackdb'.
  *

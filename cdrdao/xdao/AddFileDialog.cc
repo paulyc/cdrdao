@@ -25,28 +25,36 @@
 
 #include "AddFileDialog.h"
 
-#include "TocEdit.h"
-#include "TocEditView.h"
 #include "guiUpdate.h"
-
+#include "TocEdit.h"
 #include "Sample.h"
 #include "util.h"
 #include "AudioCDProject.h"
 #include "xcdrdao.h"
 
-AddFileDialog::AddFileDialog(AudioCDProject *project) : Gtk::FileSelection("")
+AddFileDialog::AddFileDialog(AudioCDProject *project)
+    : Gtk::FileSelection("")
 {
-  tocEditView_ = NULL;
   active_ = 0;
   project_ = project;
-  
+
+  set_filename("*.wav");
+  show_fileop_buttons();
+  set_select_multiple(false);
+  set_transient_for(*project);
   mode(M_APPEND_TRACK);
 
-  hide_fileop_buttons();
-  ((Gtk::Label *)get_cancel_button()->get_child())->set_text("Close");
+  Gtk::Button* cancel = get_cancel_button();
+  cancel->set_label(Gtk::Stock::CLOSE.id);
+  cancel->set_use_stock(true);
 
-  get_ok_button()->clicked.connect(SigC::slot(this,&AddFileDialog::applyAction));
-  get_cancel_button()->clicked.connect(SigC::slot(this,&AddFileDialog::closeAction));
+  Gtk::Button* ok = get_ok_button();
+  ok->set_label(Gtk::Stock::ADD.id);
+  ok->set_use_stock(true);
+
+  ok->signal_clicked().connect(SigC::slot(*this,&AddFileDialog::applyAction));
+  cancel->signal_clicked().connect(SigC::slot(*this,
+                                              &AddFileDialog::closeAction));
 }
 
 AddFileDialog::~AddFileDialog()
@@ -60,29 +68,25 @@ void AddFileDialog::mode(Mode m)
   switch (mode_) {
   case M_APPEND_TRACK:
     set_title("Append Track");
-    ((Gtk::Label *)get_ok_button()->get_child())->set_text("Append");
     break;
   case M_APPEND_FILE:
     set_title("Append File");
-    ((Gtk::Label *)get_ok_button()->get_child())->set_text("Append");
     break;
   case M_INSERT_FILE:
     set_title("Insert File");
-    ((Gtk::Label *)get_ok_button()->get_child())->set_text("Insert");
     break;
   }
 }
 
-void AddFileDialog::start(TocEditView *tocEditView)
+void AddFileDialog::start()
 {
   if (active_) {
-    get_window().raise();
+    get_window()->raise();
     return;
   }
 
-  active_ = 1;
-
-  update(UPD_ALL, tocEditView);
+  active_ = true;
+  set_filename("*.wav");
   show();
 }
 
@@ -90,37 +94,20 @@ void AddFileDialog::stop()
 {
   if (active_) {
     hide();
-    active_ = 0;
+    active_ = false;
   }
 }
 
-void AddFileDialog::update(unsigned long level, TocEditView *tocEditView)
+void AddFileDialog::update(unsigned long level)
 {
-  if (!active_)
-    return;
-
-  if (tocEditView == NULL) {
-    get_ok_button()->set_sensitive(FALSE);
-    tocEditView_ = NULL;
-    return;
+  if (level & UPD_EDITABLE_STATE) {
+    if (project_->tocEdit()) {
+      get_ok_button()->set_sensitive(project_->tocEdit()->editable());
+    }
   }
-
-  std::string s(tocEditView->tocEdit()->filename());
-  s += " - ";
-  s += APP_NAME;
-  if (tocEditView->tocEdit()->tocDirty())
-    s += "(*)";
-  set_title(s);
-
-  if ((level & UPD_EDITABLE_STATE) || tocEditView_ == NULL) {
-    get_ok_button()->set_sensitive(tocEditView->tocEdit()->editable() ? TRUE : FALSE);
-  }
-
-  tocEditView_ = tocEditView;
 }
 
-
-gint AddFileDialog::delete_event_impl(GdkEventAny*)
+bool AddFileDialog::on_delete_event(GdkEventAny*)
 {
   stop();
   return 1;
@@ -133,65 +120,31 @@ void AddFileDialog::closeAction()
 
 void AddFileDialog::applyAction()
 {
-  if (tocEditView_ == NULL || !tocEditView_->tocEdit()->editable())
+  if (!project_->tocEdit() ||
+      !project_->tocEdit()->editable()) {
     return;
+  }
 
-  std::string str = get_filename();
-  const char *s = stripCwd(str.c_str());
-
+  std::string sel = get_filename();
+  const char *s = stripCwd(sel.c_str());
+  
   if (s != NULL && *s != 0 && s[strlen(s) - 1] != '/') {
     unsigned long pos;
 
     switch (mode_) {
     case M_APPEND_TRACK:
-      switch (tocEditView_->tocEdit()->appendTrack(s)) {
-      case 0:
-	guiUpdate();
-	project_->statusMessage("Appended track with audio data from \"%s\".", s);
-	break;
-      case 1:
-	project_->statusMessage("Cannot open audio file \"%s\".", s);
-	break;
-      case 2:
-	project_->statusMessage("Audio file \"%s\" has wrong format.", s);
-	break;
-      }
+      project_->appendTrack(s);
       break;
 
     case M_APPEND_FILE:
-      switch (tocEditView_->tocEdit()->appendFile(s)) {
-      case 0:
-	guiUpdate();
-	project_->statusMessage("Appended audio data from \"%s\".", s);
+      project_->appendFile(s);
       break;
-      case 1:
-	project_->statusMessage("Cannot open audio file \"%s\".", s);
-	break;
-      case 2:
-	project_->statusMessage("Audio file \"%s\" has wrong format.", s);
-	break;
-      }
-      break;
+
     case M_INSERT_FILE:
-      if (tocEditView_->sampleMarker(&pos)) {
-    unsigned long len;
-	switch (tocEditView_->tocEdit()->insertFile(s, pos, &len)) {
-	case 0:
-	  tocEditView_->sampleSelection(pos, pos + len - 1);
-	  guiUpdate();
-	  project_->statusMessage("Inserted audio data from \"%s\".", s);
-	  break;
-	case 1:
-	  project_->statusMessage("Cannot open audio file \"%s\".", s);
-	  break;
-	case 2:
-	  project_->statusMessage("Audio file \"%s\" has wrong format.", s);
-	  break;
-	}
-      }
+      project_->insertFile(s);
       break;
     }
-
-    guiUpdate();
   }
+
+  set_filename("*.wav");
 }

@@ -136,9 +136,9 @@ void TocEdit::unblockEdit()
   }
 }
 
-int TocEdit::editable() const
+bool TocEdit::editable() const
 {
-  return (editBlocked_ == 0) ? 1 : 0;
+  return (editBlocked_ == 0);
 }
 
 int TocEdit::modifyAllowed() const

@@ -1,0 +1,66 @@
+SUBDIRS = stock
+
+bin_PROGRAMS = gcdmaster
+
+gcdmaster_SOURCES = \
+	AddFileDialog.cc 	\
+	AddSilenceDialog.cc 	\
+	AudioCDChild.cc		\
+	AudioCDProject.cc 	\
+	AudioCDView.cc 		\
+	BlankCDDialog.cc 	\
+	CdDevice.cc 		\
+	CdTextDialog.cc 	\
+	DeviceConfDialog.cc 	\
+	DeviceList.cc 		\
+	DumpCDProject.cc 	\
+	DuplicateCDProject.cc 	\
+	gcdmaster.cc 		\
+	GenericChild.cc 	\
+	GenericView.cc 		\
+	guiUpdate.cc 		\
+	Icons.cc		\
+	MessageBox.cc 		\
+	ProcessMonitor.cc 	\
+	ProgressDialog.cc 	\
+	Project.cc 		\
+	ProjectChooser.cc 	\
+	RecordCDSource.cc 	\
+	RecordCDTarget.cc 	\
+	RecordHDTarget.cc 	\
+	RecordTocDialog.cc 	\
+	RecordTocSource.cc 	\
+	SampleDisplay.cc 	\
+	SampleManager.cc 	\
+	Settings.cc 		\
+	TextEdit.cc 		\
+	TocEdit.cc 		\
+	TocEditView.cc 		\
+	TocInfoDialog.cc 	\
+	TrackDataScrap.cc 	\
+	TrackInfoDialog.cc 	\
+	TrackManager.cc 	\
+	xcdrdao.cc
+
+EXTRA_gcdmaster_SOURCES =	\
+	SoundIF-linux.cc 	\
+	SoundIF-none.cc 	\
+	SoundIF-solaris.cc
+
+gcdmaster_LDADD =					\
+	@sound_if_obj@					\
+	-L$(top_builddir)/dao -ldao			\
+	-L$(top_builddir)/paranoia -lcdda_paranoia	\
+	-L$(top_builddir)/trackdb -ltrackdb		\
+	-L$(top_builddir)/scsilib/export @scsilib_libs@	\
+	@LIBGUIMM2_LIBS@ @GTKMM2_LIBS@
+
+gcdmaster_DEPENDENCIES = @sound_if_obj@
+
+INCLUDES =					\
+	-I$(srcdir)/../trackdb			\
+	-I$(srcdir)/../paranoia			\
+	-I$(srcdir)/../dao			\
+	-DGNOMEICONDIR=\""$(datadir)/pixmaps"\"
+
+AM_CXXFLAGS = @GTKMM2_CFLAGS@ @LIBGUIMM2_CFLAGS@

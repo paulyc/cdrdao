@@ -18,6 +18,12 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.1.1.1  2003/12/09 05:32:28  denis
+ * Fooya
+ *
+ * Revision 1.3  2001/08/18 19:15:43  llanero
+ * added SET_DUPLICATE_ONTHEFLY_WARNING
+ *
  * Revision 1.2  2000/05/01 18:15:00  andreasm
  * Switch to gnome-config settings.
  * Adapted Message Box to Gnome look, unfortunately the Gnome::MessageBox is

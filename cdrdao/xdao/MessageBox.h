@@ -18,6 +18,20 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2004/01/01 21:21:26  denis
+ * Dialog modality fixes
+ *
+ * Revision 1.2  2003/12/09 20:08:04  denis
+ * Now using on_delete_event
+ *
+ * Revision 1.1.1.1  2003/12/09 05:32:28  denis
+ * Fooya
+ *
+ * Revision 1.3  2000/05/01 18:15:00  andreasm
+ * Switch to gnome-config settings.
+ * Adapted Message Box to Gnome look, unfortunately the Gnome::MessageBox is
+ * not implemented in gnome--, yet.
+ *
  * Revision 1.2  2000/02/20 23:34:54  llanero
  * fixed scsilib directory (files mising ?-()
  * ported xdao to 1.1.8 / gnome (MDI) app
@@ -30,17 +44,18 @@
 #ifndef __MESSAGE_BOX_H__
 #define __MESSAGE_BOX_H__
 
-#include <gtk--.h>
+#include <gtkmm.h>
 #include <gtk/gtk.h>
 #include <stdarg.h>
 
-class MessageBoxBase : public Gtk::Dialog {
+class MessageBoxBase : public Gtk::Dialog
+{
 public:
   MessageBoxBase(Gtk::Window *);
   virtual ~MessageBoxBase();
 
   void init(const char *type, const char *titel, int askDontShow, int nButtons,
-	    int defaultButton, char *buttons[], va_list);
+	    int defaultButton, Gtk::BuiltinStockID buttons[], va_list);
 
   int run();
 
@@ -52,27 +67,30 @@ protected:
 
   Gtk::CheckButton *dontShowAgain_;
 
-  Gtk::Button *createButton(const char *name);
-  gint delete_event_impl(GdkEventAny*);
+  Gtk::Button *createButton(const Gtk::BuiltinStockID);
+  bool on_delete_event(GdkEventAny*);
   void buttonAction(int);
 };
 
-class MessageBox : public MessageBoxBase {
+class MessageBox : public MessageBoxBase
+{
 public:
-  MessageBox(Gtk::Window *, const char *titel, int askDontShow, ...);
+  MessageBox(Gtk::Window *, const char *title, int askDontShow, ...);
   ~MessageBox();
 };
 
-class Ask2Box : public MessageBoxBase {
+class Ask2Box : public MessageBoxBase
+{
 public:
-  Ask2Box(Gtk::Window *, const char *titel, int askDontShow,
+  Ask2Box(Gtk::Window *, const char *title, int askDontShow,
 	  int defaultButton, ...);
   ~Ask2Box();
 };
 
-class Ask3Box : public MessageBoxBase {
+class Ask3Box : public MessageBoxBase
+{
 public:
-  Ask3Box(Gtk::Window *, const char *titel, int askDontShow,
+  Ask3Box(Gtk::Window *, const char *title, int askDontShow,
 	  int defaultButton, ...);
   ~Ask3Box();
 };

@@ -18,6 +18,18 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2003/12/12 02:49:36  denis
+ * AudioCDProject and AudioCDView cleanup.
+ *
+ * Revision 1.2  2003/12/09 20:08:04  denis
+ * Now using on_delete_event
+ *
+ * Revision 1.1.1.1  2003/12/09 05:32:28  denis
+ * Fooya
+ *
+ * Revision 1.6  2001/04/17 23:10:30  llanero
+ * More Fixes and cleanup
+ *
  * Revision 1.5  2000/11/05 12:24:41  andreasm
  * Improved handling of TocEdit views. Introduced a new class TocEditView that
  * holds all view data (displayed sample range, selected sample range,
@@ -53,30 +65,29 @@
 #ifndef __ADD_FILE_DIALOG_H__
 #define __ADD_FILE_DIALOG_H__
 
-#include <gtk--.h>
+#include <gtkmm.h>
 
-class TocEditView;
 class AudioCDProject;
 
-class AddFileDialog : public Gtk::FileSelection {
+class AddFileDialog : public Gtk::FileSelection
+{
 public:
   enum Mode { M_APPEND_TRACK, M_APPEND_FILE, M_INSERT_FILE };
 
   AddFileDialog(AudioCDProject *);
   ~AddFileDialog();
 
-  void start(TocEditView *);
+  void start();
   void stop();
 
   void mode(Mode);
-  void update(unsigned long level, TocEditView *);
+  void update(unsigned long level);
 
-  gint delete_event_impl(GdkEventAny*);
+  bool on_delete_event(GdkEventAny*);
 
 private:
   AudioCDProject *project_;
-  TocEditView *tocEditView_;
-  int active_;
+  bool active_;
   Mode mode_;
 
   void closeAction();
