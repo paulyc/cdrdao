@@ -116,4 +116,8 @@ class FormatConverter
 
 extern FormatConverter formatConverter;
 
+// Utility for parsing M3U files
+
+bool parseM3u(const char* m3ufile, std::list<std::string>& list);
+
 #endif
