@@ -353,6 +353,8 @@ void ProgressDialog::update(unsigned long level)
     }
 
     if (totalProgress != actTotalProgress_) {
+      if (actTotalProgress_ == 0)
+        gettimeofday(&time_, 0);
       actTotalProgress_ = totalProgress;
       if (totalProgress <= 1000)
         totalProgress_->set_fraction(totalProgress / 1000.0);
@@ -523,14 +525,9 @@ bool ProgressDialog::time()
       leadTime_ = time;
       leadTimeFilled_ = true;
     }
-//    time_remain = (long)((float)((float)(time + 5 - leadTime_) / actTotalProgress_) * (1000 - actTotalProgress_));
-//    time_remain = (time + 5 - leadTime_) * ((1000 - actTotalProgress_) / actTotalProgress_);
-    // aux1 = (gfloat)actTotalProgress_;
-    // aux2 = (1000 - aux1);
-    // aux3 = (aux2 * (time + 20 - leadTime_)) / aux1;
-    // time_remain = (long)aux3;
 
-    time_remain = (int)((double)time / ((double)actTotalProgress_ / 1000.0));
+    time_remain = (int)
+      (((double)time / ((double)actTotalProgress_ / 1000.0)) + 0.5);
     time_remain -= time;
     if (time_remain < 0) time_remain = 0;
 
