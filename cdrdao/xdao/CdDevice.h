@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2000/04/29 14:46:38  llanero
+ * added the "buffers" option to the Record Dialog.
+ *
  * Revision 1.3  2000/04/28 19:08:10  llanero
  * modified glade files.
  * modified toolbar a little.
@@ -112,6 +115,9 @@ public:
 
   static const char *status2string(Status);
   static const char *deviceType2string(DeviceType);
+
+  static void importSettings();
+  static void exportSettings();
 
   static CdDevice *add(int bus, int id, int lun, const char *vendor,
 		       const char *product);

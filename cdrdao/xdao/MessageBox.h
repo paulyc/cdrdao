@@ -18,6 +18,10 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2000/02/20 23:34:54  llanero
+ * fixed scsilib directory (files mising ?-()
+ * ported xdao to 1.1.8 / gnome (MDI) app
+ *
  * Revision 1.1.1.1  2000/02/05 01:38:46  llanero
  * Uploaded cdrdao 1.1.3 with pre10 patch applied.
  *
@@ -28,7 +32,6 @@
 
 #include <gtk--.h>
 #include <gtk/gtk.h>
-
 #include <stdarg.h>
 
 class MessageBoxBase : public Gtk::Dialog {
@@ -36,7 +39,7 @@ public:
   MessageBoxBase(Gtk::Window *);
   virtual ~MessageBoxBase();
 
-  void init(const char *titel, int askDontShow, int nButtons,
+  void init(const char *type, const char *titel, int askDontShow, int nButtons,
 	    int defaultButton, char *buttons[], va_list);
 
   int run();
@@ -49,6 +52,7 @@ protected:
 
   Gtk::CheckButton *dontShowAgain_;
 
+  Gtk::Button *createButton(const char *name);
   gint delete_event_impl(GdkEventAny*);
   void buttonAction(int);
 };

@@ -18,6 +18,15 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2000/04/23 09:07:08  andreasm
+ * * Fixed most problems marked with '//llanero'.
+ * * Added audio CD edit menus to MDIWindow.
+ * * Moved central storage of TocEdit object to MDIWindow.
+ * * AudioCdChild is now handled like an ordinary non modal dialog, i.e.
+ *   it has a normal 'update' member function now.
+ * * Added CdTextTable modal dialog.
+ * * Old functionality of xcdrdao is now available again.
+ *
  * Revision 1.1.1.1  2000/02/05 01:38:57  llanero
  * Uploaded cdrdao 1.1.3 with pre10 patch applied.
  *
@@ -40,7 +49,6 @@ extern class ExtractProgressDialogPool *EXTRACT_PROGRESS_POOL;
 extern class RecordDialog *RECORD_DIALOG;
 extern class ProcessMonitor *PROCESS_MONITOR;
 extern class RecordProgressDialogPool *RECORD_PROGRESS_POOL;
-extern class Settings *SETTINGS;
 
 void blockProcessMonitorSignals();
 void unblockProcessMonitorSignals();
