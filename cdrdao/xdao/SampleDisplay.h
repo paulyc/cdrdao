@@ -18,6 +18,15 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2000/04/23 09:07:08  andreasm
+ * * Fixed most problems marked with '//llanero'.
+ * * Added audio CD edit menus to MDIWindow.
+ * * Moved central storage of TocEdit object to MDIWindow.
+ * * AudioCdChild is now handled like an ordinary non modal dialog, i.e.
+ *   it has a normal 'update' member function now.
+ * * Added CdTextTable modal dialog.
+ * * Old functionality of xcdrdao is now available again.
+ *
  * Revision 1.3  2000/03/04 01:28:52  llanero
  * SampleDisplay.{cc,h} are fixed now = gtk 1.1.8 compliant.
  *
@@ -168,6 +177,7 @@ public:
   SigC::Signal2<void, unsigned long, unsigned long> selectionSet;
   SigC::Signal3<void, const Track *, int, int> trackMarkSelected;
   SigC::Signal4<void, const Track *, int, int, unsigned long> trackMarkMoved;
+  SigC::Signal2<void, unsigned long, unsigned long> viewModified;
   
 protected:
   int handle_configure_event (GdkEventConfigure *);
