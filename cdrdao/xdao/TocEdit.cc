@@ -17,9 +17,9 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "TocEdit.h"
-
 #include <stddef.h>
+
+#include <sigc++/signal.h>
 
 #include "util.h"
 #include "Toc.h"
@@ -30,6 +30,7 @@
 
 #include "guiUpdate.h"
 #include "SampleManager.h"
+#include "TocEdit.h"
 
 TocEdit::TocEdit(Toc *t, const char *filename)
 {
