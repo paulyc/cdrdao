@@ -745,14 +745,18 @@ bool SampleDisplay::handleLeaveEvent(GdkEventCrossing *event)
 void SampleDisplay::redraw(gint x, gint y, gint width, gint height,
 			   int drawMask)
 {
-  get_window()->draw_drawable(drawGc_, pixmap_, x, y, x, y, width, height);
+  Glib::RefPtr<Gdk::Window> window = get_window();
 
-  if ((drawMask & 0x02) == 0)
-    drawMarker();
+  if (window) {
+    window->draw_drawable(drawGc_, pixmap_, x, y, x, y, width, height);
 
-  if ((drawMask & 0x01) == 0 && cursorDrawn_) {
-    cursorDrawn_ = 0;
-    drawCursor(cursorX_);
+    if ((drawMask & 0x02) == 0)
+      drawMarker();
+
+    if ((drawMask & 0x01) == 0 && cursorDrawn_) {
+      cursorDrawn_ = 0;
+      drawCursor(cursorX_);
+    }
   }
 }
 
