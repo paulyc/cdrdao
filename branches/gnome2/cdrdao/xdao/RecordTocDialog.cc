@@ -17,7 +17,7 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <gnome--.h>
+#include <libgnomeuimm.h>
 
 #include "RecordTocDialog.h"
 #include "RecordTocSource.h"
@@ -28,19 +28,20 @@
 #include "DeviceList.h"
 #include "MessageBox.h"
 #include "TocEdit.h"
+#include "Icons.h"
 
 RecordTocDialog::RecordTocDialog(TocEdit *tocEdit)
 {
   tocEdit_ = tocEdit;
 
-  Gtk::VBox *vbox = new Gtk::VBox;
+  set_title("Record CD");
+
+  Gtk::VBox *vbox = manage(new Gtk::VBox);
   vbox->set_border_width(10);
   vbox->set_spacing(10);
-  vbox->show();
-  Gtk::HBox *hbox = new Gtk::HBox;
+  Gtk::HBox *hbox = manage(new Gtk::HBox);
   hbox->set_spacing(10);
-  hbox->show();
-  vbox->pack_start(*hbox, false, false);
+  vbox->pack_start(*hbox);
   add(*vbox);
 
   active_ = 0;
@@ -50,53 +51,45 @@ RecordTocDialog::RecordTocDialog(TocEdit *tocEdit)
   CDTarget = new RecordCDTarget(this);
   CDTarget->start();
 
-  hbox->pack_start(*TocSource);
-  TocSource->show();
+  hbox->pack_start(*TocSource, Gtk::PACK_SHRINK);
   hbox->pack_start(*CDTarget);
-  CDTarget->show();
 
   hbox = new Gtk::HBox;
   hbox->set_spacing(10);
-  hbox->show();
 
   Gtk::VBox *frameBox = new Gtk::VBox;
-  frameBox->show();
   simulate_rb = new Gtk::RadioButton("Simulate", 0);
   simulateBurn_rb = new Gtk::RadioButton("Simulate and Burn", 0);
   burn_rb = new Gtk::RadioButton("Burn", 0);
 
   frameBox->pack_start(*simulate_rb);
-  simulate_rb->show();
   frameBox->pack_start(*simulateBurn_rb);
-//  simulateBurn_rb->show();
-  simulateBurn_rb->set_group(simulate_rb->group());
+  Gtk::RadioButton::Group rbgroup = simulate_rb->get_group();
+  simulateBurn_rb->set_group(rbgroup);
   frameBox->pack_start(*burn_rb);
-  burn_rb->show();
-  burn_rb->set_group(simulate_rb->group());
+  burn_rb->set_group(rbgroup);
 
   hbox->pack_start(*frameBox, true, false);
 
-  Gnome::Pixmap *pixmap =
-  	manage(new Gnome::Pixmap(Gnome::Pixmap::find_file("gcdmaster/gcdmaster.png")));
-  Gtk::Label *startLabel = manage(new Gtk::Label("      Start      "));
+  Gtk::Image *pixmap = manage(new Gtk::Image(Icons::GCDMASTER,
+                                             Gtk::ICON_SIZE_DIALOG));
+  Gtk::Label *startLabel = manage(new Gtk::Label("Start"));
   Gtk::VBox *startBox = manage(new Gtk::VBox);
   Gtk::Button *button = manage(new Gtk::Button());
   startBox->pack_start(*pixmap, false, false);
   startBox->pack_start(*startLabel, false, false);
 
   button->add(*startBox);
-  button->clicked.connect(slot(this, &RecordTocDialog::startAction));
-  pixmap->show();
-  startLabel->show();
-  startBox->show();
-  button->show();
+  button->signal_clicked().connect(slot(*this, &RecordTocDialog::startAction));
+  hbox->pack_start(*button);
 
-  hbox->pack_start(*button, true, false);
+  Gtk::Button* cancel_but =
+    manage(new Gtk::Button(Gtk::StockID(Gtk::Stock::CANCEL)));
+  cancel_but->signal_clicked().connect(slot(*this, &Gtk::Widget::hide));
+  hbox->pack_start(*cancel_but);
 
-  Gtk::HBox *hbox2 = new Gtk::HBox;
-  hbox2->show();
-  hbox2->pack_start(*hbox, true, false);
-  vbox->pack_start(*hbox2, true, false);
+  vbox->pack_start(*hbox, Gtk::PACK_SHRINK);
+  show_all_children();
 }
 
 RecordTocDialog::~RecordTocDialog()
@@ -107,28 +100,20 @@ RecordTocDialog::~RecordTocDialog()
 
 void RecordTocDialog::start(Gtk::Window *parent)
 {
-  if (active_) {
-    get_window().raise();
+  if (!active_) {
+    active_ = true;
+    TocSource->start();
+    CDTarget->start();
+    update(UPD_ALL);
+    set_transient_for(*parent);
   }
-
-  active_ = 1;
-
-  TocSource->start();
-  CDTarget->start();
-
-  update(UPD_ALL);
-
-  set_transient_for(*parent);
-
-  show();
+  present();
 }
 
 void RecordTocDialog::stop()
 {
-  if (active_) {
-    hide();
-    active_ = 0;
-  }
+  hide();
+  active_ = false;
 
   TocSource->stop();
   CDTarget->stop();
@@ -152,7 +137,7 @@ void RecordTocDialog::update(unsigned long level)
     CDTarget->getDeviceList()->selectOne();
 }
 
-gint RecordTocDialog::delete_event_impl(GdkEventAny*)
+bool RecordTocDialog::on_delete_event(GdkEventAny*)
 {
   stop();
   return 1;
@@ -165,15 +150,20 @@ void RecordTocDialog::startAction()
 
   DeviceList *targetList = CDTarget->getDeviceList();
  
-  if (targetList->selection().empty()) {
-    Gnome::Dialogs::ok(*this, "Please select at least one recorder device");
+  if (!targetList->selection()) {
+    Gtk::MessageDialog md(*this, "Please select at least one recorder device",
+                          Gtk::MESSAGE_INFO);
+    md.run();
     return;
   }
 
   Toc *toc = tocEdit_->toc();
 
   if (toc->nofTracks() == 0 || toc->length().lba() < 300) {
-    Gnome::Dialogs::error(*this, "Current toc contains no tracks or length of at least one track is < 4 seconds");
+    Gtk::MessageDialog md(*this, "Current toc contains no tracks or length "
+                          "of at least one track is < 4 seconds",
+                          Gtk::MESSAGE_ERROR);
+    md.run();
     return;
   }
 
@@ -225,25 +215,28 @@ void RecordTocDialog::startAction()
 
   int buffer = CDTarget->getBuffer();
 
-  Gtk::CList_Helpers::SelectionList targetSelection = targetList->selection();
+  DeviceList* target = CDTarget->getDeviceList();
+  if (target->selection() == NULL) {
+    Gtk::MessageDialog d(*this, "Please select a writer device",
+                         Gtk::MESSAGE_INFO);
+    d.run();
+    return;
+  }
 
-  for (int i = 0; i < targetSelection.size(); i++) {
-    DeviceList::DeviceData *targetData =
-        (DeviceList::DeviceData*)targetSelection[i].get_data();
+  DeviceList::DeviceData* targetData = target->selection();
 
-    if (targetData == NULL)
-      break;
+  CdDevice *writeDevice = CdDevice::find(targetData->bus, targetData->id,
+                                         targetData->lun);
   
-    CdDevice *writeDevice = CdDevice::find(targetData->bus, targetData->id, targetData->lun);
-  
-    if (writeDevice == NULL)
-      break;
-
-    if (writeDevice->recordDao(tocEdit_, simulate, multiSession,
-			     burnSpeed, eject, reload, buffer, overburn) != 0)
-      Gnome::Dialogs::error(*this, "Cannot start disk-at-once recording");
-    else
+  if (writeDevice) {
+    if (!writeDevice->recordDao(*this, tocEdit_, simulate, multiSession,
+                                burnSpeed, eject, reload, buffer, overburn)) {
+      Gtk::MessageDialog d(*this, "Cannot start disk-at-once recording",
+                           Gtk::MESSAGE_ERROR);
+      d.run();
+    } else {
       guiUpdate(UPD_CD_DEVICE_STATUS);
+    }
   }
   stop();
 }

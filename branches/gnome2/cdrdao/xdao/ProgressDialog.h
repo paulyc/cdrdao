@@ -21,7 +21,7 @@
 #define __PROGRESS_DIALOG_H__
 
 #include <sys/time.h>
-#include <gtk--.h>
+#include <gtkmm.h>
 #include <gtk/gtk.h>
 
 class TocEdit;
@@ -29,19 +29,20 @@ class CdDevice;
 
 class ProgressDialogPool;
 
-class ProgressDialog : public Gtk::Dialog {
+class ProgressDialog : public Gtk::Dialog
+{
 public:
   ProgressDialog(ProgressDialogPool *father);
   ~ProgressDialog();
 
-  gint delete_event_impl(GdkEventAny*);
+  bool on_delete_event(GdkEventAny*);
 
 private:
   friend class ProgressDialogPool;
 
   ProgressDialogPool *poolFather_;
 
-  int active_;
+  bool active_;
   CdDevice *device_;
 
   int finished_;
@@ -60,7 +61,7 @@ private:
   bool leadTimeFilled_;
 
   struct timeval time_;
-  gint ProgressDialog::time(gint timer_nr);
+  bool ProgressDialog::time();
 
   Gtk::Button *cancelButton_;
   Gtk::Button *closeButton_;
@@ -86,22 +87,24 @@ private:
 
 };
 
-class ProgressDialogPool {
+class ProgressDialogPool
+{
 public:
   ProgressDialogPool();
   ~ProgressDialogPool();
 
   void update(unsigned long);
   
-  ProgressDialog *start(CdDevice *, TocEdit *,
-      bool showBuffer = true, bool showTrack = true);
-  ProgressDialog *start(CdDevice *, const char *tocFileName,
-      bool showBuffer = true, bool showTrack = true);
-  void stop(ProgressDialog *);
+  ProgressDialog* start(CdDevice*, const char* tocFileName,
+                        bool showBuffer = true, bool showTrack = true);
+  ProgressDialog* start(Gtk::Window& parent_window,
+                        CdDevice*, const char* tocFileName,
+                        bool showBuffer = true, bool showTrack = true);
+  void stop(ProgressDialog*);
 
 private:
-  ProgressDialog *activeDialogs_;
-  ProgressDialog *pool_;
+  ProgressDialog* activeDialogs_;
+  ProgressDialog* pool_;
 };
 
 

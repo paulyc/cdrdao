@@ -18,6 +18,12 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.1.1.1  2003/12/09 05:32:28  denis
+ * Fooya
+ *
+ * Revision 1.1.1.1  2000/02/05 01:38:55  llanero
+ * Uploaded cdrdao 1.1.3 with pre10 patch applied.
+ *
  * Revision 1.1  1999/08/27 18:39:38  mueller
  * Initial revision
  *

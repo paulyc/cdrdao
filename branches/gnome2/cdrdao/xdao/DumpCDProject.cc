@@ -26,101 +26,81 @@
 #include "MessageBox.h"
 #include "Settings.h"
 #include "util.h"
+#include "Icons.h"
+
+#include <gtkmm.h>
 #include <gnome.h>
 
 DumpCDProject::DumpCDProject()
 {
   set_title("Dump CD to disk");
 
-  Gtk::VBox *vbox = new Gtk::VBox;
-  vbox->set_border_width(10);
-  vbox->set_spacing(10);
-  vbox->show();
-  Gtk::HBox *hbox = new Gtk::HBox;
-  hbox->set_spacing(10);
-  hbox->show();
-  vbox->pack_start(*hbox, false, false);
-  set_contents(*vbox);
-
   // menu stuff
-  miSave_->set_sensitive(false);
-  miSaveAs_->set_sensitive(false);
-  miEditTree_->hide();
-  miRecord_->set_sensitive(false);
-  tiSave_->set_sensitive(false);
-  tiRecord_->hide();
+  if (miSave_)     miSave_->set_sensitive(false);
+  if (miSaveAs_)   miSaveAs_->set_sensitive(false);
+  if (miEditTree_) miEditTree_->hide();
+  if (miRecord_)   miRecord_->set_sensitive(false);
 
-  CDSource = new RecordCDSource(this);
+  // Top vbox
+  Gtk::VBox* top_vbox = manage(new Gtk::VBox);
+  top_vbox->set_border_width(10);
+  top_vbox->set_spacing(10);
+
+  CDSource = manage(new RecordCDSource(this));
   CDSource->onTheFlyOption(false);
   CDSource->start();
-  HDTarget = new RecordHDTarget();
+  top_vbox->pack_start(*CDSource);
+
+  HDTarget = manage(new RecordHDTarget());
   HDTarget->start();
+  top_vbox->pack_start(*HDTarget, Gtk::PACK_SHRINK);
 
-  hbox->pack_start(*CDSource);
-  CDSource->show();
-  hbox->pack_start(*HDTarget);
-  HDTarget->show();
+  Gtk::HButtonBox* bbox = manage(new Gtk::HButtonBox);
+  bbox->set_spacing(10);
 
-  hbox = new Gtk::HBox;
-  hbox->set_spacing(10);
-  hbox->show();
-
-  Gtk::VBox *frameBox = new Gtk::VBox;
-  frameBox->show();
-  hbox->pack_start(*frameBox, true, false);
-
-  Gnome::Pixmap *pixmap =
-  	manage(new Gnome::Pixmap(Gnome::Pixmap::find_file("gcdmaster/pixmap_dumpcd.png")));
-  Gtk::Label *startLabel = manage(new Gtk::Label("      Start      "));
+  Gtk::Image *pixmap = manage(new Gtk::Image(Icons::DUMPCD,
+                                             Gtk::ICON_SIZE_DIALOG));
+  Gtk::Label *startLabel = manage(new Gtk::Label("Start"));
   Gtk::VBox *startBox = manage(new Gtk::VBox);
   Gtk::Button *button = manage(new Gtk::Button());
   startBox->pack_start(*pixmap, false, false);
   startBox->pack_start(*startLabel, false, false);
-
   button->add(*startBox);
-  button->clicked.connect(slot(this, &DumpCDProject::start));
-  pixmap->show();
-  startLabel->show();
-  startBox->show();
-  button->show();
+  button->signal_clicked().connect(slot(*this, &DumpCDProject::start));
+  bbox->pack_start(*button, Gtk::PACK_EXPAND_PADDING);
+  top_vbox->pack_start(*bbox, Gtk::PACK_SHRINK);
 
-  hbox->pack_start(*button, true, false);
-
-  Gtk::HBox *hbox2 = new Gtk::HBox;
-  hbox2->show();
-  hbox2->pack_start(*hbox, true, false);
-  vbox->pack_start(*hbox2, true, false);
-
+  frame_.add(*top_vbox);
   install_menu_hints();
-
   guiUpdate(UPD_ALL);
+  show_all();
 }
 
 DumpCDProject::~DumpCDProject()
 {
-  delete CDSource;
-  delete HDTarget;
 }
 
 void DumpCDProject::start()
 {
   DeviceList *sourceList = CDSource->getDeviceList();
 
-  if (sourceList->selection().empty()) {
-    Gnome::Dialogs::ok(*this, "Please select one reader device");
+  if (sourceList->selection() == NULL) {
+    Gtk::MessageDialog d(*this, "Please select one reader device",
+                         Gtk::MESSAGE_INFO);
+    d.run();
     return;
   }
 
-  //Read options
+  // Read options
   int correction = CDSource->getCorrection();
   int subChanReadMode = CDSource->getSubChanReadMode();
 
-  Gtk::string imageName = HDTarget->getFilename();
+  std::string imageName = HDTarget->getFilename();
 
-  if (imageName == "")
-  {
-//FIXME: Allow for a temporary file?
-    Gnome::Dialogs::ok(*this, "Please specify a name for the image");
+  if (imageName == "") {
+    Gtk::MessageDialog d(*this, "Please specify a name for the image",
+                       Gtk::MESSAGE_INFO);
+    d.run();
     return;
   }
 
@@ -131,7 +111,9 @@ void DumpCDProject::start()
     *p = 0;
 
   if (*tmp == 0 || strcmp(tmp, ".") == 0 || strcmp(tmp, "..") == 0) {
-    Gnome::Dialogs::error(*this, "The specified image name is invalid");
+    Gtk::MessageDialog d(*this, "The specified image name is invalid",
+                         Gtk::MESSAGE_ERROR);
+    d.run();
     delete[] tmp;
     return;
   }
@@ -139,11 +121,11 @@ void DumpCDProject::start()
   imageName = tmp;
   delete[] tmp;
 
-  Gtk::string imagePath;
-  Gtk::string binPath;
-  Gtk::string tocPath;
+  std::string imagePath;
+  std::string binPath;
+  std::string tocPath;
   {  
-    Gtk::string path = HDTarget->getPath();
+    std::string path = HDTarget->getPath();
     const char *s = path.c_str();
     long len = strlen(s);
 
@@ -167,7 +149,7 @@ void DumpCDProject::start()
   tocPath += ".toc";
 
   if (access(binPath.c_str(), R_OK) == 0) {
-    Gtk::string s = "The image file \"";
+    std::string s = "The image file \"";
     s += binPath;
     s += "\" already exists.";
 
@@ -180,7 +162,7 @@ void DumpCDProject::start()
 
   if (access(tocPath.c_str(), R_OK) == 0) 
   {
-    Gtk::string s = "The toc-file \"";
+    std::string s = "The toc-file \"";
     s += tocPath;
     s += "\" already exists.";
 
@@ -203,22 +185,25 @@ void DumpCDProject::start()
     }
   }
 
-  DeviceList::DeviceData *sourceData =
-      (DeviceList::DeviceData*) sourceList->selection()[0].get_data();
+  DeviceList::DeviceData *sourceData = sourceList->selection();
 
   if (sourceData == NULL)
     return;
 
-  CdDevice *readDevice = CdDevice::find(sourceData->bus, sourceData->id, sourceData->lun);
+  CdDevice *readDevice = CdDevice::find(sourceData->bus, sourceData->id,
+                                        sourceData->lun);
 
   if (readDevice == NULL)
     return;
 
-  if (readDevice->extractDao(imagePath.c_str(), correction, subChanReadMode)
-      != 0)
-    Gnome::Dialogs::error(*this, "Cannot start reading");
-  else
+  if (readDevice->extractDao(*this, imagePath.c_str(), correction,
+                             subChanReadMode)
+      != 0) {
+    Gtk::MessageDialog d(*this, "Cannot start reading", Gtk::MESSAGE_ERROR);
+    d.run();
+  } else {
     guiUpdate(UPD_CD_DEVICE_STATUS);
+  }
 }
 
 bool DumpCDProject::closeProject()
