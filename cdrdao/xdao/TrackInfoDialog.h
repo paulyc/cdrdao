@@ -20,8 +20,6 @@
 #ifndef __TRACK_INFO_DIALOG_H__
 #define __TRACK_INFO_DIALOG_H__
 
-#include <gtk--.h>
-#include <gtk/gtk.h>
 #include <string>
 
 class Toc;
@@ -38,12 +36,10 @@ public:
 
   void update(unsigned long, TocEditView *);
 
-  void start(TocEditView *);
-  void stop();
+  void setView(TocEditView *);
 
 private:
   TocEditView *tocEditView_;
-  int active_;
 
   int selectedTrack_;
 
@@ -80,7 +76,6 @@ private:
 
   CdTextPage cdTextPages_[8];
   
-  void closeAction();
   void applyAction();
 
   Gtk::VBox *createCdTextPage(int);

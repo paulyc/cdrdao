@@ -17,14 +17,12 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "TrackInfoDialog.h"
-
-#include <gnome--.h>
-
 #include <stdio.h>
 #include <stddef.h>
 #include <string.h>
 #include <ctype.h>
+
+#include <libgnomeuimm.h>
 
 #include "TocEdit.h"
 #include "TocEditView.h"
@@ -33,6 +31,7 @@
 #include "Track.h"
 #include "CdTextItem.h"
 #include "TextEdit.h"
+#include "TrackInfoDialog.h"
 
 TrackInfoDialog::TrackInfoDialog()
 {
@@ -47,7 +46,6 @@ TrackInfoDialog::TrackInfoDialog()
   Gtk::HBox *topBox = new Gtk::HBox;
 
   tocEditView_ = NULL;
-  active_ = 0;
   trackNr_ = 0;
 
   trackNr_ = new Gtk::Label("99");
@@ -59,10 +57,10 @@ TrackInfoDialog::TrackInfoDialog()
 
   copyFlag_ = new Gtk::CheckButton("Copy");
   preEmphasisFlag_ = new Gtk::CheckButton("Pre Emphasis");
-  
-  twoChannelAudio_ = new Gtk::RadioButton("Two Channel Audio");
-  fourChannelAudio_ = new Gtk::RadioButton("Four Channel Audio");
-  fourChannelAudio_->set_group(twoChannelAudio_->group());
+
+  Gtk::RadioButton_Helpers::Group group;
+  twoChannelAudio_ = new Gtk::RadioButton(group, "Two Channel Audio");
+  fourChannelAudio_ = new Gtk::RadioButton(group, "Four Channel Audio");
 
   isrcCodeCountry_ = new TextEdit("XX");
   isrcCodeCountry_->set_max_length(2);
@@ -279,17 +277,17 @@ TrackInfoDialog::TrackInfoDialog()
 
   get_vbox()->show();
 
-  Gtk::HButtonBox *bbox = new Gtk::HButtonBox(GTK_BUTTONBOX_SPREAD);
+  Gtk::HButtonBox *bbox = new Gtk::HButtonBox(Gtk::BUTTONBOX_SPREAD);
 
-  applyButton_ = new Gnome::StockButton(GNOME_STOCK_BUTTON_APPLY);
+  applyButton_ = new Gtk::Button(Gtk::Stock::APPLY);
   bbox->pack_start(*applyButton_);
   applyButton_->show();
-  applyButton_->clicked.connect(slot(this, &TrackInfoDialog::applyAction));
+  applyButton_->signal_clicked().connect(slot(*this, &TrackInfoDialog::applyAction));
 
-  button = new Gnome::StockButton(GNOME_STOCK_BUTTON_CLOSE);
+  button = new Gtk::Button(Gtk::Stock::CLOSE);
   bbox->pack_start(*button);
   button->show();
-  button->clicked.connect(slot(this, &TrackInfoDialog::closeAction));
+  button->signal_clicked().connect(slot(*this, &TrackInfoDialog::hide));
 
   get_action_area()->pack_start(*bbox);
   bbox->show();
@@ -302,27 +300,10 @@ TrackInfoDialog::~TrackInfoDialog()
 {
 }
 
-void TrackInfoDialog::start(TocEditView *view)
+void TrackInfoDialog::setView(TocEditView *view)
 {
-  if (active_) {
-    get_window().raise();
-    return;
-  }
-
-  active_ = 1;
-
-  update(UPD_ALL, view);
-  show();
+  tocEditView_ = view;
 }
-
-void TrackInfoDialog::stop()
-{
-  if (active_) {
-    hide();
-    active_ = 0;
-  }
-}
-
 
 Gtk::VBox *TrackInfoDialog::createCdTextPage(int n)
 {
@@ -352,7 +333,7 @@ Gtk::VBox *TrackInfoDialog::createCdTextPage(int n)
   label = new Gtk::Label("Title:");
   hbox = new Gtk::HBox;
   hbox->pack_end(*label, FALSE);
-  table->attach(*hbox, 0, 1, 0, 1, GTK_FILL);
+  table->attach(*hbox, 0, 1, 0, 1, Gtk::FILL);
   hbox->show();
   label->show();
   table->attach(*(cdTextPages_[n].title), 1, 2, 0, 1);
@@ -361,7 +342,7 @@ Gtk::VBox *TrackInfoDialog::createCdTextPage(int n)
   label = new Gtk::Label("Performer:");
   hbox = new Gtk::HBox;
   hbox->pack_end(*label, FALSE);
-  table->attach(*hbox, 0, 1, 1, 2, GTK_FILL);
+  table->attach(*hbox, 0, 1, 1, 2, Gtk::FILL);
   hbox->show();
   label->show();
   table->attach(*(cdTextPages_[n].performer), 1, 2, 1, 2);
@@ -370,7 +351,7 @@ Gtk::VBox *TrackInfoDialog::createCdTextPage(int n)
   label = new Gtk::Label("Songwriter:");
   hbox = new Gtk::HBox;
   hbox->pack_end(*label, FALSE);
-  table->attach(*hbox, 0, 1, 2, 3, GTK_FILL);
+  table->attach(*hbox, 0, 1, 2, 3, Gtk::FILL);
   hbox->show();
   label->show();
   table->attach(*(cdTextPages_[n].songwriter), 1, 2, 2, 3);
@@ -379,7 +360,7 @@ Gtk::VBox *TrackInfoDialog::createCdTextPage(int n)
   label = new Gtk::Label("Composer:");
   hbox = new Gtk::HBox;
   hbox->pack_end(*label, FALSE);
-  table->attach(*hbox, 0, 1, 3, 4, GTK_FILL);
+  table->attach(*hbox, 0, 1, 3, 4, Gtk::FILL);
   hbox->show();
   label->show();
   table->attach(*(cdTextPages_[n].composer), 1, 2, 3, 4);
@@ -388,7 +369,7 @@ Gtk::VBox *TrackInfoDialog::createCdTextPage(int n)
   label = new Gtk::Label("Arranger:");
   hbox = new Gtk::HBox;
   hbox->pack_end(*label, FALSE);
-  table->attach(*hbox, 0, 1, 4, 5, GTK_FILL);
+  table->attach(*hbox, 0, 1, 4, 5, Gtk::FILL);
   hbox->show();
   label->show();
   table->attach(*(cdTextPages_[n].arranger), 1, 2, 4, 5);
@@ -397,7 +378,7 @@ Gtk::VBox *TrackInfoDialog::createCdTextPage(int n)
   label = new Gtk::Label("Message:");
   hbox = new Gtk::HBox;
   hbox->pack_end(*label, FALSE);
-  table->attach(*hbox, 0, 1, 5, 6, GTK_FILL);
+  table->attach(*hbox, 0, 1, 5, 6, Gtk::FILL);
   hbox->show();
   label->show();
   table->attach(*(cdTextPages_[n].message), 1, 2, 5, 6);
@@ -406,7 +387,7 @@ Gtk::VBox *TrackInfoDialog::createCdTextPage(int n)
   label = new Gtk::Label("ISRC:");
   hbox = new Gtk::HBox;
   hbox->pack_end(*label, FALSE);
-  table->attach(*hbox, 0, 1, 6, 7, GTK_FILL);
+  table->attach(*hbox, 0, 1, 6, 7, Gtk::FILL);
   hbox->show();
   label->show();
   table->attach(*(cdTextPages_[n].isrc), 1, 2, 6, 7);
@@ -418,18 +399,6 @@ Gtk::VBox *TrackInfoDialog::createCdTextPage(int n)
 
   return vbox;
 }
-
-gint TrackInfoDialog::delete_event_impl(GdkEventAny*)
-{
-  stop();
-  return 1;
-}
-
-void TrackInfoDialog::closeAction()
-{
-  stop();
-}
-
 
 void TrackInfoDialog::clear()
 {
@@ -460,11 +429,6 @@ void TrackInfoDialog::clear()
 void TrackInfoDialog::update(unsigned long level, TocEditView *view)
 {
   const Toc *toc;
-
-  if (!active_)
-    return;
-
-  tocEditView_ = view;
 
   if (view == NULL || !view->trackSelection(&selectedTrack_)) {
     selectedTrack_ = 0;
