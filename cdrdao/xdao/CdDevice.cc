@@ -18,6 +18,11 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2000/04/28 19:08:10  llanero
+ * modified glade files.
+ * modified toolbar a little.
+ * extract dialog has more option, and now you can specify the paranoia mode.
+ *
  * Revision 1.2  2000/04/24 12:49:06  andreasm
  * Changed handling or message from remote processes to use the
  * Gtk::Main::input mechanism.
@@ -33,7 +38,7 @@
  *
  */
 
-static char rcsid[] = "$Id: CdDevice.cc,v 1.3 2000-04-28 19:08:10 llanero Exp $";
+static char rcsid[] = "$Id: CdDevice.cc,v 1.4 2000-04-29 14:46:38 llanero Exp $";
 
 #include <sys/time.h>
 #include <sys/types.h>
@@ -468,7 +473,7 @@ void CdDevice::driverOptions(unsigned long o)
 // Return: 0: OK, process succesfully launched
 //         1: error occured
 int CdDevice::recordDao(TocEdit *tocEdit, int simulate, int multiSession,
-			int speed, int eject, int reload)
+			int speed, int eject, int reload, int buffer)
 {
   char *tocFileName;
   char *args[20];
@@ -478,6 +483,7 @@ int CdDevice::recordDao(TocEdit *tocEdit, int simulate, int multiSession,
   char speedbuf[20];
   char *execName;
   const char *s;
+  char bufferbuf[20];
 
   if (status_ != DEV_READY || process_ != NULL)
     return 1;
@@ -538,6 +544,12 @@ int CdDevice::recordDao(TocEdit *tocEdit, int simulate, int multiSession,
     sprintf(drivername, "%s:0x%lx", driverName(driverId_), options_);
     args[n++] = "--driver";
     args[n++] = drivername;
+  }
+
+  if (buffer >= 10) {
+    sprintf(bufferbuf, "%i", buffer);
+    args[n++] = "--buffers";
+    args[n++] = bufferbuf;
   }
 
   args[n++] = tocFileName;

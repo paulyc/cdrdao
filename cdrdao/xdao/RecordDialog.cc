@@ -18,6 +18,10 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2000/04/24 12:49:06  andreasm
+ * Changed handling or message from remote processes to use the
+ * Gtk::Main::input mechanism.
+ *
  * Revision 1.4  2000/04/23 09:07:08  andreasm
  * * Fixed most problems marked with '//llanero'.
  * * Added audio CD edit menus to MDIWindow.
@@ -42,7 +46,7 @@
  *
  */
 
-static char rcsid[] = "$Id: RecordDialog.cc,v 1.5 2000-04-24 12:49:06 andreasm Exp $";
+static char rcsid[] = "$Id: RecordDialog.cc,v 1.6 2000-04-29 14:46:38 llanero Exp $";
 
 #include <stdio.h>
 #include <limits.h>
@@ -81,6 +85,7 @@ RecordDialog::RecordDialog()
   Gtk::VBox *vbox;
   Gtk::Table *table;
   Gtk::Label *label;
+  Gtk::Adjustment *adjustment;
 
   active_ = 0;
   tocEdit_ = NULL;
@@ -181,7 +186,7 @@ RecordDialog::RecordDialog()
   // device settings
   Gtk::Frame *recordOptionsFrame = new Gtk::Frame(string("Record Options"));
 
-  table = new Gtk::Table(3, 2, FALSE);
+  table = new Gtk::Table(3, 3, FALSE);
   table->set_row_spacings(2);
   table->set_col_spacings(30);
   hbox = new Gtk::HBox;
@@ -230,6 +235,20 @@ RecordDialog::RecordDialog()
   hbox->pack_start(*reloadButton_, FALSE);
   reloadButton_->show();
   table->attach(*hbox, 2, 3, 1, 2);
+  hbox->show();
+
+  hbox = new Gtk::HBox;
+  label = new Gtk::Label(string("Recording Buffer: "));
+  hbox->pack_start(*label, FALSE);
+  label->show();
+  adjustment = new Gtk::Adjustment(10, 10, 1000);
+  bufferSpinButton_ = new Gtk::SpinButton(*adjustment);
+  hbox->pack_start(*bufferSpinButton_, FALSE);
+  bufferSpinButton_->show();
+  label = new Gtk::Label(string("audio seconds. (buffer/speed = real buffer time!)"));
+  hbox->pack_start(*label, FALSE);
+  label->show();
+  table->attach(*hbox, 0, 3, 2, 3);
   hbox->show();
   
   
@@ -334,6 +353,7 @@ void RecordDialog::startAction()
   int eject, simulate, speed, multiSession, reload;
   int started = 0;
   Toc *toc;
+  int buffer;
 
   if (tocEdit_ == NULL)
     return;
@@ -387,6 +407,7 @@ void RecordDialog::startAction()
   speed = SPEED_TABLE[speed_].speed;
   eject = ejectButton_->get_active() ? 1 : 0;
   reload = reloadButton_->get_active() ? 1 : 0;
+  buffer = bufferSpinButton_->get_value_as_int();
 
   // If ejecting the CD after recording is requested issue a warning message
   // because buffer under runs may occur for other devices that are recording.
@@ -446,7 +467,7 @@ void RecordDialog::startAction()
 
       if (dev != NULL) {
 	if (dev->recordDao(tocEdit_, simulate, multiSession, speed,
-			   eject, reload) != 0) {
+			   eject, reload, buffer) != 0) {
 	  message(-2, "Cannot start disk-at-once recording.");
 	}
 	else {
