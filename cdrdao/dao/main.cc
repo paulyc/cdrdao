@@ -19,6 +19,10 @@
 
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.11  2000/10/08 16:39:41  andreasm
+ * Remote progress message now always contain the track relative and total
+ * progress and the total number of processed tracks.
+ *
  * Revision 1.10  2000/08/20 19:12:41  andreasm
  * Added info about driver table download.
  *
@@ -139,7 +143,7 @@
  *
  */
 
-static char rcsid[] = "$Id: main.cc,v 1.11 2000-10-08 16:39:41 andreasm Exp $";
+static char rcsid[] = "$Id: main.cc,v 1.12 2000-10-29 08:11:11 andreasm Exp $";
 
 #include <config.h>
 
@@ -1676,6 +1680,8 @@ int main(int argc, char **argv)
   PRGNAME = *argv;
 
   SETTINGS = new Settings;
+
+  SETTINGS->read("/etc/defaults/cdrdao");
 
   if ((homeDir = getenv("HOME")) != NULL) {
     settingsPath = strdup3CC(homeDir, "/.cdrdao", NULL);
