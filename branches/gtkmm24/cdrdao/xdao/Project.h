@@ -42,7 +42,6 @@ protected:
   RecordTocDialog *recordTocDialog_;
 
   void updateWindowTitle();
-  void saveAsProject();
   Gtk::FileSelection *saveFileSelector_;
   void saveFileSelectorOKCB();
   void saveFileSelectorCancelCB();
@@ -57,6 +56,7 @@ public:
   void tocBlockedMsg(const char *);
   virtual bool closeProject() = 0; 
   virtual void saveProject();
+  virtual void saveAsProject();
   virtual void recordToc2CD() = 0;
   int projectNumber();
   TocEdit *tocEdit();
