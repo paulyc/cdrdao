@@ -57,6 +57,8 @@ public:
   bool            appendFiles(std::list<std::string>&);
   bool            insertFiles(std::list<std::string>&);
 
+  PlayStatus      playStatus() { return playStatus_; }
+
   // Controls for app bar
   void            cancelEnable(bool);
   sigc::signal0<void> signalCancelClicked;
