@@ -94,18 +94,18 @@ const char* FormatConverter::convert(const char* fn)
   if (!c)
     return NULL;
 
-  std::string file;
+  std::string* file = new std::string;
   const char* extension;
   if (c->format() == TrackData::WAVE)
       extension = "wav";
   else
       extension = "raw";
 
-  bool exists = tempFileManager.getTempFile(file, fn, extension);
+  bool exists = tempFileManager.getTempFile(*file, fn, extension);
 
   if (!exists) {
     message(2, "Decoding file \"%s\"", fn);
-    int result = c->convert(fn, file.c_str());
+    int result = c->convert(fn, file->c_str());
 
     if (result != 0)
       return NULL;
@@ -113,7 +113,7 @@ const char* FormatConverter::convert(const char* fn)
     tempFiles_.push_front(file);
   }
 
-  return file.c_str();
+  return file->c_str();
 }
 
 int FormatConverter::supportedExtensions(std::list<std::string>& list)
