@@ -19,6 +19,9 @@
 
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.14  2000/11/05 19:20:59  andreasm
+ * Unified progress messages sent from cdrdao to gcdmaster.
+ *
  * Revision 1.13  2000/11/05 12:29:47  andreasm
  * Added BURN Proof support to 'generic-mmc-raw' driver.
  * Added command 'msinfo' that displays multi session information suitable for
@@ -154,7 +157,7 @@
  *
  */
 
-static char rcsid[] = "$Id: main.cc,v 1.14 2000-11-05 19:20:59 andreasm Exp $";
+static char rcsid[] = "$Id: main.cc,v 1.15 2000-11-12 18:47:59 andreasm Exp $";
 
 #include <config.h>
 
@@ -410,7 +413,7 @@ static void importSettings(Command cmd)
     }
   }
 
-  if (cmd == BLANK || cmd == DISK_INFO || cmd == UNLOCK) {
+  if (cmd == BLANK || cmd == DISK_INFO || cmd == MSINFO || cmd == UNLOCK) {
     if ((sval = SETTINGS->getString(SET_WRITE_DRIVER)) != NULL) {
       DRIVER_ID = strdupCC(sval);
     }
@@ -474,7 +477,7 @@ static void exportSettings(Command cmd)
     SETTINGS->set(SET_READ_PARANOIA_MODE, PARANOIA_MODE);
   }
 
-  if (cmd == BLANK || cmd == DISK_INFO || cmd == UNLOCK) {
+  if (cmd == BLANK || cmd == DISK_INFO || cmd == MSINFO || cmd == UNLOCK) {
     if (DRIVER_ID != NULL)
       SETTINGS->set(SET_WRITE_DRIVER, DRIVER_ID);
     
@@ -858,7 +861,7 @@ static CdrDriver *selectDriver(Command cmd, ScsiIf *scsiIf,
 				   &options);
     // if no driver is selected, yet, try to select a read driver for
     // disk-info
-    if (id == NULL && cmd == DISK_INFO)
+    if (id == NULL && (cmd == DISK_INFO || cmd == MSINFO))
       id = CdrDriver::selectDriver(0, scsiIf->vendor(), scsiIf->product(),
 				   &options);
       
@@ -1886,7 +1889,23 @@ int main(int argc, char **argv)
     break;
 
   case MSINFO:
-    exitCode = showMultiSessionInfo(di);
+    switch (showMultiSessionInfo(di)) {
+    case 0:
+      exitCode = 0;
+      break;
+      
+    case 1: // CD-R is not empty and not appendable
+      exitCode = 2;
+      break;
+      
+    case 2: // cannot determine state
+      exitCode = 3;
+      break;
+
+    default: // everthing else is an error
+      exitCode = 1;
+      break;
+    }
     break;
 
   case READ_TOC:
