@@ -74,6 +74,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_datadir}/mime-info/gcdmaster*
 %{_datadir}/mime/packages/gcdmaster.xml
 %{_datadir}/applications/gcdmaster.desktop
+%{_datadir}/application-registry/gcdmaster.applications
 %{_datadir}/pixmaps/gcdmaster*
 %{_mandir}/man1/gcdmaster*
 
