@@ -1,5 +1,5 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.42.2.2 $)dnl
+AC_REVISION($Revision: 1.42.2.3 $)dnl
 
 AC_INIT(cdrdao, 1.1.9)
 
@@ -330,13 +330,9 @@ esac
 
 dnl Sound device selection for xcdrdao
 case "$host" in
-  *-linux-* | *-freebsd[[456]]*)
-	     sound_if_obj=SoundIF-linux.o
+  *-linux-* | *-freebsd[[456]]* | *-solaris*)
+	     sound_if_obj=SoundIF-ao.o
 	     ;;
-
-  *-solaris*)
-	      sound_if_obj=SoundIF-solaris.o
-	      ;;
 
   *)
      sound_if_obj=SoundIF-none.o
@@ -356,8 +352,8 @@ fi
 dnl Check for libao support
 if test "$with_mp3_support" = yes; then
   PKG_CHECK_MODULES(AO, ao >= 0.8, [],
-        [echo "MP3/Ogg support disabled"; with_ogg_support=no;
-        with_mp3_support=no])
+        [echo "Building of gcdmaster disabled"; with_ogg_support=no;
+        with_mp3_support=no; en_xdao=no])
 fi
 
 if test "$with_ogg_support" = yes; then
