@@ -37,7 +37,7 @@
 AddFileDialog::AddFileDialog(AudioCDProject *project)
     : Gtk::FileSelection("")
 {
-  active_ = 0;
+  active_ = false;
   project_ = project;
 
   set_filename("*.wav");
