@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.9  2000/05/17 21:15:55  llanero
+ * Beginings of Record Generic Dialog
+ *
  * Revision 1.8  2000/05/01 18:15:00  andreasm
  * Switch to gnome-config settings.
  * Adapted Message Box to Gnome look, unfortunately the Gnome::MessageBox is
@@ -178,7 +181,7 @@ static RETSIGTYPE signalHandler(int sig)
 //llanero int main (int argc, char **argv)
 int main (int argc, char* argv[])
 {
-  Gnome::Main application("StillNoName", "0.0", argc, argv);
+  Gnome::Main application("GnomeCDMaster", "0.0", argc, argv);
    
   Gtk::ButtonBox::set_child_size_default(50, 10);
 
