@@ -223,8 +223,8 @@ void ProgressDialog::closeAction()
     switch (device_->action()) {
     case CdDevice::A_RECORD:
         {
-        Ask2Box msg(this, "Abort Recording", 0, 2,
-		  "Abort recording process?", NULL);
+        Ask2Box msg(this, "Abort Recording", false,
+		  "Abort recording process?", "This will leave the disc in a unreadable state.");
 
   	  if (msg.run() == 1) {
           if (device_ != NULL) 
@@ -237,8 +237,8 @@ void ProgressDialog::closeAction()
 
     case CdDevice::A_READ:
         {        
-        Ask2Box msg(this, "Abort Reading", 0, 2,
-		    "Abort reading process?", NULL);
+        Ask2Box msg(this, "Abort Reading", false,
+		    "Abort reading process?");
 
         if (msg.run() == 1) {
           if (device_ != NULL) 
@@ -250,7 +250,7 @@ void ProgressDialog::closeAction()
 		break;
     case CdDevice::A_DUPLICATE:
         {        
-        Ask2Box msg(this, "Abort Process", 0, 2,
+        Ask2Box msg(this, "Abort Process", false,
 		    "Abort duplicating process?", NULL);
 
         if (msg.run() == 1) {
@@ -263,8 +263,8 @@ void ProgressDialog::closeAction()
 		break;
     case CdDevice::A_BLANK:
         {        
-        Ask2Box msg(this, "Abort Process", 0, 2,
-		    "Abort blanking process?", NULL);
+        Ask2Box msg(this, "Abort Process", false,
+		    "Abort blanking process?", "This can cause your burner to hang");
 
         if (msg.run() == 1) {
           if (device_ != NULL) 
