@@ -17,7 +17,7 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <gnome--.h>
+#include <libgnomeuimm.h>
 
 #include "RecordTocDialog.h"
 #include "RecordTocSource.h"
@@ -46,9 +46,9 @@ RecordTocDialog::RecordTocDialog(TocEdit *tocEdit)
   active_ = 0;
 
   TocSource = new RecordTocSource(tocEdit_);
-  TocSource->start();
+  TocSource->show();
   CDTarget = new RecordCDTarget(this);
-  CDTarget->start();
+  CDTarget->show();
 
   hbox->pack_start(*TocSource);
   TocSource->show();
@@ -61,23 +61,21 @@ RecordTocDialog::RecordTocDialog(TocEdit *tocEdit)
 
   Gtk::VBox *frameBox = new Gtk::VBox;
   frameBox->show();
-  simulate_rb = new Gtk::RadioButton("Simulate", 0);
-  simulateBurn_rb = new Gtk::RadioButton("Simulate and Burn", 0);
-  burn_rb = new Gtk::RadioButton("Burn", 0);
+  Gtk::RadioButton_Helpers::Group group;
+  simulate_rb = new Gtk::RadioButton(group, "Simulate", 0);
+  simulateBurn_rb = new Gtk::RadioButton(group, "Simulate and Burn", 0);
+  burn_rb = new Gtk::RadioButton(group, "Burn", 0);
 
   frameBox->pack_start(*simulate_rb);
   simulate_rb->show();
   frameBox->pack_start(*simulateBurn_rb);
 //  simulateBurn_rb->show();
-  simulateBurn_rb->set_group(simulate_rb->group());
   frameBox->pack_start(*burn_rb);
   burn_rb->show();
-  burn_rb->set_group(simulate_rb->group());
 
   hbox->pack_start(*frameBox, true, false);
 
-  Gnome::Pixmap *pixmap =
-  	manage(new Gnome::Pixmap(Gnome::Pixmap::find_file("gcdmaster/gcdmaster.png")));
+  Gtk::Image *pixmap = new Gtk::Image(PIXMAPS_DIR "/gcdmaster.png");
   Gtk::Label *startLabel = manage(new Gtk::Label("      Start      "));
   Gtk::VBox *startBox = manage(new Gtk::VBox);
   Gtk::Button *button = manage(new Gtk::Button());
@@ -85,7 +83,7 @@ RecordTocDialog::RecordTocDialog(TocEdit *tocEdit)
   startBox->pack_start(*startLabel, false, false);
 
   button->add(*startBox);
-  button->clicked.connect(slot(this, &RecordTocDialog::startAction));
+  button->signal_clicked().connect(slot(*this, &RecordTocDialog::startAction));
   pixmap->show();
   startLabel->show();
   startBox->show();
@@ -97,6 +95,8 @@ RecordTocDialog::RecordTocDialog(TocEdit *tocEdit)
   hbox2->show();
   hbox2->pack_start(*hbox, true, false);
   vbox->pack_start(*hbox2, true, false);
+
+  CdDevice::signal_statusChanged.connect(slot(*this, &RecordTocDialog::devicesStatusChanged));
 }
 
 RecordTocDialog::~RecordTocDialog()
@@ -107,14 +107,10 @@ RecordTocDialog::~RecordTocDialog()
 
 void RecordTocDialog::start(Gtk::Window *parent)
 {
-  if (active_) {
-    get_window().raise();
-  }
-
   active_ = 1;
 
-  TocSource->start();
-  CDTarget->start();
+  TocSource->show();
+  CDTarget->show();
 
   update(UPD_ALL);
 
@@ -129,9 +125,6 @@ void RecordTocDialog::stop()
     hide();
     active_ = 0;
   }
-
-  TocSource->stop();
-  CDTarget->stop();
 }
 
 void RecordTocDialog::update(unsigned long level)
@@ -146,10 +139,11 @@ void RecordTocDialog::update(unsigned long level)
   set_title(title);
 
   TocSource->update(level);
-  CDTarget->update(level);
+}
 
-  if (level & UPD_CD_DEVICE_STATUS)
-    CDTarget->getDeviceList()->selectOne();
+void RecordTocDialog::devicesStatusChanged()
+{
+  CDTarget->getDeviceList()->selectOne();
 }
 
 gint RecordTocDialog::delete_event_impl(GdkEventAny*)
@@ -165,15 +159,15 @@ void RecordTocDialog::startAction()
 
   DeviceList *targetList = CDTarget->getDeviceList();
  
-  if (targetList->selection().empty()) {
-    Gnome::Dialogs::ok(*this, "Please select at least one recorder device");
+  if (targetList->selectionEmpty()) {
+    Gtk::MessageDialog(*this, "Please select at least one recorder device", Gtk::MESSAGE_INFO).run();
     return;
   }
 
   Toc *toc = tocEdit_->toc();
 
   if (toc->nofTracks() == 0 || toc->length().lba() < 300) {
-    Gnome::Dialogs::error(*this, "Current toc contains no tracks or length of at least one track is < 4 seconds");
+    Gtk::MessageDialog(*this, "Current toc contains no tracks or length of at least one track is < 4 seconds", Gtk::MESSAGE_ERROR).run();
     return;
   }
 
@@ -182,22 +176,32 @@ void RecordTocDialog::startAction()
       break;
     case 1: // warning
       {
-        Ask2Box msg(this, "CD-TEXT Inconsistency", 0, 2,
-	  	  "Inconsistencies were detected in the defined CD-TEXT data",
-		    "which may produce undefined results. See the console",
-		    "output for more details.",
-		    "",
-		    "Do you want to proceed anyway?", NULL);
+        Glib::ustring s = "Inconsistencies were detected in the defined CD-TEXT data ";
+        s += "which may produce undefined results. See the console ";
+        s += "output for more details.";
 
-        if (msg.run() != 1)
-  	return;
+        Ask2Box msg(this, "CD-TEXT Inconsistency", false,
+		    "Ignore CD-TEXT inconsistency?", s);
+
+	    switch (msg.run())
+        {
+          case Gtk::RESPONSE_YES:
+            break;
+          case Gtk::RESPONSE_NO:
+            return;
+            break;
+          default:
+            cout << "invalid response" << endl;
+            return;
+            break;
+        }
       }
       break;
     default: // error
       {
-        MessageBox msg(this, "CD-TEXT Error", 0, 
+        ErrorMessageBox msg(this, "CD-TEXT Error", false, 
 	  	     "The defined CD-TEXT data is erroneous or incomplete.",
-		       "See the console output for more details.", NULL);
+		       "See the console output for more details.");
         msg.run();
         return;
       }
@@ -224,26 +228,18 @@ void RecordTocDialog::startAction()
 
   int buffer = CDTarget->getBuffer();
 
-  Gtk::CList_Helpers::SelectionList targetSelection = targetList->selection();
+  std::list<CdDevice *> devices = targetList->getAllSelected();
 
-  for (int i = 0; i < targetSelection.size(); i++) {
-    DeviceList::DeviceData *targetData =
-        (DeviceList::DeviceData*)targetSelection[i].get_data();
-
-    if (targetData == NULL)
-      break;
-  
-    CdDevice *writeDevice = CdDevice::find(targetData->bus, targetData->id, targetData->lun);
-  
-    if (writeDevice == NULL)
-      break;
+  for (std::list<CdDevice *>::iterator i = devices.begin();
+         i != devices.end(); i++)
+  {
+    CdDevice *writeDevice = *i;
 
     if (writeDevice->recordDao(tocEdit_, simulate, multiSession,
 			     burnSpeed, eject, reload, buffer) != 0)
-      Gnome::Dialogs::error(*this, "Cannot start disk-at-once recording");
-    else
-      guiUpdate(UPD_CD_DEVICE_STATUS);
+      Gtk::MessageDialog(*this, "Cannot start disk-at-once recording", Gtk::MESSAGE_ERROR).run();
   }
+
   stop();
 }
 
