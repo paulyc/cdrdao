@@ -17,6 +17,8 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include <libgnomeuimm.h>
+
 #include "xcdrdao.h"
 #include "gcdmaster.h"
 #include "guiUpdate.h"
@@ -44,35 +46,33 @@ ProjectChooser::ProjectChooser()
 
   Gtk::Table *table = manage(new Gtk::Table(7, 3, FALSE));
   Gtk::HBox *hbox;
-  Gnome::Pixmap *pixmap;
+  Gtk::Image *pixmap;
   Gtk::Label *label;
-  Gdk_Font font;
 
 //  table->set_col_spacings(20);
   table->set_border_width(40);
   
   Gtk::Button *openButton = manage(new Gtk::Button());
-  openButton->set_relief(BUTTONS_RELIEF);
+  openButton->set_relief(Gtk::RELIEF_NORMAL);
   hbox = manage(new Gtk::HBox);
-  pixmap = manage(new Gnome::Pixmap(Gnome::Pixmap::find_file("gcdmaster/pixmap_open.png")));
+  pixmap = manage(new Gtk::Image(PIXMAPS_DIR "/pixmap_open.png"));
   pixmap->show();
   hbox->pack_start(*pixmap, FALSE, FALSE, ICON_PADDING);
   // NOTE: Extra spaces are just to make it nicer.
   label = manage(new Gtk::Label("Open existing project                      "));
-//FIXME  font = label->get_font();
   label->show();
   hbox->pack_start(*label, FALSE, FALSE, LABEL_PADDING);
   hbox->show();
   openButton->add(*hbox);
   openButton->show();
-  openButton->clicked.connect(bind(slot(gcdmaster, &GCDMaster::openProject), this));
+  openButton->signal_clicked().connect(signal_openProject.slot());
   table->attach(*openButton, 1, 2, 0, 1);
 //  pack_start(*openButton, FALSE, TRUE);
 
   Gtk::Button *audioCDButton = manage(new Gtk::Button());
-  audioCDButton->set_relief(BUTTONS_RELIEF);
+  audioCDButton->set_relief(Gtk::RELIEF_NORMAL);
   hbox = manage(new Gtk::HBox);
-  pixmap = manage(new Gnome::Pixmap(Gnome::Pixmap::find_file("gcdmaster/pixmap_audiocd.png")));
+  pixmap = manage(new Gtk::Image(PIXMAPS_DIR "/pixmap_audiocd.png"));
   pixmap->show();
   hbox->pack_start(*pixmap, FALSE, FALSE, ICON_PADDING);
   label = manage(new Gtk::Label("New Audio CD project"));
@@ -81,8 +81,8 @@ ProjectChooser::ProjectChooser()
   hbox->show();
   audioCDButton->add(*hbox);
   audioCDButton->show();
-  audioCDButton->clicked.connect(bind(slot(gcdmaster, &GCDMaster::newAudioCDProject2), this));
-  table->attach(*audioCDButton, 1, 2, 1, 2, GTK_FILL);
+  audioCDButton->signal_clicked().connect(signal_newAudioProject.slot());
+  table->attach(*audioCDButton, 1, 2, 1, 2, Gtk::FILL);
 //  pack_start(*audioCDButton, FALSE, TRUE);
 
 /*
@@ -119,9 +119,9 @@ mixedCDButton->set_sensitive(false);
 //  pack_start(*mixedCDButton, TRUE, TRUE);
 */
   Gtk::Button *copyCDButton = manage(new Gtk::Button());
-  copyCDButton->set_relief(BUTTONS_RELIEF);
+  copyCDButton->set_relief(Gtk::RELIEF_NORMAL);
   hbox = manage(new Gtk::HBox);
-  pixmap = manage(new Gnome::Pixmap(Gnome::Pixmap::find_file("gcdmaster/pixmap_copycd.png")));
+  pixmap = manage(new Gtk::Image(PIXMAPS_DIR "/pixmap_copycd.png"));
   pixmap->show();
   hbox->pack_start(*pixmap, FALSE, FALSE, ICON_PADDING);
   label = manage(new Gtk::Label("Duplicate CD"));
@@ -130,14 +130,14 @@ mixedCDButton->set_sensitive(false);
   hbox->show();
   copyCDButton->add(*hbox);
   copyCDButton->show();
-  copyCDButton->clicked.connect(bind(slot(gcdmaster, &GCDMaster::newDuplicateCDProject), this));
-  table->attach(*copyCDButton, 1, 2, 4, 5, GTK_FILL);
+  copyCDButton->signal_clicked().connect(signal_newDuplicateProject.slot());
+  table->attach(*copyCDButton, 1, 2, 4, 5, Gtk::FILL);
 //  pack_start(*copyCDButton, TRUE, TRUE);
 
   Gtk::Button *dumpCDButton = manage(new Gtk::Button());
-  dumpCDButton->set_relief(BUTTONS_RELIEF);
+  dumpCDButton->set_relief(Gtk::RELIEF_NORMAL);
   hbox = manage(new Gtk::HBox);
-  pixmap = manage(new Gnome::Pixmap(Gnome::Pixmap::find_file("gcdmaster/pixmap_dumpcd.png")));
+  pixmap = manage(new Gtk::Image(PIXMAPS_DIR "/pixmap_dumpcd.png"));
   pixmap->show();
   hbox->pack_start(*pixmap, FALSE, FALSE, ICON_PADDING);
   label = manage(new Gtk::Label("Copy CD to disk"));
@@ -147,8 +147,8 @@ mixedCDButton->set_sensitive(false);
   hbox->show();
   dumpCDButton->add(*hbox);
   dumpCDButton->show();
-  dumpCDButton->clicked.connect(bind(slot(gcdmaster, &GCDMaster::newDumpCDProject), this));
-  table->attach(*dumpCDButton, 1, 2, 5, 6, GTK_FILL);
+  dumpCDButton->signal_clicked().connect(signal_newDumpProject.slot());
+  table->attach(*dumpCDButton, 1, 2, 5, 6, Gtk::FILL);
 //  pack_start(*dumpCDButton, TRUE, TRUE);
 
 /*
@@ -213,10 +213,3 @@ void AudioCDView::drag_data_received_cb(GdkDragContext *context,
   }
 }
 */
-
-gint ProjectChooser::delete_event_impl(GdkEventAny* e)
-{
-  gcdmaster->closeChooser(this);
-  return true;  // Do not close window, we will delete it from gcdmaster
-}
-

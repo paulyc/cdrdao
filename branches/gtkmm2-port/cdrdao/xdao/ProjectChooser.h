@@ -20,19 +20,17 @@
 #ifndef __PROJECT_CHOOSER_H__
 #define __PROJECT_CHOOSER_H__
 
-#include <gtk--.h>
-
-class GCDMaster;
-
 class ProjectChooser : public Gtk::Window
 {
 public:
   ProjectChooser();
 
-  virtual int delete_event_impl(GdkEventAny *event);
+  SigC::Signal0<void> signal_openProject;
+  SigC::Signal0<void> signal_newAudioProject;
+  SigC::Signal0<void> signal_newDuplicateProject;
+  SigC::Signal0<void> signal_newDumpProject;
 
 private:
-
 // FIXME: When we receive a file:
 //		if it is wav, mp3, ... open an AudioCD project
 //		else open a DataCD.
