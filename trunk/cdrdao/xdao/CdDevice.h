@@ -18,6 +18,11 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2000/04/28 19:08:10  llanero
+ * modified glade files.
+ * modified toolbar a little.
+ * extract dialog has more option, and now you can specify the paranoia mode.
+ *
  * Revision 1.2  2000/04/24 12:49:06  andreasm
  * Changed handling or message from remote processes to use the
  * Gtk::Main::input mechanism.
@@ -89,7 +94,7 @@ public:
   void manuallyConfigured(int);
 
   int recordDao(TocEdit *, int simulate, int multiSession, int speed,
-		int eject, int reload);
+		int eject, int reload, int buffer);
   void abortDaoRecording();
 
   int extractDao(char *tocFileName, int correction);
