@@ -20,9 +20,6 @@
 #ifndef __RECORD_CD_TARGET_H
 #define __RECORD_CD_TARGET_H
 
-#include <gtk--.h>
-#include <gtk/gtk.h>
-
 class TocEdit;
 class CdDevice;
 class DeviceList;
@@ -32,10 +29,7 @@ public:
   RecordCDTarget(Gtk::Window *);
   ~RecordCDTarget();
   
-  void start();
-  void stop();
-
-  void update(unsigned long level);
+  Gtk::VBox *moreOptions();
 
   DeviceList *getDeviceList() { return DEVICES;}
   int getMultisession();
@@ -47,16 +41,13 @@ public:
   int checkReloadWarning(Gtk::Window *);
   int getBuffer();
 
-  void cancelAction();
 private:
-  int active_;
-
   DeviceList *DEVICES;
 
   int speed_;
 
   Gtk::Window *parent_;
-  Gnome::Dialog *moreOptionsDialog_;
+  Gtk::VBox *moreTargetOptions_;
 
   Gtk::CheckButton *closeSessionButton_;
   Gtk::CheckButton *ejectButton_;
@@ -70,8 +61,6 @@ private:
   Gtk::Label *bufferRAMLabel_;
 
   void updateBufferRAMLabel();
-
-  void moreOptions();
 
   void speedButtonChanged();
   void speedChanged();
