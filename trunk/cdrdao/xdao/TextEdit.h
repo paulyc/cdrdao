@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.1.1.1  2000/02/05 01:38:51  llanero
+ * Uploaded cdrdao 1.1.3 with pre10 patch applied.
+ *
  * Revision 1.1  1999/08/19 20:28:12  mueller
  * Initial revision
  *
@@ -29,7 +32,7 @@
 #include <gtk--.h>
 #include <gtk/gtk.h>
 
-class TextEdit : public Gtk_Entry {
+class TextEdit : public Gtk::Entry {
 public:
   TextEdit(const char *sample);
   ~TextEdit();

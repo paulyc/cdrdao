@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.1.1.1  2000/02/05 01:38:46  llanero
+ * Uploaded cdrdao 1.1.3 with pre10 patch applied.
+ *
  * Revision 1.1  1999/09/07 11:17:32  mueller
  * Initial revision
  *
@@ -31,7 +34,7 @@
 
 class TocEdit;
 
-class AddFileDialog : public Gtk_FileSelection {
+class AddFileDialog : public Gtk::FileSelection {
 public:
   enum Mode { M_APPEND_TRACK, M_APPEND_FILE, M_INSERT_FILE };
 

@@ -18,12 +18,15 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.1.1.1  2000/02/05 01:38:58  llanero
+ * Uploaded cdrdao 1.1.3 with pre10 patch applied.
+ *
  * Revision 1.1  1999/09/07 11:17:32  mueller
  * Initial revision
  *
  */
 
-static char rcsid[] = "$Id: AddFileDialog.cc,v 1.1.1.1 2000-02-05 01:38:58 llanero Exp $";
+static char rcsid[] = "$Id: AddFileDialog.cc,v 1.2 2000-02-20 23:34:53 llanero Exp $";
 
 #include <stdio.h>
 #include <limits.h>
@@ -39,7 +42,7 @@ static char rcsid[] = "$Id: AddFileDialog.cc,v 1.1.1.1 2000-02-05 01:38:58 llane
 #include "util.h"
 
 
-AddFileDialog::AddFileDialog() : Gtk_FileSelection(string(""))
+AddFileDialog::AddFileDialog() : Gtk::FileSelection(string(""))
 {
   tocEdit_ = NULL;
   active_ = 0;
@@ -48,8 +51,8 @@ AddFileDialog::AddFileDialog() : Gtk_FileSelection(string(""))
 
   hide_fileop_buttons();
 
-  connect_to_method(get_ok_button()->clicked, this, &AddFileDialog::applyAction);
-  connect_to_method(get_cancel_button()->clicked, this, &AddFileDialog::cancelAction);
+  get_ok_button()->clicked.connect(SigC::slot(this,&AddFileDialog::applyAction));
+  get_cancel_button()->clicked.connect(SigC::slot(this,&AddFileDialog::cancelAction));
 }
 
 AddFileDialog::~AddFileDialog()

@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.1.1.1  2000/02/05 01:38:46  llanero
+ * Uploaded cdrdao 1.1.3 with pre10 patch applied.
+ *
  * Revision 1.5  1999/05/24 18:10:25  mueller
  * Adapted to new reading interface of 'trackdb'.
  *
@@ -41,6 +44,8 @@
 #include <gtk--.h>
 #include <gtk/gtk.h>
 
+#include <gnome--.h>
+
 #include "Toc.h"
 
 class SampleDisplay;
@@ -53,7 +58,8 @@ class Sample;
 class TrackData;
 class TocEdit;
 
-class MainWindow : public Gtk_Window
+class MainWindow : public Gtk::Window
+//llanero class AudioChild : public Gnome::MDIGenericChild
 {
 private:
   enum Mode { ZOOM, SELECT };
@@ -62,10 +68,11 @@ private:
 
   Mode mode_;
 
-  Gtk_VBox vbox_;
+  Gtk::VBox vbox_;
 
-  Gtk_ItemFactory *itemFactory_;
-  Gtk_ObjectHandle<Gtk_MenuBar> menuBar_;
+  Gtk::ItemFactory *itemFactory_;
+//llanero  Gtk_ObjectHandle<Gtk_MenuBar> menuBar_;
+  Gtk::MenuBar menuBar_;
 
   TocReader tocReader;
 
@@ -79,21 +86,21 @@ private:
 
 
   SampleDisplay *sampleDisplay_;
-  Gtk_Statusbar *statusBar_;
+  Gtk::Statusbar *statusBar_;
   guint lastMessageId_;
 
-  Gtk_FileSelection *fileSelector_;
-  Connection fileSelectorC1_;
-  Connection fileSelectorC2_;
+  Gtk::FileSelection *fileSelector_;
+  Gtk::Connection fileSelectorC1_;
+  Gtk::Connection fileSelectorC2_;
 
-  Gtk_RadioButton *zoomButton_;
-  Gtk_RadioButton *selectButton_;
-  Gtk_Button *playButton_;
+  Gtk::RadioButton *zoomButton_;
+  Gtk::RadioButton *selectButton_;
+  Gtk::Button *playButton_;
   
-  Gtk_Entry *markerPos_;
-  Gtk_Entry *cursorPos_;
-  Gtk_Entry *selectionStartPos_;
-  Gtk_Entry *selectionEndPos_;
+  Gtk::Entry *markerPos_;
+  Gtk::Entry *cursorPos_;
+  Gtk::Entry *selectionStartPos_;
+  Gtk::Entry *selectionEndPos_;
 
 
   void createMenuBar();

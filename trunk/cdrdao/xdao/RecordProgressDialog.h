@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.1.1.1  2000/02/05 01:38:46  llanero
+ * Uploaded cdrdao 1.1.3 with pre10 patch applied.
+ *
  */
 
 #ifndef __RECORD_PROGRESS_DIALOG_H__
@@ -31,7 +34,7 @@ class CdDevice;
 
 class RecordProgressDialogPool;
 
-class RecordProgressDialog : public Gtk_Dialog {
+class RecordProgressDialog : public Gtk::Dialog {
 public:
   RecordProgressDialog(RecordProgressDialogPool *father);
   ~RecordProgressDialog();
@@ -54,14 +57,14 @@ private:
 
   int actCloseButtonLabel_;
 
-  Gtk_Button *closeButton_;
-  Gtk_Label *abortLabel_;
-  Gtk_Label *closeLabel_;
-  Gtk_Label *tocName_;
+  Gtk::Button *closeButton_;
+  Gtk::Label *abortLabel_;
+  Gtk::Label *closeLabel_;
+  Gtk::Label *tocName_;
 
-  Gtk_Label *statusMsg_;;
-  Gtk_ProgressBar *totalProgress_;
-  Gtk_ProgressBar *bufferFillRate_;
+  Gtk::Label *statusMsg_;;
+  Gtk::ProgressBar *totalProgress_;
+  Gtk::ProgressBar *bufferFillRate_;
 
   RecordProgressDialog *poolNext_;
 
