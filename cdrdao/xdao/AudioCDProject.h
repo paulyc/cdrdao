@@ -53,6 +53,7 @@ public:
 
   unsigned long   getDelay();
 
+  bool            appendTrack(const char* file);
   bool            appendTracks(std::list<std::string>&);
   bool            appendFiles(std::list<std::string>&);
   bool            insertFiles(std::list<std::string>&);

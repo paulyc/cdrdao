@@ -622,6 +622,36 @@ void AudioCDProject::on_cancel_clicked()
     signalCancelClicked();
 }
 
+bool AudioCDProject::appendTrack(const char* file)
+{
+  FileExtension type = fileExtension(file);
+
+  switch (type) {
+
+  case FE_M3U: {
+    std::list<std::string> list;
+    if (parseM3u(file, list)) {
+      std::list<std::string>::iterator i = list.begin();
+      for (; i != list.end(); i++) {
+        tocEdit()->queueAppendTrack((*i).c_str());
+      }
+    } else {
+      std::string msg = "Could not read M3U file \"";
+      msg += file;
+      msg += "\"";
+      errorDialog(msg.c_str());
+      return false;
+    }
+    break;
+  }
+
+  default:
+    tocEdit()->queueAppendTrack(file);
+  }
+
+  return true;
+}
+
 bool AudioCDProject::appendTracks(std::list<std::string>& files)
 {
   std::list<std::string>::iterator i = files.begin();

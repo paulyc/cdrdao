@@ -123,9 +123,8 @@ void AddFileDialog::applyAction()
     const char *s = stripCwd((*i).c_str());
 
     if (s && *s != 0 && s[strlen(s) - 1] != '/') {
-      const char* ext = fileExtension(s);
 
-      if (strcasecmp(ext, "m3u") == 0)
+      if (fileExtension(s) == FE_M3U)
         parseM3u(s, files);
       else
         files.push_back(s);
