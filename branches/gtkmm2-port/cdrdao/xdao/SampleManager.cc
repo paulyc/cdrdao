@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.5.4.1  2002/09/30 17:48:32  llanero
+ * gtkmm2 port
+ *
  * Revision 1.5  2002/01/20 20:43:37  andreasm
  * Added support for sub-channel reading and writing.
  * Adapted to autoconf-2.52.
@@ -103,6 +106,7 @@ public:
   unsigned long length_;
   gfloat percent_;
   gfloat percentStep_;
+  gfloat percentLast_;
   int withGui_;
 
   int aborted_;
@@ -120,12 +124,14 @@ public:
   void removeSamples(unsigned long start, unsigned long end, TrackDataScrap *);
   void insertSamples(unsigned long pos, unsigned long len,
 		     const TrackDataScrap *);
+
+  SigC::Signal0<void> signal_samplesChanged;
 };
 
 SampleManager::SampleManager(unsigned long blocking)
 {
   impl_ = new SampleManagerImpl(blocking);
-  
+  impl_->signal_samplesChanged.connect(signal_samplesChanged.slot());
 }
 
 SampleManager::~SampleManager()
@@ -323,6 +329,7 @@ int SampleManagerImpl::scanToc(unsigned long start, unsigned long end)
     burstBlock_ = 1;
 
   percent_ = 0;
+  percentLast_ = 0;
   aborted_ = 0;
 
   if (withGui_) {
@@ -351,7 +358,7 @@ bool SampleManagerImpl::readSamples()
     tocReader_.closeData();
     progressWindow_->hide();
     tocEdit_->unblockEdit();
-    guiUpdate(UPD_SAMPLES);
+    signal_samplesChanged();
     return 0;
   }
 
@@ -385,7 +392,7 @@ bool SampleManagerImpl::readSamples()
 	progressWindow_->hide();
       }
       tocEdit_->unblockEdit();
-      guiUpdate(UPD_SAMPLES);
+      signal_samplesChanged();
       return 0;
     }
     length_ -= n;
@@ -398,7 +405,7 @@ bool SampleManagerImpl::readSamples()
       progressWindow_->hide();
     }
     tocEdit_->unblockEdit();
-    guiUpdate(UPD_SAMPLES);
+    signal_samplesChanged();
     return 0;
   }
 
@@ -408,6 +415,11 @@ bool SampleManagerImpl::readSamples()
 
   if (withGui_) {
     progressBar_->set_fraction(percent_);
+    if (percentLast_ + 0.01 < percent_)
+	{
+		signal_samplesChanged();
+		percentLast_ = percent_;
+	}
   }
 
   return 1;
