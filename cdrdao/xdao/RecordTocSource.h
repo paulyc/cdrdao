@@ -20,9 +20,6 @@
 #ifndef __RECORD_TOC_SOURCE_H
 #define __RECORD_TOC_SOURCE_H
 
-#include <gtk--.h>
-#include <gtk/gtk.h>
-
 class TocEdit;
 
 class RecordTocSource : public Gtk::VBox {

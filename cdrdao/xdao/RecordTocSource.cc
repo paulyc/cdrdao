@@ -22,7 +22,7 @@
 #include <math.h>
 #include <assert.h>
 
-#include <gnome.h>
+#include <libgnomeuimm.h>
 
 #include "RecordTocSource.h"
 #include "MessageBox.h"
@@ -123,10 +123,10 @@ void RecordTocSource::update(unsigned long level, TocEdit *tedit)
   }
 
   if (tocEdit_ == NULL) {
-    projectLabel_->set("");
-    tocTypeLabel_->set("");
-    nofTracksLabel_->set("");
-    tocLengthLabel_->set("");
+    projectLabel_->set_text("");
+    tocTypeLabel_->set_text("");
+    nofTracksLabel_->set_text("");
+    tocLengthLabel_->set_text("");
   }
   else {
     if (level & UPD_TOC_DATA) {
@@ -134,16 +134,16 @@ void RecordTocSource::update(unsigned long level, TocEdit *tedit)
       char buf[50];
       const Toc *toc = tocEdit_->toc();
 
-      projectLabel_->set(tocEdit_->filename());
+      projectLabel_->set_text(tocEdit_->filename());
 
-      tocTypeLabel_->set(toc->tocType2String(toc->tocType()));
+      tocTypeLabel_->set_text(toc->tocType2String(toc->tocType()));
 
       sprintf(label, "%d", toc->nofTracks());
-      nofTracksLabel_->set(label);
+      nofTracksLabel_->set_text(label);
       
       sprintf(buf, "%d:%02d:%02d", toc->length().min(),
 	      toc->length().sec(), toc->length().frac());
-      tocLengthLabel_->set(buf);
+      tocLengthLabel_->set_text(buf);
     }
   }
 }
