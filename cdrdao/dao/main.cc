@@ -19,6 +19,10 @@
 
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.9  2000/08/20 17:16:26  andreasm
+ * Added option '--keepimage' to not remove the image create with command
+ * 'copy'.
+ *
  * Revision 1.8  2000/08/06 13:13:09  andreasm
  * Added option --cddb-directory and corresponding setting to specify where
  * fetched CDDB record should be stored.
@@ -132,7 +136,7 @@
  *
  */
 
-static char rcsid[] = "$Id: main.cc,v 1.9 2000-08-20 17:16:26 andreasm Exp $";
+static char rcsid[] = "$Id: main.cc,v 1.10 2000-08-20 19:12:41 andreasm Exp $";
 
 #include <config.h>
 
@@ -269,6 +273,7 @@ static void printVersion()
   message(1, "  L-EC encoding library - (C) Heiko Eissfeldt");
   message(1, "  Paranoia DAE library - (C) Monty");
   message(1, "");
+  message(1, "Check http://cdrdao.sourceforge.net/drives.html#dt for actual driver tables.");
 }
 
 static void printUsage()
