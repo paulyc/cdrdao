@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.1.1.1  2000/02/05 01:38:46  llanero
+ * Uploaded cdrdao 1.1.3 with pre10 patch applied.
+ *
  */
 
 #ifndef __PROCESS_MONITOR_H__
@@ -53,7 +56,7 @@ public:
 
   int statusChanged();
 
-  Process *start(const char *, char *const args[]);
+  Process *start(const char *, char *args[], int pipeFdArgNum);
   void stop(Process *);
 
   void remove(Process *);

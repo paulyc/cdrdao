@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2000/04/23 16:29:49  andreasm
+ * Updated to state of my private development environment.
+ *
  * Revision 1.16  1999/12/15 20:31:46  mueller
  * Added remote messages for 'read-cd' progress used by a GUI.
  *
@@ -63,7 +66,7 @@
  *
  */
 
-static char rcsid[] = "$Id: CDD2600.cc,v 1.2 2000-04-23 16:29:49 andreasm Exp $";
+static char rcsid[] = "$Id: CDD2600.cc,v 1.3 2000-10-08 16:39:40 andreasm Exp $";
 
 #include <config.h>
 
@@ -540,7 +543,6 @@ int CDD2600::nextWritableAddress(long *lba, int showError)
 DiskInfo *CDD2600::diskInfo()
 {
   unsigned char cmd[10];
-  unsigned long dataLen = 34;
   unsigned char data[34];
   long nwa;
   int i;
@@ -923,7 +925,7 @@ int CDD2600::readSubChannels(long lba, long len, SubChannel ***chans,
   return 0;
 }
 
-int CDD2600::readAudioRange(int fd, long start, long end,
+int CDD2600::readAudioRange(ReadDiskInfo *rinfo, int fd, long start, long end,
 			    int startTrack, int endTrack,
 			    TrackInfo *info)
 {
@@ -933,8 +935,13 @@ int CDD2600::readAudioRange(int fd, long start, long end,
     message(1, "Analyzing...");
 
     for (t = startTrack; t <= endTrack; t++) {
+      long totalProgress;
 
-      sendReadCdProgressMsg(RCD_ANALYZING, t + 1, 0);
+      totalProgress = t * 1000;
+      totalProgress /= rinfo->tracks;
+
+      sendReadCdProgressMsg(RCD_ANALYZING, rinfo->tracks, t + 1, 0,
+			    totalProgress);
 
       message(1, "Track %d...", t + 1);
       info[t].isrcCode[0] = 0;
@@ -943,12 +950,16 @@ int CDD2600::readAudioRange(int fd, long start, long end,
       if (info[t].isrcCode[0] != 0)
 	message(1, "Found ISRC code.");
 
-      sendReadCdProgressMsg(RCD_ANALYZING, t + 1, 1000);
+      totalProgress = (t + 1) * 1000;
+      totalProgress /= rinfo->tracks;
+
+      sendReadCdProgressMsg(RCD_ANALYZING, rinfo->tracks, t + 1, 1000,
+			    totalProgress);
     }
 
     message(1, "Reading...");
   }
 
-  return CdrDriver::readAudioRangeParanoia(fd, start, end, startTrack,
+  return CdrDriver::readAudioRangeParanoia(rinfo, fd, start, end, startTrack,
 					   endTrack, info);
 }

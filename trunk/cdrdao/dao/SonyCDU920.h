@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.1.1.1  2000/02/05 01:35:11  llanero
+ * Uploaded cdrdao 1.1.3 with pre10 patch applied.
+ *
  * Revision 1.2  1999/05/24 17:34:19  mueller
  * Added parameter for data form of lead-in to 'createCueSheet()'.
  *
@@ -90,8 +93,8 @@ protected:
   long readTrackData(TrackData::Mode mode, long lba, long len,
 		     unsigned char *buf);
 
-  int readAudioRange(int fd, long start, long end, int startTrack,
-		     int endTrack, TrackInfo *);
+  int readAudioRange(ReadDiskInfo *, int fd, long start, long end,
+		     int startTrack, int endTrack, TrackInfo *);
 
 };
 

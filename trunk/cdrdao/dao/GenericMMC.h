@@ -19,6 +19,12 @@
 
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2000/06/06 22:26:13  andreasm
+ * Updated list of supported drives.
+ * Added saving of some command line settings to $HOME/.cdrdao.
+ * Added test for multi session support in raw writing mode to GenericMMC.cc.
+ * Updated manual page.
+ *
  * Revision 1.1.1.1  2000/02/05 01:35:04  llanero
  * Uploaded cdrdao 1.1.3 with pre10 patch applied.
  *
@@ -147,8 +153,8 @@ protected:
   long readTrackData(TrackData::Mode mode, long lba, long len,
 		     unsigned char *buf);
 
-  int readAudioRange(int fd, long start, long end, int startTrack,
-		     int endTrack, TrackInfo *);
+  int readAudioRange(ReadDiskInfo *, int fd, long start, long end,
+		     int startTrack, int endTrack, TrackInfo *);
 
 };
 

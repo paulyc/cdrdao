@@ -19,6 +19,9 @@
 
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.1.1.1  2000/02/05 01:37:27  llanero
+ * Uploaded cdrdao 1.1.3 with pre10 patch applied.
+ *
  * Revision 1.2  1999/05/24 17:34:19  mueller
  * Added parameter for data form of lead-in to 'createCueSheet()'.
  *
@@ -27,7 +30,7 @@
  *
  */
 
-static char rcsid[] = "$Id: SonyCDU920.cc,v 1.1.1.1 2000-02-05 01:37:27 llanero Exp $";
+static char rcsid[] = "$Id: SonyCDU920.cc,v 1.2 2000-10-08 16:39:40 andreasm Exp $";
 
 #include <config.h>
 
@@ -980,9 +983,10 @@ long SonyCDU920::readTrackData(TrackData::Mode mode, long lba, long len,
   return len;
 }
 
-int SonyCDU920::readAudioRange(int fd, long start, long end, int startTrack,
+int SonyCDU920::readAudioRange(ReadDiskInfo *rinfo, int fd, long start,
+			       long end, int startTrack,
 			       int endTrack, TrackInfo *info)
 {
-  return CdrDriver::readAudioRangeParanoia(fd, start, end, startTrack,
+  return CdrDriver::readAudioRangeParanoia(rinfo, fd, start, end, startTrack,
 					   endTrack, info);
 }

@@ -19,6 +19,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.1.1.1  2000/02/05 01:35:15  llanero
+ * Uploaded cdrdao 1.1.3 with pre10 patch applied.
+ *
  * Revision 1.3  1999/04/05 11:04:10  mueller
  * Added driver option flags.
  *
@@ -101,8 +104,8 @@ protected:
   long readTrackData(TrackData::Mode mode, long lba, long len,
 		     unsigned char *buf);
 
-  int readAudioRange(int fd, long start, long end, int startTrack,
-		     int endTrack, TrackInfo *);
+  int readAudioRange(ReadDiskInfo *, int fd, long start, long end,
+		     int startTrack, int endTrack, TrackInfo *);
 
 };
 

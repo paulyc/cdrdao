@@ -19,6 +19,10 @@
 
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.7  2000/06/22 12:19:28  andreasm
+ * Added switch for reading CDs written in TAO mode.
+ * The fifo buffer size is now also saved to $HOME/.cdrdao.
+ *
  * Revision 1.6  2000/06/19 20:17:37  andreasm
  * Added CDDB reading to add CD-TEXT information to toc-files.
  * Fixed bug in reading ATIP data in 'GenericMMC::diskInfo()'.
@@ -93,7 +97,7 @@
  *
  */
 
-static char rcsid[] = "$Id: GenericMMC.cc,v 1.7 2000-06-22 12:19:28 andreasm Exp $";
+static char rcsid[] = "$Id: GenericMMC.cc,v 1.8 2000-10-08 16:39:40 andreasm Exp $";
 
 #include <config.h>
 
@@ -1856,7 +1860,8 @@ long GenericMMC::readTrackData(TrackData::Mode mode, long lba, long len,
   return len;
 }
 
-int GenericMMC::readAudioRange(int fd, long start, long end, int startTrack,
+int GenericMMC::readAudioRange(ReadDiskInfo *rinfo, int fd, long start,
+			       long end, int startTrack,
 			       int endTrack, TrackInfo *info)
 {
   if (!onTheFly_) {
@@ -1874,9 +1879,14 @@ int GenericMMC::readAudioRange(int fd, long start, long end, int startTrack,
 
 
       for (t = startTrack; t <= endTrack; t++) {
+	long totalProgress;
+
 	message(1, "Track %d...", t + 1);
 
-	sendReadCdProgressMsg(RCD_ANALYZING, t + 1, 0);
+	totalProgress = t * 1000;
+	totalProgress /= rinfo->tracks;
+	sendReadCdProgressMsg(RCD_ANALYZING, rinfo->tracks, t + 1, 0,
+			      totalProgress);
 
 	if (options_ & OPT_MMC_NO_SUBCHAN) {
 	  // we have to use the binary search method to find pre-gap and
@@ -1922,14 +1932,17 @@ int GenericMMC::readAudioRange(int fd, long start, long end, int startTrack,
 	if (info[t].isrcCode[0] != 0)
 	  message(1, "Found ISRC code.");
 
-	sendReadCdProgressMsg(RCD_ANALYZING, t + 1, 1000);
+	totalProgress = (t + 1) * 1000;
+	totalProgress /= rinfo->tracks;
+	sendReadCdProgressMsg(RCD_ANALYZING, rinfo->tracks, t + 1, 1000,
+			      totalProgress);
       }
 
       message(1, "Reading...");
     }
   }
 
-  return CdrDriver::readAudioRangeParanoia(fd, start, end, startTrack,
+  return CdrDriver::readAudioRangeParanoia(rinfo, fd, start, end, startTrack,
 					   endTrack, info);
 }
 
