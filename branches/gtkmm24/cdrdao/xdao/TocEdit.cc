@@ -705,6 +705,7 @@ bool TocEdit::queueThread()
           ss << " samples of data";
           std::string msg = ss.str();
           signalStatusMessage(msg.c_str());
+          updateLevel_ |= UPD_SAMPLES;
         }
       }
       curState_ = TE_IDLE;
