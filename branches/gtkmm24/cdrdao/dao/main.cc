@@ -193,6 +193,15 @@ static void printVersion()
   message(1, "");
 }
 
+static bool convertTocFiles(Toc* toc)
+{
+  if (formatConverter.convert(toc) != FormatSupport::FS_SUCCESS) {
+    return false;
+  }
+
+  return true;
+}
+
 static void printUsage()
 {
   switch (COMMAND) {
@@ -2134,6 +2143,12 @@ int main(int argc, char **argv)
     }
 
     if (toc == NULL) {
+      exitCode = 1; goto fail;
+    }
+
+    if (!convertTocFiles(toc)) {
+      message(-2, "Could not decode audio files from toc file \"%s\".",
+              TOC_FILE);
       exitCode = 1; goto fail;
     }
 
