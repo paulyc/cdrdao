@@ -18,6 +18,10 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.7  2000/06/22 12:19:28  andreasm
+ * Added switch for reading CDs written in TAO mode.
+ * The fifo buffer size is now also saved to $HOME/.cdrdao.
+ *
  * Revision 1.6  2000/06/19 20:25:07  andreasm
  * Fixed bug in CD-TEXT reading.
  * read-cd is now configured to handle DAO disks again.
@@ -98,7 +102,7 @@
  *
  */
 
-static char rcsid[] = "$Id: CdrDriver.cc,v 1.7 2000-06-22 12:19:28 andreasm Exp $";
+static char rcsid[] = "$Id: CdrDriver.cc,v 1.8 2000-10-08 16:39:40 andreasm Exp $";
 
 #include <config.h>
 
@@ -721,6 +725,7 @@ CdrDriver::CdrDriver(ScsiIf *scsiIf, unsigned long options)
   encodingMode_ = 0;
   force_ = 0;
   remote_ = 0;
+  remoteFd_ = -1;
 
   blockLength_ = 0;
   blocksPerWrite_ = 0;
@@ -781,17 +786,19 @@ void CdrDriver::onTheFly(int fd)
   }
 }
 
-void CdrDriver::remote(int f)
+void CdrDriver::remote(int f, int fd)
 {
-  remote_ = (f != 0 ? 1 : 0);
-
-  if (remote_) {
+  if (f != 0 && fd >= 0) {
     int flags;
-    int fd = 3;
 
-    // switch FD 3 to non blocking IO mode
+    remote_ = 1;
+    remoteFd_ = fd;
+
+    // switch 'fd' to non blocking IO mode
     if ((flags = fcntl(fd, F_GETFL)) == -1) {
       message(-1, "Cannot get flags of remote stream: %s", strerror(errno));
+      remote_ = 0;
+      remoteFd_ = -1;
       return;
     }
 
@@ -799,7 +806,13 @@ void CdrDriver::remote(int f)
 
     if (fcntl(fd, F_SETFL, flags) < 0) {
       message(-1, "Cannot set flags of remote stream: %s", strerror(errno));
+      remote_ = 0;
+      remoteFd_ = -1;
     }
+  }
+  else {
+    remote_ = 0;
+    remoteFd_ = -1;
   }
 }
 
@@ -2960,6 +2973,12 @@ Toc *CdrDriver::readDisk(int session, const char *dataFilename)
   trackInfos[nofTracks].filename = NULL;
   trackInfos[nofTracks].bytesWritten = 0;
 
+  ReadDiskInfo info;
+
+  info.tracks = nofTracks;
+  info.startLba = trackInfos[0].start;
+  info.endLba = trackInfos[nofTracks].start;
+
   int trs = 0;
   int tre = 0;
   long slba, elba;
@@ -3000,7 +3019,7 @@ Toc *CdrDriver::readDisk(int session, const char *dataFilename)
       message(1, "length %s to \"%s\"...", Msf(elba - slba).str(),
 	      trackInfos[trs].filename);
       
-      if (readDataTrack(fp, slba, elba, &trackInfos[trs]) != 0)
+      if (readDataTrack(&info, fp, slba, elba, &trackInfos[trs]) != 0)
 	goto fail;
 
       trs++;
@@ -3054,7 +3073,7 @@ Toc *CdrDriver::readDisk(int session, const char *dataFilename)
       message(1, "length %s to \"%s\"...", Msf(elba - slba).str(),
 	      trackInfos[trs].filename);
 
-      if (readAudioRange(fp, slba, elba, trs, tre - 1, trackInfos) != 0)
+      if (readAudioRange(&info, fp, slba, elba, trs, tre - 1, trackInfos) != 0)
 	goto fail;
 
       trs = tre;
@@ -3233,7 +3252,7 @@ Toc *CdrDriver::buildToc(TrackInfo *trackInfos, long nofTrackInfos,
 // trackInfo: info about current track, updated by this function
 // Return: 0: OK
 //         1: error occured
-int CdrDriver::readDataTrack(int fd, long start, long end,
+int CdrDriver::readDataTrack(ReadDiskInfo *info, int fd, long start, long end,
 			     TrackInfo *trackInfo)
 {
   long len = end - start;
@@ -3388,10 +3407,24 @@ int CdrDriver::readDataTrack(int fd, long start, long end,
 	lastLba = lba;
 
 	if (remote_) {
-	  long progress = (totalLen - len) * 1000;
+	  long totalProgress;
+	  long progress;
+
+	  progress = (totalLen - len) * 1000;
 	  progress /= totalLen;
 
-	  sendReadCdProgressMsg(RCD_EXTRACTING, trackInfo->trackNr, progress);
+	  totalProgress = lba - info->startLba;
+
+	  if (totalProgress > 0) {
+	    totalProgress *= 1000;
+	    totalProgress /= (info->endLba - info->startLba);
+	  }
+	  else {
+	    totalProgress = 0;
+	  }
+
+	  sendReadCdProgressMsg(RCD_EXTRACTING, info->tracks, 
+				trackInfo->trackNr, progress, totalProgress);
 	}
       }
 
@@ -3526,17 +3559,19 @@ int CdrDriver::readCatalogScan(char *mcnCode, long startLba, long endLba)
 
 
 // Sends a read cd progress message without blocking the actual process.
-void CdrDriver::sendReadCdProgressMsg(ReadCdProgressType type,
-				      int track, int trackProgress)
+void CdrDriver::sendReadCdProgressMsg(ReadCdProgressType type, int totalTracks,
+				      int track, int trackProgress,
+				      int totalProgress)
 {
   if (remote_) {
-    int fd = 3;
+    int fd = remoteFd_;
     ReadCdProgress p;
 
     p.status = type;
+    p.totalTracks = totalTracks;
     p.track = track;
-    //p.totalTracks = totalTracks;
     p.trackProgress = trackProgress;
+    p.totalProgress = totalProgress;
 
     if (write(fd, REMOTE_MSG_SYNC_, sizeof(REMOTE_MSG_SYNC_)) != sizeof(REMOTE_MSG_SYNC_) ||
 	write(fd, (const char*)&p, sizeof(p)) != sizeof(p)) {
@@ -3544,6 +3579,34 @@ void CdrDriver::sendReadCdProgressMsg(ReadCdProgressType type,
     }
   }
 }
+
+// Sends a write cd progress message without blocking the actual process.
+int CdrDriver::sendWriteCdProgressMsg(WriteCdProgressType type, 
+				      int totalTracks, int track,
+				      int trackProgress, int totalProgress,
+				      int bufferFillRate)
+{
+  if (remote_) {
+    int fd = remoteFd_;
+    DaoWritingProgress p;
+
+    p.status = type;
+    p.totalTracks = totalTracks;
+    p.track = track;
+    p.trackProgress = trackProgress;
+    p.totalProgress = totalProgress;
+    p.bufferFillRate = bufferFillRate;
+
+    if (write(fd, REMOTE_MSG_SYNC_, sizeof(REMOTE_MSG_SYNC_)) != sizeof(REMOTE_MSG_SYNC_) ||
+	write(fd, (const char*)&p, sizeof(p)) != sizeof(p)) {
+      message(-1, "Failed to send write CD remote progress message.");
+      return 1;
+    }
+  }
+
+  return 0;
+}
+
 
 
 // read cdda paranoia related:
@@ -3567,8 +3630,8 @@ void CdrDriver::paranoiaMode(int mode)
   }
 }
 
-int CdrDriver::readAudioRangeParanoia(int fd, long start, long end,
-				      int startTrack, int endTrack, 
+int CdrDriver::readAudioRangeParanoia(ReadDiskInfo *info, int fd, long start,
+				      long end, int startTrack, int endTrack, 
 				      TrackInfo *trackInfo)
 {
   long startLba = start;
@@ -3587,6 +3650,7 @@ int CdrDriver::readAudioRangeParanoia(int fd, long start, long end,
   paranoia_set_range(paranoia_, startLba, endLba);
   paranoia_modeset(paranoia_, paranoiaMode_);
 
+  paranoiaReadInfo_ = info;
   paranoiaTrackInfo_ = trackInfo;
   paranoiaStartTrack_ = startTrack;
   paranoiaEndTrack_ = endTrack;
@@ -3657,6 +3721,7 @@ long CdrDriver::paranoiaRead(Sample *buffer, long startLba, long len)
     long totalTrackLen = paranoiaTrackInfo_[paranoiaActTrack_ + 1].start -
                          paranoiaTrackInfo_[paranoiaActTrack_ ].start;
     long progress = startLba - paranoiaTrackInfo_[paranoiaActTrack_ ].start;
+    long totalProgress;
 
     if (progress > 0) {
       progress *= 1000;
@@ -3666,7 +3731,18 @@ long CdrDriver::paranoiaRead(Sample *buffer, long startLba, long len)
       progress = 0;
     }
 
-    sendReadCdProgressMsg(RCD_EXTRACTING, paranoiaActTrack_ + 1, progress);
+    totalProgress = startLba + len - paranoiaReadInfo_->startLba;
+
+    if (totalProgress > 0) {
+      totalProgress *= 1000;
+      totalProgress /= paranoiaReadInfo_->endLba - paranoiaReadInfo_->startLba;
+    }
+    else {
+      totalProgress = 0;
+    }
+
+    sendReadCdProgressMsg(RCD_EXTRACTING, paranoiaReadInfo_->tracks,
+			  paranoiaActTrack_ + 1, progress, totalProgress);
   }
 
   if (chans == NULL) {

@@ -18,6 +18,17 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.9  2000/09/21 02:07:06  llanero
+ * MDI support:
+ * Splitted AudioCDChild into same and AudioCDView
+ * Move Selections from TocEdit to AudioCDView to allow
+ *   multiple selections.
+ * Cursor animation in all the views.
+ * Can load more than one from from command line
+ * Track info, Toc info, Append/Insert Silence, Append/Insert Track,
+ *   they all are built for every child when needed.
+ * ...
+ *
  * Revision 1.7  2000/08/01 01:27:50  llanero
  * CD to CD copy works now.
  *
@@ -49,7 +60,7 @@
  *
  */
 
-static char rcsid[] = "$Id: RecordProgressDialog.cc,v 1.9 2000-09-21 02:07:06 llanero Exp $";
+static char rcsid[] = "$Id: RecordProgressDialog.cc,v 1.10 2000-10-08 16:39:41 andreasm Exp $";
 
 #include <stdio.h>
 #include <stddef.h>
@@ -104,7 +115,7 @@ RecordProgressDialog::RecordProgressDialog(RecordProgressDialogPool *father)
   hbox->show();
 
   hbox = new Gtk::HBox(TRUE, TRUE);
-  label = new Gtk::Label(string("Current Time: "), 1);
+  label = new Gtk::Label(string("Elapsed Time: "), 1);
   hbox->pack_start(*label, FALSE);
   label->show();
   currentTime_ = new Gtk::Label(string(""), 0);
@@ -359,11 +370,12 @@ void RecordProgressDialog::clear()
 void RecordProgressDialog::update(unsigned long level)
 {
   int status;
+  int totalTracks;
   int track;
   int trackProgress;
   int totalProgress;
   int bufferFill;
-  char buf[20];
+  char buf[40];
   char bufProgress[30];
   string s;
 
@@ -375,7 +387,8 @@ void RecordProgressDialog::update(unsigned long level)
   switch (device_->action()) {
     case CdDevice::A_RECORD:
     if ((level & UPD_PROGRESS_STATUS) && device_->progressStatusChanged()) {
-      device_->recordProgress(&status, &track, &totalProgress, &bufferFill);
+      device_->recordProgress(&status, &totalTracks, &track, &trackProgress,
+			      &totalProgress, &bufferFill);
 
       if (status != actStatus_) {
         actStatus_ = status;
@@ -388,7 +401,7 @@ void RecordProgressDialog::update(unsigned long level)
 	        actTrack_ = track;
 
         	s = "Writing track ";
-        	sprintf(buf, "%d", track);
+        	sprintf(buf, "%d of %d", track, totalTracks);
 	        s += buf;
 
         	statusMsg_->set_text(s);
@@ -403,10 +416,18 @@ void RecordProgressDialog::update(unsigned long level)
         actTrack_ = track;
 
         s = "Writing track ";
-        sprintf(buf, "%d", track);
+        sprintf(buf, "%d of %d", track, totalTracks);
         s += buf;
 
         statusMsg_->set_text(s);
+      }
+
+      if (trackProgress != actTrackProgress_) {
+        actTrackProgress_ = trackProgress;
+
+        trackProgress_->set_percentage(gfloat(trackProgress) / 1000.0);
+        sprintf(bufProgress, "%.2f %%%%", gfloat(trackProgress/10.0));
+        trackProgress_->set_format_string(bufProgress);  
       }
 
       if (totalProgress != actTotalProgress_) {
@@ -449,7 +470,8 @@ void RecordProgressDialog::update(unsigned long level)
 
   case CdDevice::A_READ:
     if ((level & UPD_PROGRESS_STATUS) && device_->progressStatusChanged()) {
-      device_->readProgress(&status, &track, &trackProgress);
+      device_->readProgress(&status, &totalTracks, &track, &trackProgress,
+			    &totalProgress);
 
       if (status != actStatus_ || actTrack_ != track) {
         actStatus_ = status;
@@ -459,7 +481,7 @@ void RecordProgressDialog::update(unsigned long level)
       	actTrack_ = track;
 
       	s = "Analyzing track ";
-      	sprintf(buf, "%d", track);
+      	sprintf(buf, "%d of %d", track, totalTracks);
       	s += buf;
 
       	statusMsg_->set_text(s);
@@ -468,7 +490,7 @@ void RecordProgressDialog::update(unsigned long level)
       	actTrack_ = track;
 
       	s = "Extracting track ";
-	      sprintf(buf, "%d", track);
+	      sprintf(buf, "%d of %d", track, totalTracks);
 	      s += buf;
 
       	statusMsg_->set_text(s);
@@ -482,6 +504,14 @@ void RecordProgressDialog::update(unsigned long level)
         trackProgress_->set_percentage(gfloat(trackProgress) / 1000.0);
         sprintf(bufProgress, "%.2f %%%%", gfloat(trackProgress/10.0));
         trackProgress_->set_format_string(bufProgress);  
+      }
+
+      if (totalProgress != actTotalProgress_) {
+        actTotalProgress_ = totalProgress;
+
+        totalProgress_->set_percentage(gfloat(totalProgress) / 1000.0);
+        sprintf(bufProgress, "%.2f %%%%", gfloat(totalProgress/10.0));
+        totalProgress_->set_format_string(bufProgress);
       }
     }
 
@@ -509,7 +539,8 @@ void RecordProgressDialog::update(unsigned long level)
   
   case CdDevice::A_DUPLICATE:
     if ((level & UPD_PROGRESS_STATUS) && device_->progressStatusChanged()) {
-      device_->recordProgress(&status, &track, &totalProgress, &bufferFill);
+      device_->recordProgress(&status, &totalTracks, &track, &trackProgress,
+			      &totalProgress, &bufferFill);
 
 //g_print("Message received!\n");
 
@@ -524,7 +555,7 @@ void RecordProgressDialog::update(unsigned long level)
 	        actTrack_ = track;
 
         	s = "Writing track ";
-        	sprintf(buf, "%d", track);
+        	sprintf(buf, "%d of %d", track, totalTracks);
 	        s += buf;
 
         	statusMsg_->set_text(s);
@@ -539,10 +570,18 @@ void RecordProgressDialog::update(unsigned long level)
         actTrack_ = track;
 
         s = "Writing track ";
-        sprintf(buf, "%d", track);
+        sprintf(buf, "%d of %d", track, totalTracks);
         s += buf;
 
         statusMsg_->set_text(s);
+      }
+
+      if (trackProgress != actTrackProgress_) {
+        actTrackProgress_ = trackProgress;
+
+        trackProgress_->set_percentage(gfloat(trackProgress) / 1000.0);
+        sprintf(bufProgress, "%.2f %%%%", gfloat(trackProgress/10.0));
+        trackProgress_->set_format_string(bufProgress);  
       }
 
       if (totalProgress != actTotalProgress_) {
@@ -624,7 +663,7 @@ gint RecordProgressDialog::time(gint timer_nr)
   mins = (time - (hours * 3600)) / 60;
   secs = time - ((hours * 3600) + (mins * 60));
 
-  sprintf(buf, "%d:%02d:%02d", hours, mins, secs);
+  sprintf(buf, "%ld:%02ld:%02ld", hours, mins, secs);
   currentTime_->set(string(buf));
 
 
@@ -649,7 +688,7 @@ gint RecordProgressDialog::time(gint timer_nr)
     mins = (time_remain - (hours * 3600)) / 60;
     secs = time_remain - ((hours * 3600) + (mins * 60));
 
-    sprintf(buf, "%d:%02d:%02d", hours, mins, secs);
+    sprintf(buf, "%ld:%02ld:%02ld", hours, mins, secs);
     remainingTime_->set(string(buf));
   }
 

@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2000/04/23 16:29:50  andreasm
+ * Updated to state of my private development environment.
+ *
  * Revision 1.2  1999/12/15 20:31:46  mueller
  * Added remote messages for 'read-cd' progress used by a GUI.
  *
@@ -30,17 +33,20 @@
 #define __REMOTE_H__
 
 struct DaoWritingProgress {
-  int status; // 1: writing lead-in, 2: writing data, 3: writing lead-out
-  int track; // actually written track
-  int totalProgress; // total writing progress 0..1000
+  int status;         // 1: writing lead-in, 2: writing data, 3: writing lead-out
+  int totalTracks;    // total number of tracks
+  int track;          // actually written track
+  int trackProgress;  // progress for current track 0..1000
+  int totalProgress;  // total writing progress 0..1000
   int bufferFillRate; // buffer fill rate 0..100
 };
 
 struct ReadCdProgress {
-  int status; // 1: analyzing, 2: extracting
-  int track; // actually processed track
-  // int totalTracks; // total number of tracks
+  int status;        // 1: analyzing, 2: extracting
+  int totalTracks;   // total number of tracks
+  int track;         // actually processed track
   int trackProgress; // extraction progress for track 0..1000
+  int totalProgress; // total writing progress 0..1000
 };
 
 #endif

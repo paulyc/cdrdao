@@ -18,6 +18,12 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2000/06/06 22:26:13  andreasm
+ * Updated list of supported drives.
+ * Added saving of some command line settings to $HOME/.cdrdao.
+ * Added test for multi session support in raw writing mode to GenericMMC.cc.
+ * Updated manual page.
+ *
  * Revision 1.2  2000/05/01 18:13:18  andreasm
  * Fixed too small mode page buffer.
  *
@@ -58,7 +64,7 @@
  *
  */
 
-static char rcsid[] = "$Id: dao.cc,v 1.3 2000-06-06 22:26:13 andreasm Exp $";
+static char rcsid[] = "$Id: dao.cc,v 1.4 2000-10-08 16:39:41 andreasm Exp $";
 
 #include <config.h>
 
@@ -133,7 +139,6 @@ extern "C" int sched_getscheduler __P((pid_t __pid));
 
 #include "dao.h"
 #include "util.h"
-#include "remote.h"
 
 struct ShmSegment {
   int id;
@@ -147,7 +152,7 @@ struct Buffer {
                              // blocks must be encoded in audio blocks,
                              // only used for message printing
   int trackNr; // if != 0 a new track with given number has started
-
+  int trackProgress; // reading progress of current track 0..1000
   char *buffer; // address of buffer that should be written
 };
   
@@ -270,9 +275,11 @@ static void unblockSignals()
 // return: 0: OK 
 //         1: child process terminated and has been collected with 'wait()'
 //         2: error -> child process must be terminated
-static int writer(CdrDriver *cdr, long total, BufferHeader *header, long lba,
-		  long remoteMode)
+static int writer(const Toc *toc, CdrDriver *cdr, BufferHeader *header,
+		  long lba)
 {
+  long total = toc->length().lba() * AUDIO_BLOCK_LEN;
+  long totalTracks = toc->nofTracks();
   long cnt = 0;
   long blkCount = 0;
   long len = 0;
@@ -285,16 +292,9 @@ static int writer(CdrDriver *cdr, long total, BufferHeader *header, long lba,
   int actTrackNr = 0;
   long actProgress;
   TrackData::Mode dataMode;
-  DaoWritingProgress remoteMsg;
-  char remoteMsgSync[4];
 #ifndef USE_POSIX_THREADS
   int status;
 #endif
-
-  remoteMsgSync[0] = 0xff;
-  remoteMsgSync[1] = 0x00;
-  remoteMsgSync[2] = 0xff;
-  remoteMsgSync[3] = 0x00;
 
   message (3, "Waiting for reader process");
 
@@ -326,19 +326,8 @@ static int writer(CdrDriver *cdr, long total, BufferHeader *header, long lba,
   message (3, "Awaken, will start writing");
 
   if (cdr != NULL) {
-    if (remoteMode) {
-      remoteMsg.status = 1; // writing lead-in
-      remoteMsg.track = 0;
-      remoteMsg.totalProgress = 0;
-      remoteMsg.bufferFillRate = 100;
-
-      if (write(3/*fileno(stdout)*/, remoteMsgSync, sizeof(remoteMsgSync)) < 0 ||
-	  write(3/*fileno(stdout)*/, (const char*)&remoteMsg,
-		sizeof(remoteMsg)) < 0) {
-	message(-1, "Disabling remote messages.");
-	remoteMode = 0;
-      }
-    }
+    cdr->sendWriteCdProgressMsg(CdrDriver::WCD_LEADIN,
+				totalTracks, 0, 0, 0, 100);
 
     blockSignals();
     if (cdr->startDao() != 0) {
@@ -414,21 +403,10 @@ static int writer(CdrDriver *cdr, long total, BufferHeader *header, long lba,
 	fclose(fp);
 #endif
 
-      if (remoteMode) {
-	remoteMsg.status = 3; // writing lead-out
-	remoteMsg.track = 0xaa;
-	remoteMsg.totalProgress = 1000;
-	remoteMsg.bufferFillRate = 100;
-
-	if (write(3/*fileno(stdout)*/, remoteMsgSync, sizeof(remoteMsgSync)) < 0 ||
-	    write(3/*fileno(stdout)*/, (const char*)&remoteMsg,
-		  sizeof(remoteMsg)) < 0) {
-	  message(-1, "Disabling remote messages.");
-	  remoteMode = 0;
-	}
-      }
-
       if (cdr != NULL) {
+	cdr->sendWriteCdProgressMsg(CdrDriver::WCD_LEADOUT,
+				    totalTracks, 0xaa, 1000, 1000, 100);
+	
 	blockSignals();
 	if (cdr->finishDao() != 0) {
 	  unblockSignals();
@@ -478,26 +456,15 @@ static int writer(CdrDriver *cdr, long total, BufferHeader *header, long lba,
 	}
       }
       unblockSignals();
-    }
-    else {
-      message(1, "Read %ld of %ld MB.\r", cnt >> 20, total >> 20);
-    }
 
-    if (remoteMode) {
       actProgress = cnt;
       actProgress /= total / 1000;
 
-      remoteMsg.status = 2; // writing data
-      remoteMsg.track = actTrackNr;
-      remoteMsg.totalProgress = actProgress;
-      remoteMsg.bufferFillRate = buffFill;
-      
-      if (write(3/*fileno(stdout)*/, remoteMsgSync, sizeof(remoteMsgSync)) < 0 ||
-	  write(3/*fileno(stdout)*/, (const char*)&remoteMsg,
-		sizeof(remoteMsg)) < 0) {
-	message(-1, "Disabling remote messages.");
-	remoteMode = 0;
-      }
+      cdr->sendWriteCdProgressMsg(CdrDriver::WCD_DATA, totalTracks, actTrackNr,
+				  buf.trackProgress, actProgress, buffFill);
+    }
+    else {
+      message(1, "Read %ld of %ld MB.\r", cnt >> 20, total >> 20);
     }
 
 
@@ -536,6 +503,8 @@ static void *reader(void *args)
   TrackData::Mode dataMode;
   int encodingMode = 1;
   int newTrack;
+  long tact; // number of blocks already read from current track
+  long tprogress;
 
   if (cdr != NULL) {
     if (cdr->bigEndianSamples() == 0) {
@@ -556,7 +525,9 @@ static void *reader(void *args)
     message(-2, "Opening of track data failed.");
     goto fail;
   }
+
   newTrack = 1;
+  tact = 0;
 
   dataMode = (encodingMode == 0) ? TrackData::AUDIO : track->type();
 
@@ -586,10 +557,12 @@ static void *reader(void *args)
 	  dataMode = track->type();
 
 	newTrack = 1;
+	tact = 0;
       }
     } while (rn == 0);
 
     lba += rn;
+    tact += rn;
 
     if (track->type() == TrackData::AUDIO) {
       if (swap) {
@@ -604,10 +577,14 @@ static void *reader(void *args)
       }
     }
 
-    // notify writer that it can write buffer
     buf.bufLen = rn;
     buf.mode = dataMode;
     buf.trackMode = track->type();
+
+    tprogress = tact * 1000;
+    tprogress /= track->length().lba();
+
+    buf.trackProgress = tprogress;
 
     if (newTrack) {
       // inform write process that it should print message about new track
@@ -673,10 +650,8 @@ fail:
 
 
 int writeDiskAtOnce(const Toc *toc, CdrDriver *cdr, int nofBuffers, int swap,
-		    int testMode, int remoteMode)
+		    int testMode)
 {
-  long length = toc->length().lba();
-  long total = length * AUDIO_BLOCK_LEN;
   int err = 0;
   BufferHeader *header = NULL;
   long nofShmSegments = 0;
@@ -703,23 +678,6 @@ int writeDiskAtOnce(const Toc *toc, CdrDriver *cdr, int nofBuffers, int swap,
     message(-1, "Adjusted number of FIFO buffers to 10.");
   }
 #endif
-
-  if (remoteMode) {
-    // switch stdout to non blocking IO
-    int flags;
-
-    if ((flags = fcntl(3/*fileno(stdout)*/, F_GETFL)) == -1) {
-      message(-2, "Cannot get flags of stdout: %s", strerror(errno));
-      return 1;
-    }
-
-    flags |= O_NONBLOCK;
-
-    if (fcntl(3/*fileno(stdout)*/, F_SETFL, flags) < 0) {
-      message(-2, "Cannot set flags of stdout: %s", strerror(errno));
-      return 1;
-    }
-  }
 
   if (getSharedMemory(nofBuffers, &header, &nofShmSegments,
 		      &shmSegments)  != 0) {
@@ -926,7 +884,7 @@ int writeDiskAtOnce(const Toc *toc, CdrDriver *cdr, int nofBuffers, int swap,
   }
 #endif
 
-  switch (writer(cdr, total, header, startLba, remoteMode)) {
+  switch (writer(toc, cdr, header, startLba)) {
   case 1: // error, reader process terminated abnormally
 #ifndef USE_POSIX_THREADS
     pid = 0;

@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2000/04/23 16:29:49  andreasm
+ * Updated to state of my private development environment.
+ *
  * Revision 1.13  1999/11/07 09:17:08  mueller
  * Release 1.1.3
  *
@@ -116,7 +119,7 @@ private:
   long readTrackData(TrackData::Mode mode, long lba, long len,
 		     unsigned char *buf);
 
-  int readAudioRange(int fd, long start, long end,
+  int readAudioRange(ReadDiskInfo *, int fd, long start, long end,
 		     int startTrack, int endTrack, TrackInfo *);
 
   int nextWritableAddress(long *lba, int showError);

@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.1.1.1  2000/02/05 01:39:32  llanero
+ * Uploaded cdrdao 1.1.3 with pre10 patch applied.
+ *
  */
 
 #include <unistd.h>
@@ -33,7 +36,7 @@
 
 #include "util.h"
 
-static char rcsid[] = "$Id: ProcessMonitor.cc,v 1.1.1.1 2000-02-05 01:39:32 llanero Exp $";
+static char rcsid[] = "$Id: ProcessMonitor.cc,v 1.2 2000-10-08 16:39:41 andreasm Exp $";
 
 Process::Process(int pid, int commFd)
 {
@@ -104,17 +107,35 @@ int ProcessMonitor::statusChanged()
   return s;
 }
 
-Process *ProcessMonitor::start(const char *prg, char *const args[])
+/* Starts a child process 'prg' with arguments 'args'.
+ * If 'pipeFdArgNum' is > 0 the file descriptor number will be written to
+ * 'args[pipeFdArgNum]'.
+ * Return: newly allocated 'Process' object or NULL on error
+ */
+
+Process *ProcessMonitor::start(const char *prg, char *args[], int pipeFdArgNum)
 {
   int pid;
   Process *p;
   int pipeFds[2];
+  char buf[20];
 
   if (pipe(pipeFds) != 0) {
     message(-2, "Cannot create pipe: %s", strerror(errno));
     return NULL;
   }
   
+  if (pipeFdArgNum > 0) {
+    sprintf(buf, "%d", pipeFds[1]);
+    args[pipeFdArgNum] = buf;
+  }
+
+  message(0, "Starting: ");
+  for (int i = 0; args[i] != NULL; i++)
+    message(0, "%s ", args[i]);
+  message(0, "");
+
+
   blockProcessMonitorSignals();
 
   pid = fork();
@@ -127,11 +148,6 @@ Process *ProcessMonitor::start(const char *prg, char *const args[])
 
     // close reading end of pipe
     close(pipeFds[0]);
-
-    if (pipeFds[1] != 3) {
-      dup2(pipeFds[1], 3/*fileno(stdout)*/);
-      close(pipeFds[1]);
-    }
 
     execvp(prg, args);
 
