@@ -23,6 +23,8 @@
 #include <assert.h>
 #include <unistd.h>
 
+#include <libgnomeuimm.h>
+
 #include "RecordCDSource.h"
 #include "MessageBox.h"
 #include "xcdrdao.h"
@@ -48,24 +50,25 @@ static RecordCDSource::CorrectionTable CORRECTION_TABLE[MAX_CORRECTION_ID + 1] =
 RecordCDSource::RecordCDSource(Gtk::Window *parent)
 {
   parent_ = parent;
-  active_ = 0;
-//  onTheFly_ = 0;
   correction_ = 0;
   speed_ = 1;
-  moreOptionsDialog_ = 0;
+  moreSourceOptions_ = 0;
   set_spacing(10);
 
   DEVICES = new DeviceList(CdDevice::CD_ROM);
   pack_start(*DEVICES, false, false);
 
   // device settings
-  Gtk::Frame *extractOptionsFrame = new Gtk::Frame("Read Options");
   Gtk::VBox *vbox = new Gtk::VBox;
   vbox->set_border_width(5);
   vbox->set_spacing(5);
-  vbox->show();
-  extractOptionsFrame->add(*vbox);
-  
+
+  optionsLabel_ = new Gtk::Label("<b><big>Read options</big></b>");
+  optionsLabel_->set_alignment(0, 1);
+  optionsLabel_->set_use_markup(true);
+  vbox->pack_start(*optionsLabel_, false, false);
+  optionsLabel_->show();
+
   onTheFlyButton_ = new Gtk::CheckButton("Copy to disk before burning", 0);
   onTheFlyButton_->set_active(true);
   onTheFlyButton_->show();
@@ -82,124 +85,65 @@ RecordCDSource::RecordCDSource(Gtk::Window *parent)
   speedSpinButton_->set_digits(0);
   speedSpinButton_->show();
   speedSpinButton_->set_sensitive(false);
-  adjustment->value_changed.connect(SigC::slot(this, &RecordCDSource::speedChanged));
+  adjustment->signal_value_changed().connect(SigC::slot(*this, &RecordCDSource::speedChanged));
   hbox->pack_start(*speedSpinButton_, false, false, 10);
 
   speedButton_ = new Gtk::CheckButton("Use max.", 0);
   speedButton_->set_active(true);
   speedButton_->show();
-  speedButton_->toggled.connect(SigC::slot(this, &RecordCDSource::speedButtonChanged));
+  speedButton_->signal_toggled().connect(SigC::slot(*this, &RecordCDSource::speedButtonChanged));
   hbox->pack_start(*speedButton_, true, true);
   vbox->pack_start(*hbox);
 
-  Gnome::StockPixmap *moreOptionsPixmap =
-  	manage(new Gnome::StockPixmap(GNOME_STOCK_MENU_PROP));
-  Gtk::Label *moreOptionsLabel = manage(new Gtk::Label("More Options"));
-  Gtk::HBox *moreOptionsBox = manage(new Gtk::HBox);
-  moreOptionsBox->set_border_width(2);
-  Gtk::Button *moreOptionsButton = manage(new Gtk::Button());
-  moreOptionsBox->pack_start(*moreOptionsPixmap, false, false, 3);
-  moreOptionsBox->pack_start(*moreOptionsLabel, false, false, 4);
-  moreOptionsButton->add(*moreOptionsBox);
-  moreOptionsButton->clicked.connect(slot(this, &RecordCDSource::moreOptions));
-  moreOptionsPixmap->show();
-  moreOptionsLabel->show();
-  moreOptionsBox->show();
-  moreOptionsButton->show();
-  moreOptionsBox = manage(new Gtk::HBox);
-  moreOptionsBox->show();
-  vbox->pack_start(*moreOptionsBox);
-  moreOptionsBox->pack_end(*moreOptionsButton, false, false);
-
-  pack_start(*extractOptionsFrame, false, false);
-  extractOptionsFrame->show();
+  pack_start(*vbox, false, false);
+  vbox->show();
 }
 
 RecordCDSource::~RecordCDSource()
 {
-  if (moreOptionsDialog_)
-    delete moreOptionsDialog_;
+  if (moreSourceOptions_)
+    delete moreSourceOptions_;
 }
 
-void RecordCDSource::start()
+Gtk::VBox *RecordCDSource::moreOptions()
 {
-  if (active_) {
-    get_window().raise();
-    return;
-  }
-
-  active_ = 1;
-
-  update(UPD_CD_DEVICES);
-
-  show();
-}
-
-void RecordCDSource::stop()
-{
-  if (active_) {
-    hide();
-    active_ = 0;
-  }
-}
-
-void RecordCDSource::update(unsigned long level)
-{
-  if (!active_)
-    return;
-
-  if (level & UPD_CD_DEVICES)
-    DEVICES->import();
-  else if (level & UPD_CD_DEVICE_STATUS)
-    DEVICES->importStatus();
-}
-
-void RecordCDSource::moreOptions()
-{
-  if (!moreOptionsDialog_)
+  if (!moreSourceOptions_)
   {
     Gtk::HBox *hbox;
     Gtk::Label *label;
 
-    std::vector <std::string> buttons;
-    buttons.push_back(GNOME_STOCK_BUTTON_CLOSE);
-    moreOptionsDialog_ = new Gnome::Dialog("Source options", buttons);
+    moreSourceOptions_ = new Gtk::VBox();
 
-    moreOptionsDialog_->set_parent(*parent_);
-    moreOptionsDialog_->set_close(true);
-
-    Gtk::VBox *vbox = moreOptionsDialog_->get_vbox();
-    Gtk::Frame *frame = new Gtk::Frame("More Source Options");
-    vbox->pack_start(*frame);
-    vbox = new Gtk::VBox;
-    vbox->set_border_width(10);
-    vbox->set_spacing(5);
-    vbox->show();
-    frame->add(*vbox);
-    frame->show();
+    label = new Gtk::Label("<b><big>Read options</big></b>");
+    label->set_alignment(0, 1);
+    label->set_use_markup(true);
+    moreSourceOptions_->pack_start(*label, false, false);
+    label->show();
+    moreSourceOptions_->set_border_width(10);
+    moreSourceOptions_->set_spacing(5);
 
     continueOnErrorButton_ = new Gtk::CheckButton("Continue if errors found", 0);
     continueOnErrorButton_->set_active(false);
 //    continueOnErrorButton_->show();
-    vbox->pack_start(*continueOnErrorButton_);
+    moreSourceOptions_->pack_start(*continueOnErrorButton_);
 
     ignoreIncorrectTOCButton_ = new Gtk::CheckButton("Ignore incorrect TOC", 0);
     ignoreIncorrectTOCButton_->set_active(false);
 //    ignoreIncorrectTOCButton_->show();
-    vbox->pack_start(*ignoreIncorrectTOCButton_);
+    moreSourceOptions_->pack_start(*ignoreIncorrectTOCButton_);
 
     Gtk::Menu *menuCorrection = manage(new Gtk::Menu);
     Gtk::MenuItem *miCorr;
 	
     for (int i = 0; i <= MAX_CORRECTION_ID; i++) {
       miCorr = manage(new Gtk::MenuItem(CORRECTION_TABLE[i].name));
-      miCorr->activate.connect(bind(slot(this, &RecordCDSource::setCorrection), i));
+      miCorr->signal_activate().connect(bind(slot(*this, &RecordCDSource::setCorrection), i));
       miCorr->show();
       menuCorrection->append(*miCorr);
     }
   
     correctionMenu_ = new Gtk::OptionMenu;
-    correctionMenu_->set_menu(menuCorrection);
+    correctionMenu_->set_menu(*menuCorrection);
   
     correctionMenu_->set_history(correction_);
   
@@ -210,10 +154,12 @@ void RecordCDSource::moreOptions()
     hbox->pack_start(*correctionMenu_, FALSE);
     correctionMenu_->show();
     hbox->show();
-    vbox->pack_start(*hbox);
+    moreSourceOptions_->pack_start(*hbox, false, false);
   }
 
-  moreOptionsDialog_->show();
+  moreSourceOptions_->show();
+
+  return moreSourceOptions_; 
 }
 
 void RecordCDSource::setCorrection(int s)
@@ -258,8 +204,14 @@ void RecordCDSource::speedChanged()
 void RecordCDSource::onTheFlyOption(bool visible)
 {
   if (visible)
+  {
+    optionsLabel_->show();
     onTheFlyButton_->show();
+  }
   else
+  {
+    optionsLabel_->hide();
     onTheFlyButton_->hide();
+  }
 }
 

@@ -20,8 +20,6 @@
 #ifndef __RECORD_CD_SOURCE_H
 #define __RECORD_CD_SOURCE_H
 
-#include <gnome--.h>
-
 class CdDevice;
 class DeviceList;
 
@@ -30,10 +28,7 @@ public:
   RecordCDSource(Gtk::Window *);
   ~RecordCDSource();
 
-  void start();
-  void stop();
-
-  void update(unsigned long level);
+  Gtk::VBox *moreOptions();
 
   bool getOnTheFly();
   void setOnTheFly(bool);
@@ -49,24 +44,20 @@ public:
 private:
   DeviceList *DEVICES;
 
-  int active_;
   int correction_;
   int speed_;
 
-//  bool onTheFly_;
-
   Gtk::Window *parent_;
-  Gnome::Dialog *moreOptionsDialog_;
+  Gtk::VBox *moreSourceOptions_;
 
   Gtk::SpinButton *speedSpinButton_;
   Gtk::CheckButton *speedButton_;
 
+  Gtk::Label *optionsLabel_;
   Gtk::OptionMenu *correctionMenu_;
   Gtk::CheckButton *onTheFlyButton_;
   Gtk::CheckButton *continueOnErrorButton_;
   Gtk::CheckButton *ignoreIncorrectTOCButton_;
-
-  void moreOptions();
 
   void setSpeed(int);
   void setCorrection(int);
