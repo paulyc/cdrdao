@@ -28,10 +28,11 @@
 #include "util.h"
 
 #include "xconfig.h"
-#include <schily/standard.h>
-#include <scg/scgcmd.h>
-#include <scg/scsitransp.h>
-#include <scg/scsireg.h>
+
+#include "standard.h"
+#include "scg/scgcmd.h"
+#include "scg/scsitransp.h"
+#include "scg/scsireg.h"
 
 static void printVersionInfo(SCSI *scgp);
 
