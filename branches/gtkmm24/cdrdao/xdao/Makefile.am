@@ -86,6 +86,10 @@ EXTRA_gcdmaster_SOURCES =	\
 	SoundIF-none.cc 	\
 	SoundIF-solaris.cc
 
+gladedir = $(datadir)/gcdmaster/glade
+glade_DATA = 			\
+	glade/ProjectChooser.glade
+
 gcdmaster_LDADD =					\
 	@sound_if_obj@					\
 	-L$(top_builddir)/dao -ldao			\
@@ -103,12 +107,13 @@ gcdmaster_DEPENDENCIES = \
 INCLUDES =					\
 	-I$(srcdir)/../trackdb			\
 	-I$(srcdir)/../paranoia			\
-	-I$(srcdir)/../dao
+	-I$(srcdir)/../dao			\
+	-DCDRDAO_GLADEDIR=\""$(gladedir)"\"
 
 AM_CXXFLAGS = @GTKMM2_CFLAGS@ @LIBGUIMM2_CFLAGS@
 
 man1_MANS = gcdmaster.man
-EXTRA_DIST = $(man1_MANS) gcdmaster.desktop BUGS TASKS gcdmaster.png
+EXTRA_DIST = $(man1_MANS) $(glade_DATA) gcdmaster.desktop BUGS TASKS gcdmaster.png
 
 desktopdir = $(datadir)/applications
 desktop_DATA = gcdmaster.desktop
