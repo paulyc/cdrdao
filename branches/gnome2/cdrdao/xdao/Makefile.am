@@ -64,8 +64,7 @@ gcdmaster_DEPENDENCIES = \
 INCLUDES =					\
 	-I$(srcdir)/../trackdb			\
 	-I$(srcdir)/../paranoia			\
-	-I$(srcdir)/../dao			\
-	-DGNOMEICONDIR=\""$(datadir)/pixmaps"\"
+	-I$(srcdir)/../dao
 
 AM_CXXFLAGS = @GTKMM2_CFLAGS@ @LIBGUIMM2_CFLAGS@
 
