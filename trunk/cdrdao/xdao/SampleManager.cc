@@ -1,6 +1,6 @@
 /*  cdrdao - write audio CD-Rs in disc-at-once mode
  *
- *  Copyright (C) 1998  Andreas Mueller <mueller@daneb.ping.de>
+ *  Copyright (C) 1998-2002  Andreas Mueller <andreas@daneb.de>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,6 +18,10 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2000/09/24 17:39:07  andreasm
+ * Fixed length of processed data per idle signal call so that playback does
+ * not jump when audio data scanning is active.
+ *
  * Revision 1.3  2000/04/23 09:07:08  andreasm
  * * Fixed most problems marked with '//llanero'.
  * * Added audio CD edit menus to MDIWindow.
@@ -185,7 +189,7 @@ SampleManagerImpl::SampleManagerImpl(unsigned long blocking) : tocReader_(NULL)
 
   // create progress window
   Gtk::VBox *vbox = new Gtk::VBox();
-  Gtk::Label *label = new Gtk::Label(string("Scanning Audio Data..."));
+  Gtk::Label *label = new Gtk::Label("Scanning Audio Data...");
   
   vbox->pack_start(*label, FALSE, FALSE, 5);
   label->show();
@@ -197,7 +201,7 @@ SampleManagerImpl::SampleManagerImpl(unsigned long blocking) : tocReader_(NULL)
   progressBar_->show();
 
   Gtk::HBox *hbox = new Gtk::HBox();
-  Gtk::Button *button = new Gtk::Button(string(" Abort "));
+  Gtk::Button *button = new Gtk::Button(" Abort ");
   hbox->pack_start(*button, TRUE, FALSE);
   button->show();
   button->clicked.connect(slot(this, &SampleManagerImpl::abortAction));

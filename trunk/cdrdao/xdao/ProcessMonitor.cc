@@ -1,6 +1,6 @@
 /*  cdrdao - write audio CD-Rs in disc-at-once mode
  *
- *  Copyright (C) 1998, 1999  Andreas Mueller <mueller@daneb.ping.de>
+ *  Copyright (C) 1998-2002  Andreas Mueller <andreas@daneb.de>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -16,12 +16,6 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-/*
- * $Log: not supported by cvs2svn $
- * Revision 1.1.1.1  2000/02/05 01:39:32  llanero
- * Uploaded cdrdao 1.1.3 with pre10 patch applied.
- *
- */
 
 #include <unistd.h>
 #include <stddef.h>
@@ -36,7 +30,6 @@
 
 #include "util.h"
 
-static char rcsid[] = "$Id: ProcessMonitor.cc,v 1.2 2000-10-08 16:39:41 andreasm Exp $";
 
 Process::Process(int pid, int commFd)
 {
