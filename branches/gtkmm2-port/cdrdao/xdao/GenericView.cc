@@ -17,8 +17,8 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include <libgnomeuimm.h>
 #include "GenericView.h"
-
 
 GenericView::GenericView()
 {
