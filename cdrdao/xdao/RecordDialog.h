@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2000/04/29 14:46:38  llanero
+ * added the "buffers" option to the Record Dialog.
+ *
  * Revision 1.3  2000/04/23 09:07:08  andreasm
  * * Fixed most problems marked with '//llanero'.
  * * Added audio CD edit menus to MDIWindow.
@@ -88,6 +91,9 @@ private:
   Gtk::OptionMenu *speedMenu_;
 
   Gtk::SpinButton *bufferSpinButton_;
+  Gtk::Label *bufferRAMLabel_;
+
+  void updateBufferRAMLabel();
 
   void cancelAction();
   void startAction();
