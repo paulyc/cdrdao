@@ -18,6 +18,12 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2000/12/17 10:51:23  andreasm
+ * Default verbose level is now 2. Adaopted message levels to have finer
+ * grained control about the amount of messages printed by cdrdao.
+ * Added CD-TEXT writing support to the GenericMMCraw driver.
+ * Fixed CD-TEXT cue sheet creating for the GenericMMC driver.
+ *
  * Revision 1.2  2000/11/12 16:50:44  andreasm
  * Fixes for compilation under Win32.
  *
@@ -29,7 +35,7 @@
  *
  */
 
-static char rcsid[] = "$Id: port.cc,v 1.3 2000-12-17 10:51:23 andreasm Exp $";
+static char rcsid[] = "$Id: port.cc,v 1.4 2001-03-25 07:36:14 andreasm Exp $";
 
 #include <config.h>
 
@@ -53,12 +59,14 @@ static char rcsid[] = "$Id: port.cc,v 1.3 2000-12-17 10:51:23 andreasm Exp $";
 
 #ifdef _WIN32
 #include <vadefs.h>
-#include <Windows32/Base.h>
-#include <Windows32/Defines.h>
-#include <Windows32/Structures.h>
-#include <Windows32/Functions.h>
+#include <windows.h>
 #endif
 
+#ifdef UNIXWARE
+#include <sys/priocntl.h>
+#include <sys/fppriocntl.h>
+extern uid_t geteuid();
+#endif
 
 /* Select POSIX scheduler interface for real time scheduling if possible */
 #ifdef USE_POSIX_THREADS
@@ -136,7 +144,12 @@ void installSignalHandler(int sig, SignalHandler handler)
 
   memset(&action, 0, sizeof(action));
 
+#ifdef UNIXWARE
+  action.sa_handler = (void(*)()) handler;
+#else
   action.sa_handler = handler;
+#endif
+
   sigemptyset(&(action.sa_mask));
 
   if (sigaction(sig, &action, NULL) != 0) 
@@ -256,6 +269,38 @@ int setRealTimeScheduling(int priority)
   else {
     message(5, "Using POSIX real time scheduling.");
   }
+
+#elif defined UNIXWARE
+  /* Switch to fixed priority scheduling for this process */
+  pcinfo_t        pci;
+  pcparms_t       pcp;
+  fpparms_t       *fp;
+
+  if (geteuid() != 0) {
+    return 1;
+  }
+ 
+  /* set fixed priority class */
+  strcpy(pci.pc_clname, "FP");
+  fp = (fpparms_t *) &pcp.pc_clparms;
+  fp->fp_pri = FP_NOCHANGE;
+  fp->fp_tqsecs = (ulong_t) FP_TQDEF;
+  fp->fp_tqnsecs = FP_TQDEF;
+  
+  if (priocntl(P_PID, 0, PC_GETCID, (void *) &pci) < 0) {
+    message(-1, "priocntl PC_GETCID failed");
+    return 3;
+  }
+ 
+  pcp.pc_cid = pci.pc_cid;
+ 
+  if (priocntl(P_PID, getpid(), PC_SETPARMS, (void *) &pcp) < 0) {
+    message(-1, "priocntl PC_SETPARMS failed");
+    return 3;
+  }
+ 
+  message(2, "Now running in fixed-priority scheduling mode.");
+
 #else
   return 2;
 #endif
