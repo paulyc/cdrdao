@@ -46,6 +46,9 @@ cdrdao \- writes audio CD-Rs in disc-at-once mode
 .IR timeout ]
 .RB [ --cddb-directory
 .IR directory ]
+.RB [ --tmpdir
+.IR directory ]
+.RB [ --keep ]
 .RB [ --save ]
 .RB [ -n ]
 .RB [ -v 

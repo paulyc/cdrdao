@@ -52,6 +52,8 @@ const char *SET_CDDB_SERVER_LIST = "cddb_server_list";
 const char *SET_CDDB_TIMEOUT     = "cddb_timeout";
 const char *SET_CDDB_DB_DIR      = "cddb_directory";
 
+const char *SET_TMP_FILE_DIR = "tmp_file_dir";
+
 class SettingEntry {
 public:
   SettingEntry(const char *, int);
