@@ -20,8 +20,6 @@
 #ifndef __GENERIC_VIEW_H__
 #define __GENERIC_VIEW_H__
 
-#include <gtk--.h>
-
 class TocEditView;
 
 class GenericView : public Gtk::VBox
