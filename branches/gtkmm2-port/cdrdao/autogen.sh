@@ -1,6 +1,9 @@
 #! /bin/sh
 # Run this to generate the configure script and unpack needed packages
 
+# This generates the aclocal.m4 file from the macros in your system
+aclocal
+
 # This generates the configure script from configure.in
 autoconf
 
