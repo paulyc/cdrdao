@@ -51,9 +51,9 @@ DuplicateCDProject::DuplicateCDProject()
   tiRecord_->hide();
 
   CDSource = new RecordCDSource(this);
-  CDSource->start();
+  CDSource->show();
   CDTarget = new RecordCDTarget(this);
-  CDTarget->start();
+  CDTarget->show();
 
   hbox->pack_start(*CDSource);
   CDSource->show();
