@@ -38,16 +38,6 @@ AudioCDChild::AudioCDChild(AudioCDProject *project)
 {
   project_ = project;
   tocEdit_ = project->tocEdit();
-
-  // Menu Stuff
-  {
-    using namespace Gnome::UI::Items;
-    vector<Info> menus, viewMenuTree;
-
-    menus.push_back(Gnome::UI::Menus::View(viewMenuTree));
-
-//GTKMM2    project->insert_menus("Edit", menus);
-  }
 }
 
 AudioCDChild::~AudioCDChild()
