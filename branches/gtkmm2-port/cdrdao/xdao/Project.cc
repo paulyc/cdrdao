@@ -39,8 +39,7 @@ Project::Project() : Gnome::UI::App("gcdmaster", APP_NAME)
   viewNumber = 0;
   recordTocDialog_ = 0;
   enable_layout_config(true);
-//  set_usize(630, 440);
-//  set_policy(false, true, false);
+  set_default_size(630, 440);
   set_wmclass("GCDMaster", "GCDMaster");
 
   createMenus();
@@ -219,7 +218,6 @@ void Project::createToolbar()
 void Project::createStatusbar()
 {
   Gtk::HBox *container = new Gtk::HBox;
-//GTKMM2 bugzilla bug #93317
   statusbar_ = new Gnome::UI::AppBar(FALSE, TRUE, Gnome::UI::PREFERENCES_NEVER);
   progressbar_ = new Gtk::ProgressBar;
   progressButton_ = new Gtk::Button("Cancel");
