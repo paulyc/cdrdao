@@ -1,5 +1,5 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.30.2.2 $)dnl
+AC_REVISION($Revision: 1.30.2.3 $)dnl
 
 AC_INIT(cdrdao, 1.1.8-pre2)
 
@@ -212,6 +212,7 @@ fi
 
 if test "$use_scglib" = yes; then
   AC_DEFINE(USE_SCGLIB,1,"")
+  AC_DEFINE(SCSI_ATAPI, 1, "Allow ATAPI support device")
 
   if test "$scglib_inc" = default -o "$scglib_lib" = default; then
     scsilib_dir=scsilib

@@ -34,6 +34,12 @@
 #include "scg/scsitransp.h"
 #include "scg/scsireg.h"
 
+// schily/standard.h define these, i don't know what they smoked the
+// day they came up with those defines.
+#undef vendor
+#undef product
+#undef revision
+
 static void printVersionInfo(SCSI *scgp);
 
 #define MAX_DATALEN_LIMIT (63 * 1024)
@@ -219,7 +225,7 @@ int ScsiIf::sendCmd(const unsigned char *cmd, int cmdLen,
 	
   impl_->scgp_->cmdname = " ";
   impl_->scgp_->verbose = 0;
-  impl_->scgp_->silent = showMessage ? 0 : 1;
+  impl_->scgp_->silent = 1;
   
   if (scg_cmd(impl_->scgp_) < 0) {
     return scmd->sense_count > 0 ?  2 : 1;
@@ -255,7 +261,7 @@ int ScsiIf::inquiry()
   cmd[5] = 0;
 
 
-  if (sendCmd(cmd, 6, NULL, 0, result, 0x2c, 1) != 0) {
+  if (sendCmd(cmd, 6, NULL, 0, result, 0x2c, 0) != 0) {
     message (-2, "Inquiry command failed on '%s'.", impl_->dev_);
     return 1;
   }
@@ -315,31 +321,17 @@ static int scanInquiry(SCSI *scgp, unsigned char *buf, ScsiIf::ScanData *sdata)
   if (cmd_status == 0 || (is_atapi && dev_sense >= 0)) {
     struct scsi_inquiry* inq = (struct scsi_inquiry*)buf;
     if (inq->type == INQ_OPTD || inq->type == INQ_ROMD) {
-      sdata->bus = scg_scsibus(scgp);
-      sdata->id = scg_target(scgp);
-      sdata->lun = scg_lun(scgp);
-      sdata->is_atapi = is_atapi;
+      char buf[16];
+      sprintf(buf, "%d,%d,%d", scg_scsibus(scgp), scg_target(scgp),
+              scg_lun(scgp));
+      sdata->dev +=  buf;
 
-      strncpy(sdata->_vendor, (char *)(buf + 0x08), 8);
-      sdata->_vendor[8] = 0;
-
-      strncpy(sdata->_product, (char *)(buf + 0x10), 16);
-      sdata->_product[16] = 0;
-
-      strncpy(sdata->_revision, (char *)(buf + 0x20), 4);
-      sdata->_revision[4] = 0;
-
-      for (i = 7; i >= 0 && sdata->_vendor[i] == ' '; i--) {
-	sdata->_vendor[i] = 0;
-      }
-
-      for (i = 15; i >= 0 && sdata->_product[i] == ' '; i--) {
-	sdata->_product[i] = 0;
-      }
-
-      for (i = 3; i >= 0 && sdata->_revision[i] == ' '; i--) {
-	sdata->_revision[i] = 0;
-      }
+      strncpy(sdata->vendor, inq->vendor_info, 8);
+      sdata->vendor[8] = 0;
+      strncpy(sdata->product, inq->prod_ident, 16);
+      sdata->product[16] = 0;
+      strncpy(sdata->revision, inq->prod_revision, 4);
+      sdata->revision[4] = 0;
 
       return 1;
     }
@@ -377,6 +369,10 @@ ScsiIf::ScanData *ScsiIf::scan(int *len, char* scsi_dev)
 
       for (int target=0; target < 16 && *len < MAX_SCAN_DATA_LEN; target++) {
 	scg_settarget(scgp, bus, target, lun);
+        if (scsi_dev) {
+          sdata[*len].dev = scsi_dev;
+          sdata[*len].dev += ":";
+        }
 	if (scanInquiry(scgp, buf, &(sdata[*len])))
 	  *len += 1;
       }
