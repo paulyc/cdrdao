@@ -19,7 +19,7 @@
 
 #include <stddef.h>
 
-#include <sigc++/signal.h>
+#include <sigc++/sigc++.h>
 
 #include "guiUpdate.h"
 #include "TocEdit.h"
