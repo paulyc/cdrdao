@@ -18,6 +18,10 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2000/04/24 12:49:06  andreasm
+ * Changed handling or message from remote processes to use the
+ * Gtk::Main::input mechanism.
+ *
  * Revision 1.2  2000/04/23 09:07:08  andreasm
  * * Fixed most problems marked with '//llanero'.
  * * Added audio CD edit menus to MDIWindow.
@@ -35,7 +39,7 @@
  *
  */
 
-static char rcsid[] = "$Id: guiUpdate.cc,v 1.3 2000-04-24 12:49:06 andreasm Exp $";
+static char rcsid[] = "$Id: guiUpdate.cc,v 1.4 2000-07-17 22:08:33 llanero Exp $";
 
 #include "guiUpdate.h"
 
@@ -47,6 +51,7 @@ static char rcsid[] = "$Id: guiUpdate.cc,v 1.3 2000-04-24 12:49:06 andreasm Exp 
 #include "AddSilenceDialog.h"
 #include "AddFileDialog.h"
 #include "DeviceConfDialog.h"
+#include "RecordGenericDialog.h"
 #include "RecordDialog.h"
 #include "RecordProgressDialog.h"
 #include "ExtractDialog.h"
@@ -84,6 +89,9 @@ void guiUpdate(unsigned long level)
 
   if (RECORD_DIALOG != NULL)
     RECORD_DIALOG->update(level, tocEdit);
+
+  if (RECORD_GENERIC_DIALOG != NULL)
+    RECORD_GENERIC_DIALOG->update(level, tocEdit);
 
   if (RECORD_PROGRESS_POOL != NULL)
     RECORD_PROGRESS_POOL->update(level, tocEdit);

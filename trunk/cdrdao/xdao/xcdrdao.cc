@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.11  2000/06/10 14:49:49  andreasm
+ * Changed Warning to WARNING in 'message()'.
+ *
  * Revision 1.10  2000/05/25 20:12:55  llanero
  * added BUGS and TASKS, changed name to GnomeCDMaster
  *
@@ -233,19 +236,6 @@ int main (int argc, char* argv[])
 
   guiUpdate();
 
-{
-/*
-  GtkWidget *message_box;
-  GtkWidget *boton;
-  message_box = gnome_message_box_new("This is a test!",
-    GNOME_MESSAGE_BOX_WARNING, GNOME_STOCK_BUTTON_CLOSE, NULL);
-  gtk_widget_show(message_box);
-  boton = gtk_button_new();
-  gtk_container_add(GTK_CONTAINER(message_box), boton);
-  gtk_widget_show(boton);
-*/    
-}
-	
   application.run();
 
   // save settings
