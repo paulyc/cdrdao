@@ -154,7 +154,7 @@ void BlankCDDialog::moreOptions()
   moreOptionsDialog_->hide();
 }
 
-void BlankCDDialog::start(Project& parent)
+void BlankCDDialog::start(Gtk::Window& parent)
 {
   present();
   active_ = true;
