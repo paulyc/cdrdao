@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2004/02/12 01:13:31  poolshark
+ * Merge from gnome2 branch
+ *
  * Revision 1.1.1.1.4.2  2004/01/07 08:28:14  poolshark
  * Added ATAPI support
  *
@@ -79,6 +82,10 @@ public:
   //         2: not ready, no disk in drive
   //         3: scsi command failed
   int testUnitReady();
+
+  // check for mmc capability
+  bool checkMmc(bool *cd_r_read,  bool *cd_r_write,
+                bool *cd_rw_read, bool *cd_rw_write);
 
   struct ScanData {
     std::string dev;
