@@ -20,10 +20,6 @@
 #ifndef __CD_TEXT_DIALOG_H__
 #define __CD_TEXT_DIALOG_H__
 
-#include <gtk--.h>
-#include <gtk/gtk.h>
-
-//#include "Toc.h"
 #include "CdTextItem.h"
 
 class TocEdit;
@@ -33,16 +29,11 @@ public:
   CdTextDialog();
   ~CdTextDialog();
 
-  gint delete_event_impl(GdkEventAny*);
-
   void update(unsigned long, TocEdit *);
 
-  void start(TocEdit *);
-  void stop();
+  void setTocEdit(TocEdit *);
 
 private:
-  int active_;
-
   TocEdit *tocEdit_;
   int trackEntries_;
 
