@@ -52,7 +52,7 @@ gcdmaster_LDADD =					\
 	-L$(top_builddir)/dao -ldao			\
 	-L$(top_builddir)/paranoia -lcdda_paranoia	\
 	-L$(top_builddir)/trackdb -ltrackdb		\
-	-L$(top_builddir)/scsilib/export @scsilib_libs@	\
+	@scsilib_libs@					\
 	@LIBGUIMM2_LIBS@ @GTKMM2_LIBS@
 
 gcdmaster_DEPENDENCIES = @sound_if_obj@

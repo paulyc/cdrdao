@@ -42,7 +42,7 @@ cdrdao_LDADD =						\
 	@thread_libs@					\
 	-L$(top_builddir)/paranoia -lcdda_paranoia	\
 	-L$(top_builddir)/trackdb -ltrackdb		\
-	-L$(top_builddir)/scsilib/export @scsilib_libs@
+	@scsilib_libs@
 
 cdrdao_DEPENDENCIES = ../paranoia/libcdda_paranoia.a libdao.a
 
@@ -52,8 +52,7 @@ DRIVER_TABLE_FILE = $(CDRDAO_DATA_DIR)/drivers
 INCLUDES =						\
 	-I$(srcdir)/../trackdb				\
 	-I$(srcdir)/../paranoia				\
-	-I$(srcdir)/../scsilib/export			\
-	-I$(srcdir)/../scsilib/export/libschily
+	@scsilib_incl@
 
 AM_CXXFLAGS = -DDRIVER_TABLE_FILE=\"$(DRIVER_TABLE_FILE)\"
 
