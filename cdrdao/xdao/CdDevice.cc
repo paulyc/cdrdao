@@ -46,6 +46,7 @@
 #include "Toc.h"
 
 #define DRIVER_IDS 13
+#define DRIVER_ID_DEFAULT 2
 
 CdDevice *CdDevice::DEVICE_LIST_ = NULL;
 
@@ -167,27 +168,15 @@ int CdDevice::autoSelectDriver()
   driverName = CdrDriver::selectDriver(1, vendor_.c_str(), product_.c_str(),
                                        &options);
 
-  if (driverName == NULL) {
-    // select read driver 
-    driverName = CdrDriver::selectDriver(0, vendor_.c_str(), product_.c_str(),
-                                         &options);
-
-    if (driverName != NULL)
-      deviceType_ = CD_ROM;
-  }
-
-  if (driverName != NULL) {
+  if (driverName) {
     driverId_ = driverName2Id(driverName);
     options_ = options;
-
-    return 1;
-  }
-  else {
-    driverId_ = 0;
+  } else {
+    driverId_ = DRIVER_ID_DEFAULT;
     options_ = 0;
-
-    return 0;
   }
+
+  return 1;
 }
 
 int CdDevice::updateStatus()
