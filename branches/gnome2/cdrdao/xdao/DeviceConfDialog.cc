@@ -489,13 +489,15 @@ void DeviceConfDialog::exportConfiguration(Gtk::TreeIter row)
   if (row) {
     data = (*row)[listColumns_.data];
 
-    data->options = strtoul(driverOptionsEntry_.get_text().c_str(), NULL, 0);
-    s = checkString(specialDeviceEntry_.get_text());
+    if (data) {
+      data->options = strtoul(driverOptionsEntry_.get_text().c_str(), NULL, 0);
+      s = checkString(specialDeviceEntry_.get_text());
 
-    if (s == NULL)
-      data->specialDevice = "";
-    else
-      data->specialDevice = s;
+      if (s == NULL)
+          data->specialDevice = "";
+      else
+          data->specialDevice = s;
+    }
   }
 }
 
