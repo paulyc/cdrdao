@@ -1,6 +1,13 @@
 #! /bin/sh
 # Run this to generate the configure script and unpack needed packages
 
+# This generates the aclocal.m4 file based on configure.in. Manual
+# additions should be added to acinclude.m4
+aclocal
+
+# This generates the Makefile.in files from the corresponding Makefile.am
+automake
+
 # This generates the configure script from configure.in
 autoconf
 
