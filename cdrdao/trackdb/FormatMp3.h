@@ -17,6 +17,9 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#ifndef __FORMATMP3_H__
+#define __FORMATMP3_H__
+
 #include <stdlib.h>
 #include <ao/ao.h>
 #include <mad.h>
@@ -29,7 +32,9 @@ class FormatMp3 : public FormatSupport
  public:
   FormatMp3();
 
-  int convert(const char* from, const char* to);
+  Status convert(const char* from, const char* to);
+  Status convertStart(const char* from, const char* to);
+  Status convertContinue();
 
   TrackData::FileType format() { return TrackData::WAVE; }
 
@@ -43,21 +48,28 @@ protected:
   static inline signed long audio_linear_dither(unsigned int bits,
                                                 mad_fixed_t sample,
                                                 struct audio_dither* dither);
-  static enum mad_flow madoutput(void* data, struct mad_header const* header,
-                                 struct mad_pcm* pcm);
-  static enum mad_flow madinput(void* data, struct mad_stream* stream);
-  static enum mad_flow maderror(void* data, struct mad_stream* stream,
-                                struct mad_frame* frame);
+
+  Status madInit();
+  Status madDecodeFrame();
+  void   madExit();
+  
+  Status madOutput();
 
  private:
+  const char* src_file_;
+  const char* dst_file_;
   // 1152 because that's what mad has as a max; *4 because there are 4
   // distinct bytes per sample (in 2 channel case).
-  char stream_[1152*4];
+  char        buffer_[1152*4];
+  ao_device*  out_;
+  int         mapped_fd_;
+  void*       start_;
+  unsigned    length_;
+
   struct audio_dither dither_;
-  unsigned char const* start_;
-  unsigned long length_;
-  ao_device* out_;
-  struct mad_decoder decoder_;
+  struct mad_stream   stream_;
+  struct mad_frame    frame_;
+  struct mad_synth    synth_;
 };
 
 class FormatMp3Manager : public FormatSupportManager
@@ -66,3 +78,5 @@ class FormatMp3Manager : public FormatSupportManager
   FormatSupport* newConverter(const char* extension);
   int supportedExtensions(std::list<std::string>&);
 };
+
+#endif

@@ -17,6 +17,9 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#ifndef __FORMATOGG_H__
+#define __FORMATOGG_H__
+
 #include <stdlib.h>
 #include <ao/ao.h>
 #include <vorbis/vorbisfile.h>
@@ -27,17 +30,27 @@
 class FormatOgg : public FormatSupport
 {
  public:
-  FormatOgg();
+  FormatOgg() {};
 
-  int convert(const char* from, const char* to);
+  Status convert(const char* from, const char* to);
+  Status convertStart(const char* from, const char* to);
+  Status convertContinue();
 
   TrackData::FileType format() { return TrackData::WAVE; }
 
+ protected:
+  virtual Status oggInit();
+  virtual Status oggDecodeFrame();
+  virtual Status oggExit();
+
  private:
-  char buffer[4096];
-  ao_device* aoDev_;
+  const char*      src_file_;
+  const char*      dst_file_;
+  char             buffer_[4096];
+  FILE*            fin_;
+  ao_device*       aoDev_;
   ao_sample_format outFormat_;
-  OggVorbis_File vorbisFile_;
+  OggVorbis_File   vorbisFile_;
 };
 
 class FormatOggManager : public FormatSupportManager
@@ -46,3 +59,5 @@ class FormatOggManager : public FormatSupportManager
   FormatSupport* newConverter(const char* extension);
   int supportedExtensions(std::list<std::string>&);
 };
+
+#endif
