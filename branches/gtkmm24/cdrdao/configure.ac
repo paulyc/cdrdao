@@ -1,5 +1,5 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.42.2.3 $)dnl
+AC_REVISION($Revision: 1.1.2.1 $)dnl
 
 AC_INIT(cdrdao, 1.1.9)
 
