@@ -44,7 +44,7 @@ AudioCDChild::AudioCDChild(AudioCDProject *project)
     using namespace Gnome::UI::Items;
     vector<Info> menus, viewMenuTree;
 
-    viewMenuTree.push_back(Item(Icon(Gtk::Stock::ADD.id),
+    viewMenuTree.push_back(Item(Icon(Gtk::Stock::ADD),
 			      N_("Add new track editor view"),
 			      slot(*project, &AudioCDProject::newAudioCDView),
 			      N_("Add new view of current project")));
