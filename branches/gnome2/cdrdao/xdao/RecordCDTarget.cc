@@ -375,11 +375,6 @@ void RecordCDTarget::speedChanged()
     speedSpinButton_->set_value(new_speed);
   }
 
-  if (new_speed > 8) {
-    new_speed = 8;
-    speedSpinButton_->set_value(new_speed);
-  }
-
   speed_ = new_speed;
 }
 
