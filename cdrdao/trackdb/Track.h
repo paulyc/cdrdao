@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.1.1.1  2000/02/05 01:32:33  llanero
+ * Uploaded cdrdao 1.1.3 with pre10 patch applied.
+ *
  * Revision 1.6  1999/04/05 11:03:01  mueller
  * Added CD-TEXT support.
  *
@@ -94,7 +97,7 @@ public:
   // encoded with given mode
   static void encodeZeroData(int encMode, TrackData::Mode, long lba, char *);
 
-  int check() const;
+  int check(int trackNr) const;
 
   int isrcValid() const { return isrcValid_; }
 
