@@ -31,6 +31,7 @@
 #include "TrackData.h"
 #include "Msf.h"
 #include "util.h"
+#include "FormatConverter.h"
 
 #ifdef UNIXWARE
 extern "C" {
@@ -65,8 +66,15 @@ void TrackData::init(const char *filename, long offset,
   }
   else {
     type_ = DATAFILE;
-    filename_ = strdupCC(filename);
-    fileType_ = audioFileType(filename);
+
+    const char* fn;
+    if (formatConverter.canConvert(filename) &&
+        (fn = formatConverter.convert(filename))) {
+      filename_ = strdupCC(fn);
+    } else {
+      filename_ = strdupCC(filename);
+    }
+    fileType_ = audioFileType(filename_);
   }
   
   offset_ = offset;
@@ -132,10 +140,16 @@ void TrackData::init(Mode m, SubChannelMode sm, const char *filename,
   }
   else {
     type_ = DATAFILE;
-    filename_ = strdupCC(filename);
+    const char* fn;
+    if (formatConverter.canConvert(filename) &&
+        (fn = formatConverter.convert(filename))) {
+      filename_ = strdupCC(fn);
+    } else {
+      filename_ = strdupCC(filename);
+    }
 
     if (mode_ == AUDIO)
-      fileType_ = audioFileType(filename);
+      fileType_ = audioFileType(filename_);
     else
       fileType_ = RAW; // data files are always raw
   }
@@ -200,7 +214,7 @@ TrackData::TrackData(const TrackData &obj)
     
 TrackData::~TrackData()
 {
-  if (filename_ != NULL) {
+  if (filename_) {
     delete[] filename_;
     filename_ = NULL;
   }
@@ -566,11 +580,19 @@ int TrackData::checkAudioFile(const char *fn, unsigned long *length)
   if (ret != 0)
     return 1;
 
+  // Check if audio file needs conversion. Go ahead and do it if
+  // necessary. 
+  if (formatConverter.canConvert(fn)) {
+    // Returns new filename, which will be either a wav or raw file.
+    fn = formatConverter.convert(fn);
+    if (!fn)
+      return 1;
+  }
+
   if (audioFileType(fn) == WAVE) {
     if (waveLength(fn, 0, &headerLength, length) != 0)
       return 2;
-  }
-  else {
+  } else {
     if (buf.st_size % sizeof(Sample) != 0) {
       message(-1, "%s: Length is not a multiple of sample size (4).", fn);
     }
@@ -986,7 +1008,6 @@ const char *TrackData::subChannelMode2String(SubChannelMode m)
 
   return ret;
 }
-
 
 TrackDataReader::TrackDataReader(const TrackData *d)
 {
