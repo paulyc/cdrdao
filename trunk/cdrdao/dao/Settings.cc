@@ -18,6 +18,10 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2000/06/22 12:19:28  andreasm
+ * Added switch for reading CDs written in TAO mode.
+ * The fifo buffer size is now also saved to $HOME/.cdrdao.
+ *
  * Revision 1.2  2000/06/19 20:17:37  andreasm
  * Added CDDB reading to add CD-TEXT information to toc-files.
  * Fixed bug in reading ATIP data in 'GenericMMC::diskInfo()'.
@@ -31,7 +35,7 @@
  *
  */
 
-static char rcsid[] = "$Id: Settings.cc,v 1.3 2000-06-22 12:19:28 andreasm Exp $";
+static char rcsid[] = "$Id: Settings.cc,v 1.4 2000-08-06 13:13:08 andreasm Exp $";
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -58,6 +62,7 @@ const char *SET_READ_PARANOIA_MODE = "read_paranoia_mode";
 
 const char *SET_CDDB_SERVER_LIST = "cddb_server_list";
 const char *SET_CDDB_TIMEOUT     = "cddb_timeout";
+const char *SET_CDDB_DB_DIR      = "cddb_directory";
 
 class SettingEntry {
 public:
