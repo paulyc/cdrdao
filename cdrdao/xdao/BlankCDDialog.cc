@@ -188,7 +188,7 @@ void BlankCDDialog::startAction()
   int reload = checkReloadWarning(this);
   int burnSpeed = getSpeed();
 
-  std::list<CdDevice *> devices = Devices->getAllSelected();
+  std::list<CdDevice *> devices = Devices->getAll(true);
 
   for (std::list<CdDevice *>::iterator i = devices.begin();
          i != devices.end(); i++)
