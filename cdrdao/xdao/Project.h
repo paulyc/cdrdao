@@ -20,19 +20,17 @@
 #ifndef __PROJECT_H__
 #define __PROJECT_H__
 
-#include <gnome--.h>
 
 class RecordTocDialog;
 class TocEdit;
 #include "ViewSwitcher.h"
 
-class Project : public Gnome::App
+class Project : public Gnome::UI::App
 {
 protected:
   Gtk::Toolbar *toolbar;
   Gtk::HBox *hbox;
-//  Gtk::Statusbar *statusbar_;  
-  Gnome::AppBar *statusbar_;  
+  Gnome::UI::AppBar *statusbar_;  
   Gtk::ProgressBar *progressbar_;  
   Gtk::Button *progressButton_;  
   ViewSwitcher *viewSwitcher_;
@@ -61,7 +59,6 @@ protected:
   void saveFileSelectorOKCB();
   void saveFileSelectorCancelCB();
 
-  virtual int delete_event_impl(GdkEventAny *event);
   virtual void recordToc2CD() = 0;
   virtual void projectInfo() = 0;
 
@@ -75,6 +72,17 @@ public:
   int projectNumber();
   TocEdit *tocEdit();
   gint getViewNumber();
+
+  SigC::Signal0<void> signal_newProject;
+  SigC::Signal0<void> signal_openProject;
+  SigC::Signal0<void> signal_newAudioProject;
+  SigC::Signal0<void> signal_newDuplicateProject;
+  SigC::Signal0<void> signal_newDumpProject;
+  SigC::Signal0<void> signal_closeProject;
+  SigC::Signal0<void> signal_exitApp;
+  SigC::Signal0<void> signal_blankCD;
+  SigC::Signal0<void> signal_configureDevices;
+  SigC::Signal0<void> signal_about;
 
   virtual void update(unsigned long level) = 0;
 };
