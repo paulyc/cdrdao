@@ -1,6 +1,6 @@
 /*  cdrdao - write audio CD-Rs in disc-at-once mode
  *
- *  Copyright (C) 1998, 1999  Andreas Mueller <mueller@daneb.ping.de>
+ *  Copyright (C) 1998-2000  Andreas Mueller <mueller@daneb.ping.de>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,6 +18,12 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  1999/12/15 20:31:46  mueller
+ * Added remote messages for 'read-cd' progress used by a GUI.
+ *
+ * Revision 1.4  1999/11/07 09:15:15  mueller
+ * Release 1.1.3
+ *
  * Revision 1.3  1999/04/05 11:04:10  mueller
  * Added driver option flags.
  *
@@ -29,7 +35,7 @@
  *
  */
 
-static char rcsid[] = "$Id: TeacCdr55.cc,v 1.1.1.1 2000-02-05 01:37:43 llanero Exp $";
+static char rcsid[] = "$Id: TeacCdr55.cc,v 1.2 2000-04-23 16:29:50 andreasm Exp $";
 
 #include <config.h>
 
@@ -1500,11 +1506,15 @@ int TeacCdr55::readAudioRange(int fd, long start, long end, int startTrack,
     message(1, "Analyzing...");
     
     for (t = startTrack; t <= endTrack; t++) {
+      sendReadCdProgressMsg(RCD_ANALYZING, t + 1, 0);
+      
       message(1, "Track %d...", t + 1);
       info[t].isrcCode[0] = 0;
       readIsrc(t + 1, info[t].isrcCode);
       if (info[t].isrcCode[0] != 0)
 	message(1, "Found ISRC code.");
+
+      sendReadCdProgressMsg(RCD_ANALYZING, t + 1, 1000);
     }
 
     message(1, "Reading...");
