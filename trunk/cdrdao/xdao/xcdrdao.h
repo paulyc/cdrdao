@@ -18,6 +18,12 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2000/11/05 12:24:41  andreasm
+ * Improved handling of TocEdit views. Introduced a new class TocEditView that
+ * holds all view data (displayed sample range, selected sample range,
+ * selected tracks/index marks, sample marker). This class is passed now to
+ * most of the update functions of the dialogs.
+ *
  * Revision 1.5  2000/09/21 02:07:07  llanero
  * MDI support:
  * Splitted AudioCDChild into same and AudioCDView
@@ -57,6 +63,7 @@
 #ifndef __XCDRDAO_H__
 #define __XCDRDAO_H__
 
+extern class GCDMaster *gcdmaster;
 extern class MDIWindow *MDI_WINDOW;
 extern class DeviceConfDialog *DEVICE_CONF_DIALOG;
 extern class ProcessMonitor *PROCESS_MONITOR;
