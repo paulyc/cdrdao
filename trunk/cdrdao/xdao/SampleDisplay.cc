@@ -18,6 +18,17 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.8  2000/09/21 02:07:06  llanero
+ * MDI support:
+ * Splitted AudioCDChild into same and AudioCDView
+ * Move Selections from TocEdit to AudioCDView to allow
+ *   multiple selections.
+ * Cursor animation in all the views.
+ * Can load more than one from from command line
+ * Track info, Toc info, Append/Insert Silence, Append/Insert Track,
+ *   they all are built for every child when needed.
+ * ...
+ *
  * Revision 1.7  2000/04/23 09:07:08  andreasm
  * * Fixed most problems marked with '//llanero'.
  * * Added audio CD edit menus to MDIWindow.
@@ -64,7 +75,7 @@
  *
  */
 
-static char rcsid[] = "$Id: SampleDisplay.cc,v 1.8 2000-09-21 02:07:06 llanero Exp $";
+static char rcsid[] = "$Id: SampleDisplay.cc,v 1.9 2001-01-21 13:46:11 andreasm Exp $";
 
 #include <stdio.h>
 #include <limits.h>
@@ -418,6 +429,8 @@ void SampleDisplay::getColor(const char *colorName, Gdk_Color *color)
 
 void SampleDisplay::scrollTo()
 {
+  unsigned long minSample, maxSample;
+
   if (tocEdit_ == NULL)
     return;
 
@@ -427,19 +440,18 @@ void SampleDisplay::scrollTo()
   if (adjust->page_size == 0.0)
     return;
 
-  minSample_ = (unsigned long)adjust->value;
-  maxSample_ = (unsigned long)(adjust->value + adjust->page_size) - 1;
+  minSample = (unsigned long)adjust->value;
+  maxSample = (unsigned long)(adjust->value + adjust->page_size) - 1;
 
-  if (maxSample_ >= toc->length().samples()) {
-    maxSample_ = toc->length().samples() - 1;
-    if (maxSample_ <= (unsigned long)(adjust->page_size - 1))
-      minSample_ = 0;
+  if (maxSample >= toc->length().samples()) {
+    maxSample = toc->length().samples() - 1;
+    if (maxSample <= (unsigned long)(adjust->page_size - 1))
+      minSample = 0;
     else 
-      minSample_ = maxSample_ - (unsigned long)(adjust->page_size - 1);
+      minSample = maxSample - (unsigned long)(adjust->page_size - 1);
   }
 
-  updateSamples();
-  redraw(0, 0, width_, height_, 0);
+  viewModified(minSample, maxSample);
 }
 
 unsigned long SampleDisplay::pixel2sample(gint x)

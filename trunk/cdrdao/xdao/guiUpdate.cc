@@ -18,6 +18,12 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.7  2000/11/05 12:24:41  andreasm
+ * Improved handling of TocEdit views. Introduced a new class TocEditView that
+ * holds all view data (displayed sample range, selected sample range,
+ * selected tracks/index marks, sample marker). This class is passed now to
+ * most of the update functions of the dialogs.
+ *
  * Revision 1.6  2000/09/21 02:07:07  llanero
  * MDI support:
  * Splitted AudioCDChild into same and AudioCDView
@@ -58,12 +64,11 @@
  *
  */
 
-static char rcsid[] = "$Id: guiUpdate.cc,v 1.7 2000-11-05 12:24:41 andreasm Exp $";
+static char rcsid[] = "$Id: guiUpdate.cc,v 1.8 2001-01-21 13:46:11 andreasm Exp $";
 
 #include "guiUpdate.h"
 
 #include "xcdrdao.h"
-#include "TocEdit.h"
 #include "MDIWindow.h"
 #include "TrackInfoDialog.h"
 #include "TocInfoDialog.h"
@@ -74,20 +79,24 @@ static char rcsid[] = "$Id: guiUpdate.cc,v 1.7 2000-11-05 12:24:41 andreasm Exp 
 #include "ProgressDialog.h"
 #include "ProcessMonitor.h"
 #include "CdDevice.h"
+#include "TocEdit.h"
 
 #include "util.h"
 #include "GenericChild.h"
 
 void guiUpdate(unsigned long level)
 {
+  TocEdit *tocEdit = NULL;
+
   if (MDI_WINDOW == 0)
     return;
 
-  if (MDI_WINDOW->gtkobj()->children)
-  {
+  if (MDI_WINDOW->gtkobj()->children) {
     GenericChild *child = static_cast <GenericChild *>(MDI_WINDOW->get_active_child());
 
-    level |= child->tocEdit()->updateLevel();
+    tocEdit = child->tocEdit();
+
+    level |= tocEdit->updateLevel();
     
     child->update(level);
   }
@@ -99,8 +108,7 @@ void guiUpdate(unsigned long level)
     DEVICE_CONF_DIALOG->update(level);
 
   if (RECORD_GENERIC_DIALOG != NULL)
-    RECORD_GENERIC_DIALOG->update(level);
-//    RECORD_GENERIC_DIALOG->update(level, tocEdit);
+    RECORD_GENERIC_DIALOG->update(level, tocEdit);
 
   if (PROGRESS_POOL != NULL)
     PROGRESS_POOL->update(level);

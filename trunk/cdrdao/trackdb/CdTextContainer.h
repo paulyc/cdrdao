@@ -19,6 +19,9 @@
 
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.1.1.1  2000/02/05 01:32:23  llanero
+ * Uploaded cdrdao 1.1.3 with pre10 patch applied.
+ *
  * Revision 1.1  1999/04/05 11:02:11  mueller
  * Initial revision
  *
@@ -55,7 +58,9 @@ public:
   // sets/returns language code for block nr
   void language(int blockNr, int lang);
   int language(int blockNr) const;
-  
+
+  static const char *languageName(int lang);
+
 private:
   long count_;
   CdTextItem *items_;
