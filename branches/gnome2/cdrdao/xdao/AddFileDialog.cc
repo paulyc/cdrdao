@@ -43,7 +43,7 @@ AddFileDialog::AddFileDialog(AudioCDProject *project)
 
   set_filename("*.wav");
   show_fileop_buttons();
-  set_select_multiple(false);
+  set_select_multiple(true);
   set_transient_for(*project);
   mode(M_APPEND_TRACK);
 
@@ -128,25 +128,34 @@ void AddFileDialog::applyAction()
     return;
   }
 
-  std::string sel = get_filename();
-  const char *s = stripCwd(sel.c_str());
-  
-  if (s != NULL && *s != 0 && s[strlen(s) - 1] != '/') {
-    unsigned long pos;
+  Glib::ArrayHandle<std::string> sfiles = get_selections();
+  std::list<std::string> files;
 
+  for (Glib::ArrayHandle<std::string>::const_iterator i = sfiles.begin();
+       i != sfiles.end(); i++) {
+
+    const char *s = stripCwd((*i).c_str());
+
+    if (s && *s != 0 && s[strlen(s) - 1] != '/')
+      files.push_back(s);
+  }
+
+  if (files.size() > 0) {
     switch (mode_) {
     case M_APPEND_TRACK:
-      project_->appendTrack(s);
+      project_->appendTracks(files);
       break;
-
+      
     case M_APPEND_FILE:
-      project_->appendFile(s);
+      project_->appendFiles(files);
       break;
 
     case M_INSERT_FILE:
-      project_->insertFile(s);
+      project_->insertFiles(files);
       break;
     }
+    if (files.size() > 1)
+      stop();
   }
 
   set_filename("*.wav");
