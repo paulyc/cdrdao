@@ -347,7 +347,8 @@ bool CdDevice::recordDao(Gtk::Window& parent, TocEdit *tocEdit, int simulate,
   char bufferbuf[20];
   int remoteFdArgNum = 0;
 
-  if (status_ != DEV_READY || process_ != NULL)
+  if ((status_ != DEV_READY && status_ != DEV_FAULT && status_ != DEV_UNKNOWN)
+      || process_ != NULL)
     return false;
 
   sprintf(tocFileName, "/tmp/gcdm.toc.XXXXXX");
@@ -498,7 +499,8 @@ int CdDevice::extractDao(Project& parent, const char *tocFileName,
   char correctionbuf[20];
   int remoteFdArgNum = 0;
 
-  if (status_ != DEV_READY || process_ != NULL)
+  if ((status_ != DEV_READY && status_ != DEV_FAULT && status_ != DEV_UNKNOWN)
+      || process_ != NULL)
     return 1;
 
   if ((s = gnome_config_get_string(SET_CDRDAO_PATH)) != NULL)
@@ -612,10 +614,13 @@ int CdDevice::duplicateDao(Project& parent, int simulate, int multiSession,
   int remoteFdArgNum = 0;
 
 
-  if (readdev->status() != DEV_READY || readdev->process() != NULL)
+  int rdstat = readdev->status();
+  if ((rdstat != DEV_READY && rdstat != DEV_UNKNOWN && rdstat != DEV_FAULT) ||
+      readdev->process() != NULL)
     return 1;
 
-  if (status_ != DEV_READY || process_ != NULL)
+  if ((status_ != DEV_READY && status_ != DEV_FAULT && status_ != DEV_UNKNOWN)
+      || process_ != NULL)
     return 1;
 
   if ((s = gnome_config_get_string(SET_CDRDAO_PATH)) != NULL)
@@ -758,7 +763,8 @@ int CdDevice::blank(Project* parent, int fast, int speed, int eject,
   const char *s;
   int remoteFdArgNum = 0;
 
-  if (status_ != DEV_READY || process_ != NULL)
+  if ((status_ != DEV_READY && status_ != DEV_FAULT && status_ != DEV_UNKNOWN)
+      || process_ != NULL)
     return 1;
 
   if ((s = gnome_config_get_string(SET_CDRDAO_PATH)) != NULL)
