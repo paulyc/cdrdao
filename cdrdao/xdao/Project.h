@@ -83,8 +83,6 @@ public:
   SigC::Signal0<void> signal_blankCD;
   SigC::Signal0<void> signal_configureDevices;
   SigC::Signal0<void> signal_about;
-
-  virtual void update(unsigned long level) = 0;
 };
 #endif
 
