@@ -40,7 +40,46 @@ gcdmaster_SOURCES = \
 	TrackDataScrap.cc 	\
 	TrackInfoDialog.cc 	\
 	TrackManager.cc 	\
-	xcdrdao.cc
+	xcdrdao.cc		\
+	AddFileDialog.h		\
+	DumpCDProject.h		\
+	ProjectChooser.h	\
+	SoundIF.h		\
+	AddSilenceDialog.h	\
+	DuplicateCDProject.h	\
+	Project.h		\
+	TextEdit.h		\
+	AudioCDChild.h		\
+	gcdmaster.h		\
+	RecordCDSource.h	\
+	TocEdit.h		\
+	AudioCDProject.h	\
+	GenericChild.h		\
+	RecordCDTarget.h	\
+	TocEditView.h		\
+	AudioCDView.h		\
+	GenericView.h		\
+	RecordHDTarget.h	\
+	TocInfoDialog.h		\
+	BlankCDDialog.h		\
+	guiUpdate.h		\
+	RecordTocDialog.h	\
+	TrackDataScrap.h	\
+	CdDevice.h		\
+	Icons.h			\
+	RecordTocSource.h	\
+	TrackInfoDialog.h	\
+	CdTextDialog.h		\
+	MessageBox.h		\
+	SampleDisplay.h		\
+	TrackManager.h		\
+	DeviceConfDialog.h	\
+	ProcessMonitor.h	\
+	SampleManager.h		\
+	xcdrdao.h		\
+	DeviceList.h		\
+	ProgressDialog.h	\
+	Settings.h
 
 EXTRA_gcdmaster_SOURCES =	\
 	SoundIF-linux.cc 	\

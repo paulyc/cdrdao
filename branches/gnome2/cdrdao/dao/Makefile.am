@@ -30,12 +30,45 @@ libdao_a_SOURCES = \
 	SonyCDU948.cc		\
 	ToshibaReader.cc	\
 	CdTextEncoder.cc	\
-	Settings.cc
+	Settings.cc		\
+	CDD2600Base.h		\
+	CDD2600.h		\
+	cdda_interface.h	\
+	CdrDriver.h		\
+	CdTextEncoder.h		\
+	dao.h			\
+	data.h			\
+	GenericMMC.h		\
+	GenericMMCraw.h		\
+	PlextorReader.h		\
+	PlextorReaderScan.h	\
+	port.h			\
+	PQChannelEncoder.h	\
+	PQSubChannel16.h	\
+	PWSubChannel96.h	\
+	remote.h		\
+	RicohMP6200.h		\
+	ScsiIf.h		\
+	Settings.h		\
+	sg_err.h		\
+	SonyCDU920.h		\
+	SonyCDU948.h		\
+	SubChannel.h		\
+	TaiyoYuden.h		\
+	TeacCdr55.h		\
+	ToshibaReader.h		\
+	winaspi.h		\
+	YamahaCDR10x.h
 
 EXTRA_libdao_a_SOURCES = 	\
 	dao-win32.cc		\
 	decodeSense.cc		\
-	sg_err.cc
+	sg_err.cc		\
+	ScsiIf-common.cc	\
+	ScsiIf-linux.cc		\
+	ScsiIf-freebsd-cam.cc	\
+	ScsiIf-nt.cc		\
+	ScsiIf-win.cc
 
 cdrdao_LDADD =						\
 	-L. -ldao					\
