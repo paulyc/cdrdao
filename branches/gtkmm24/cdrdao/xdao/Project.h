@@ -25,16 +25,14 @@
 class RecordTocDialog;
 class TocEdit;
 
-class Project : public Gnome::UI::App
+class Project : public Gtk::VBox
 {
 protected:
+  Gtk::Window* parent_;
   Gtk::HBox* hbox;
-  Gnome::UI::AppBar* statusbar_;  
-  Gtk::Frame frame_;
-  Gtk::ProgressBar* progressbar_;  
+
+  Gnome::UI::AppBar* statusbar_;
   Gtk::Button* progressButton_;  
-  Gnome::UI::About* about_;  
-  
   int projectNumber_;
   gint viewNumber;
   bool new_; // If it is a new project (not saved)
@@ -42,21 +40,12 @@ protected:
   TocEdit *tocEdit_;
   RecordTocDialog *recordTocDialog_;
 
-  Gtk::Widget *miSave_;
-  Gtk::Widget *miSaveAs_;
-  Gtk::Widget *miEditTree_;
-  Gtk::Widget *miRecord_;
-
-  virtual void createMenus();
-  virtual void createToolbar() = 0;
-  virtual void createStatusbar();
   void updateWindowTitle();
   void saveAsProject();
   Gtk::FileSelection *saveFileSelector_;
   void saveFileSelectorOKCB();
   void saveFileSelectorCancelCB();
 
-  virtual bool on_delete_event(GdkEventAny *event);
   virtual void projectInfo() = 0;
 
 public:
@@ -72,9 +61,10 @@ public:
   TocEdit *tocEdit();
   gint getViewNumber();
 
+  void setParentWindow (Gtk::Window *w) { parent_ = w; };
+  Gtk::Window * getParentWindow () { return parent_; };
+
   virtual void update(unsigned long level) = 0;
 
-  void aboutDialog();
 };
 #endif
-
