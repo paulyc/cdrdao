@@ -8,7 +8,7 @@ Group:		Applications/Multimedia
 License:	GPL
 URL:            http://cdrdao.sourceforge.net/
 BuildRoot:      %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-Source0:	http://download.sourceforge.net/cdrdao/%{name}-%{version}.tar.gz
+Source0:	http://download.sourceforge.net/cdrdao/%{name}-%{version}.tar.bz2
 
 %description
 Writes audio CD-Rs in disc-at-once (DAO) mode allowing control over
@@ -72,6 +72,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_bindir}/gcdmaster
 %{_datadir}/gcdmaster
 %{_datadir}/mime-info/gcdmaster*
+%{_datadir}/mime/packages/gcdmaster.xml
 %{_datadir}/applications/gcdmaster.desktop
 %{_datadir}/pixmaps/gcdmaster*
 %{_mandir}/man1/gcdmaster*
