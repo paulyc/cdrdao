@@ -40,6 +40,8 @@ int bcd2int(unsigned char);
 
 const char *stripCwd(const char *fname);
 
+const char* fileExtension(const char* fname);
+
 void message(int level, const char *fmt, ...);
 
 
