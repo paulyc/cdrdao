@@ -1,6 +1,6 @@
 [Desktop Entry]
 Name=Gnome CD Master
-Comment=Utility to Burn CDs
+Comment=Utility to Burn Audio CDs
 Exec=gcdmaster
 Icon=gcdmaster.png
 Terminal=0
