@@ -559,6 +559,8 @@ int CdDevice::recordDao(TocEdit *tocEdit, int simulate, int multiSession,
 					   (Glib::IOCondition)(Glib::IO_IN|Glib::IO_PRI|Glib::IO_ERR|Glib::IO_HUP));
     }
 
+    signal_statusChanged();
+
     return 0;
   }
   else {
@@ -684,6 +686,9 @@ int CdDevice::extractDao(const char *tocFileName, int correction)
 					   process_->commFd(),
 					   (Glib::IOCondition)(Glib::IO_IN|Glib::IO_PRI|Glib::IO_ERR|Glib::IO_HUP));
     }
+
+    signal_statusChanged();
+
     return 0;
   }
   else {
@@ -839,6 +844,8 @@ int CdDevice::duplicateDao(int simulate, int multiSession, int speed,
 					   process_->commFd(),
 					   (Glib::IOCondition)(Glib::IO_IN|Glib::IO_PRI|Glib::IO_ERR|Glib::IO_HUP));
     }
+
+    signal_statusChanged();
 
     return 0;
   }
