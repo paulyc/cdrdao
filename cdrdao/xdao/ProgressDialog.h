@@ -21,8 +21,6 @@
 #define __PROGRESS_DIALOG_H__
 
 #include <sys/time.h>
-#include <gtk--.h>
-#include <gtk/gtk.h>
 
 class TocEdit;
 class CdDevice;
@@ -60,7 +58,7 @@ private:
   bool leadTimeFilled_;
 
   struct timeval time_;
-  gint ProgressDialog::time(gint timer_nr);
+  bool ProgressDialog::time(gint timer_nr);
 
   Gtk::Button *cancelButton_;
   Gtk::Button *closeButton_;

@@ -21,7 +21,7 @@
 #include <stddef.h>
 #include <ctype.h>
 
-#include <gnome--.h>
+#include <libgnomeuimm.h>
 
 #include "ProgressDialog.h"
 #include "MessageBox.h"
@@ -48,11 +48,8 @@ ProgressDialog::ProgressDialog(ProgressDialogPool *father)
 
   statusMsg_ = new Gtk::Label("XXXXXXXXXXXXXXXXXXX");
   trackProgress_ = new Gtk::ProgressBar;
-  trackProgress_->set_show_text(TRUE);
   totalProgress_ = new Gtk::ProgressBar;
-  totalProgress_->set_show_text(TRUE);
   bufferFillRate_ = new Gtk::ProgressBar;
-  bufferFillRate_->set_show_text(TRUE);
   tocName_ = new Gtk::Label;
 
   hbox = new Gtk::HBox;
@@ -96,7 +93,7 @@ ProgressDialog::ProgressDialog(ProgressDialogPool *father)
   align = new Gtk::Alignment(1.0, 0.5, 0.0, 0.0);
   align->add(*trackLabel_);
   trackLabel_->show();
-  table->attach(*align, 0, 1, 0, 1, GTK_FILL);
+  table->attach(*align, 0, 1, 0, 1, Gtk::FILL);
   align->show();
 
   hbox = new Gtk::HBox;
@@ -109,7 +106,7 @@ ProgressDialog::ProgressDialog(ProgressDialogPool *father)
   align = new Gtk::Alignment(1.0, 0.5, 0.0, 0.0);
   align->add(*label);
   label->show();
-  table->attach(*align, 0, 1, 1, 2, GTK_FILL);
+  table->attach(*align, 0, 1, 1, 2, Gtk::FILL);
   align->show();
 
   hbox = new Gtk::HBox;
@@ -122,7 +119,7 @@ ProgressDialog::ProgressDialog(ProgressDialogPool *father)
   align = new Gtk::Alignment(1.0, 0.5, 0.0, 0.0);
   align->add(*bufferFillRateLabel_);
   label->show();
-  table->attach(*align, 0, 1, 2, 3, GTK_FILL);
+  table->attach(*align, 0, 1, 2, 3, Gtk::FILL);
   align->show();
   
   hbox = new Gtk::HBox;
@@ -139,25 +136,25 @@ ProgressDialog::ProgressDialog(ProgressDialogPool *father)
 
   get_vbox()->show();
 
-  Gtk::HButtonBox *bbox = new Gtk::HButtonBox(GTK_BUTTONBOX_SPREAD);
+  Gtk::HButtonBox *bbox = new Gtk::HButtonBox(Gtk::BUTTONBOX_SPREAD);
 
-  cancelButton_ = new Gnome::StockButton(GNOME_STOCK_BUTTON_CANCEL);
+  cancelButton_ = new Gtk::Button(Gtk::Stock::CANCEL);
   bbox->pack_start(*cancelButton_);
 
-  closeButton_ = new Gnome::StockButton(GNOME_STOCK_BUTTON_CLOSE);
+  closeButton_ = new Gtk::Button(Gtk::Stock::CLOSE);
   bbox->pack_start(*closeButton_);
 
   cancelButton_->show();
   actCloseButtonLabel_ = 2;
 
-  cancelButton_->clicked.connect(SigC::slot(this,&ProgressDialog::closeAction));
-  closeButton_->clicked.connect(SigC::slot(this,&ProgressDialog::closeAction));
+  cancelButton_->signal_clicked().connect(SigC::slot(*this,&ProgressDialog::closeAction));
+  closeButton_->signal_clicked().connect(SigC::slot(*this,&ProgressDialog::closeAction));
 
   get_action_area()->pack_start(*bbox);
   bbox->show();
   get_action_area()->show();
 
-  set_usize(400, 0);
+  set_default_size(400, 0);
 }
 
 ProgressDialog::~ProgressDialog()
@@ -173,7 +170,7 @@ void ProgressDialog::start(CdDevice *device, const char *tocFileName)
     return;
 
   if (active_) {
-    get_window().raise();
+    present();
     return;
   }
 
@@ -182,8 +179,8 @@ void ProgressDialog::start(CdDevice *device, const char *tocFileName)
 
   clear();
 
-  SigC::Slot0<gint> my_slot = bind(slot(this,&ProgressDialog::time),m_t_nr);
-  Gtk::Connection conn = Gtk::Main::timeout.connect(my_slot, 1000);
+  SigC::Slot0<bool> my_slot = bind(slot(*this,&ProgressDialog::time),m_t_nr);
+  SigC::Connection conn = Glib::signal_timeout().connect(my_slot, 1000);
 
   statusMsg_->set_text("Initializing...");
   tocName_->set_text(tocFileName);
@@ -295,16 +292,13 @@ void ProgressDialog::clear()
   actBufferFill_ = 0;
 
   gettimeofday(&time_, NULL);
-  currentTime_->set("0:00:00");
-  remainingTime_->set("");
+  currentTime_->set_text("0:00:00");
+  remainingTime_->set_text("");
   leadTimeFilled_ = FALSE;
   statusMsg_->set_text("");
-  trackProgress_->set_percentage(0.0);
-  trackProgress_->set_format_string("");
-  totalProgress_->set_percentage(0.0);
-  totalProgress_->set_format_string("");
-  bufferFillRate_->set_percentage(0.0);
-  bufferFillRate_->set_format_string("");
+  trackProgress_->set_fraction(0.0);
+  totalProgress_->set_fraction(0.0);
+  bufferFillRate_->set_fraction(0.0);
   
   set_title("");
 }
@@ -385,25 +379,22 @@ void ProgressDialog::update(unsigned long level)
     if (trackProgress != actTrackProgress_) {
       actTrackProgress_ = trackProgress;
 
-      trackProgress_->set_percentage(gfloat(trackProgress) / 1000.0);
+      trackProgress_->set_fraction(gfloat(trackProgress) / 1000.0);
       sprintf(bufProgress, "%.1f %%%%", gfloat(trackProgress/10.0));
-      trackProgress_->set_format_string(bufProgress);  
     }
 
     if (totalProgress != actTotalProgress_) {
       actTotalProgress_ = totalProgress;
       
-      totalProgress_->set_percentage(gfloat(totalProgress) / 1000.0);
+      totalProgress_->set_fraction(gfloat(totalProgress) / 1000.0);
       sprintf(bufProgress, "%.1f %%%%", gfloat(totalProgress/10.0));
-      totalProgress_->set_format_string(bufProgress);
     }
 
     if (bufferFill != actBufferFill_) {
       actBufferFill_ = bufferFill;
       
-      bufferFillRate_->set_percentage(gfloat(bufferFill) / 100.0);
+      bufferFillRate_->set_fraction(gfloat(bufferFill) / 100.0);
       sprintf(bufProgress, "%.1f %%%%", gfloat(bufferFill/1.0));
-      bufferFillRate_->set_format_string(bufProgress);
     }
   }
   
@@ -527,7 +518,7 @@ void ProgressDialog::setCloseButtonLabel(int l)
   actCloseButtonLabel_ = l;
 }
 
-gint ProgressDialog::time(gint timer_nr)
+bool ProgressDialog::time(gint timer_nr)
 {
   char buf[50];
   struct timeval timenow;
@@ -542,7 +533,7 @@ gint ProgressDialog::time(gint timer_nr)
   secs = time - ((hours * 3600) + (mins * 60));
 
   sprintf(buf, "%ld:%02ld:%02ld", hours, mins, secs);
-  currentTime_->set(buf);
+  currentTime_->set_text(buf);
 
 
   if (actTotalProgress_ > 10)
@@ -567,7 +558,7 @@ gint ProgressDialog::time(gint timer_nr)
     secs = time_remain - ((hours * 3600) + (mins * 60));
 
     sprintf(buf, "%ld:%02ld:%02ld", hours, mins, secs);
-    remainingTime_->set(buf);
+    remainingTime_->set_text(buf);
   }
 
   if (finished_) 
