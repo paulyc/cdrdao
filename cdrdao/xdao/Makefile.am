@@ -98,6 +98,16 @@ gcdmaster_LDADD =					\
 	@scsilib_libs@					\
 	@LIBGUIMM2_LIBS@ @GTKMM2_LIBS@
 
+if COND_MP3
+gcdmaster_LDADD += @MAD_LIBS@
+endif
+
+if COND_OGG
+gcdmaster_LDADD += @VORBISFILE_LIBS@
+endif
+
+gcdmaster_LDADD += @AO_LIBS@
+
 gcdmaster_DEPENDENCIES = \
 	$(top_builddir)/dao/libdao.a			\
 	$(top_builddir)/paranoia/libcdda_paranoia.a	\
