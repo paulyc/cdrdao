@@ -1,6 +1,6 @@
 /*  cdrdao - write audio CD-Rs in disc-at-once mode
  *
- *  Copyright (C) 1999  Andreas Mueller <mueller@daneb.ping.de>
+ *  Copyright (C) 1999-2001  Andreas Mueller <andreas@daneb.de>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -15,18 +15,6 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- */
-/*
- * $Log: not supported by cvs2svn $
- * Revision 1.1.1.1  2000/02/05 01:35:11  llanero
- * Uploaded cdrdao 1.1.3 with pre10 patch applied.
- *
- * Revision 1.2  1999/05/24 17:34:19  mueller
- * Added parameter for data form of lead-in to 'createCueSheet()'.
- *
- * Revision 1.1  1999/05/20 18:40:17  mueller
- * Initial revision
- *
  */
 
 #ifndef __SONY_CDU920_H__
@@ -55,7 +43,8 @@ public:
   int startDao();
   int finishDao();
   void abortDao();
-  int writeData(TrackData::Mode, long &lba, const char *buf, long len);
+  int writeData(TrackData::Mode, TrackData::SubChannelMode, long &lba,
+		const char *buf, long len);
 
   DiskInfo *diskInfo();
   Toc *readDiskToc(int session, const char *audioFilename);

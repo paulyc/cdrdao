@@ -1,6 +1,6 @@
 /*  cdrdao - write audio CD-Rs in disc-at-once mode
  *
- *  Copyright (C) 1998  Andreas Mueller <mueller@daneb.ping.de>
+ *  Copyright (C) 1998-2001  Andreas Mueller <andreas@daneb.de>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -15,24 +15,6 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- */
-/*
- * $Log: not supported by cvs2svn $
- * Revision 1.2  2000/12/17 10:51:22  andreasm
- * Default verbose level is now 2. Adaopted message levels to have finer
- * grained control about the amount of messages printed by cdrdao.
- * Added CD-TEXT writing support to the GenericMMCraw driver.
- * Fixed CD-TEXT cue sheet creating for the GenericMMC driver.
- *
- * Revision 1.1.1.1  2000/02/05 01:35:04  llanero
- * Uploaded cdrdao 1.1.3 with pre10 patch applied.
- *
- * Revision 1.2  1998/08/30 19:10:32  mueller
- * Added handling of Catalog Number and ISRC codes.
- *
- * Revision 1.1  1998/08/25 19:29:27  mueller
- * Initial revision
- *
  */
 
 #ifndef __PQ_CHANNEL_ENCODER_H__
@@ -84,7 +66,7 @@ public:
 
   // encodes 'blocks' blocks of data in 'in' and places them appended by
   // PQ sub channel data in caller provided buffer 'out'
-  void encode(long lba, unsigned char *in, long blocks, unsigned char *out);
+  void encode(long lba, unsigned char *out, long blocks);
 
 private:
   SubChannel *subChannel_; // template for all sub channel objects

@@ -1,6 +1,6 @@
 /*  cdrdao - write audio CD-Rs in disc-at-once mode
  *
- *  Copyright (C) 1999  Andreas Mueller <mueller@daneb.ping.de>
+ *  Copyright (C) 1999-2001  Andreas Mueller <andreas@daneb.de>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -15,18 +15,6 @@
  *  You should have received a copy of the GNU General Public License
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
- */
-/*
- * $Log: not supported by cvs2svn $
- * Revision 1.3  1999/05/24 17:32:59  mueller
- * Added CD-TEXT writing.
- *
- * Revision 1.2  1999/05/20 19:47:15  mueller
- * Updated implementation.
- *
- * Revision 1.1  1999/05/15 20:11:56  mueller
- * Initial revision
- *
  */
 
 #ifndef __SONY_CDU948_H__
