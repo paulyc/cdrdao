@@ -1574,8 +1574,8 @@ static void scanBus()
 
   for (i = 0; i < len; i++) {
     message(0, "%d,%d,%d: %s, %s, %s", sdata[i].bus, sdata[i].id,
-	    sdata[i].lun, sdata[i].vendor, sdata[i].product,
-	    sdata[i].revision);
+	    sdata[i].lun, sdata[i]._vendor, sdata[i]._product,
+	    sdata[i]._revision);
   }
 
   delete[] sdata;
