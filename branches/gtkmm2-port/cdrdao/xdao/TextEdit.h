@@ -18,6 +18,10 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2000/02/20 23:34:54  llanero
+ * fixed scsilib directory (files mising ?-()
+ * ported xdao to 1.1.8 / gnome (MDI) app
+ *
  * Revision 1.1.1.1  2000/02/05 01:38:51  llanero
  * Uploaded cdrdao 1.1.3 with pre10 patch applied.
  *
@@ -29,8 +33,6 @@
 #ifndef __TEXT_EDIT_H__
 #define __TEXT_EDIT_H__
 
-#include <gtk--.h>
-#include <gtk/gtk.h>
 
 class TextEdit : public Gtk::Entry {
 public:

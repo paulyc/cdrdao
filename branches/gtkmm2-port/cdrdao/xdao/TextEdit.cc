@@ -17,10 +17,12 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "TextEdit.h"
-
 #include <stddef.h>
 #include <ctype.h>
+
+#include <libgnomeuimm.h>
+
+#include "TextEdit.h"
 
 TextEdit::TextEdit(const char *sample) : Gtk::Entry()
 {
@@ -93,17 +95,17 @@ void TextEdit::insert_text_impl(const gchar *c, gint p2, gint *p3)
 
   *p = 0;
 
-  Gtk::Entry::insert_text_impl(s, p2, p3);
+//GTKMM2  Gtk::Entry::insert_text_impl(s, p2, p3);
 
   delete[] s;
 }
 
 void TextEdit::setSize(const char *sample)
 {
-  const Gtk::Style *style = get_style();
-  const GtkStyle *s = style->gtkobj();
+  Glib::RefPtr<Pango::Layout> layout = Pango::Layout::create(Gtk::Widget::get_pango_context());
+  layout->set_text(sample);
+  int width, height;
+  layout->get_pixel_size(width, height);
 
-  Gdk_Font font(s->font);
-
-  set_usize(font.string_width(sample) + 8, font.string_height(sample) + 12);
+  set_size_request(width + 8, height + 12);
 }
