@@ -18,6 +18,15 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2000/04/23 09:07:08  andreasm
+ * * Fixed most problems marked with '//llanero'.
+ * * Added audio CD edit menus to MDIWindow.
+ * * Moved central storage of TocEdit object to MDIWindow.
+ * * AudioCdChild is now handled like an ordinary non modal dialog, i.e.
+ *   it has a normal 'update' member function now.
+ * * Added CdTextTable modal dialog.
+ * * Old functionality of xcdrdao is now available again.
+ *
  * Revision 1.1.1.1  2000/02/05 01:40:28  llanero
  * Uploaded cdrdao 1.1.3 with pre10 patch applied.
  *
@@ -26,7 +35,7 @@
  *
  */
 
-static char rcsid[] = "$Id: guiUpdate.cc,v 1.2 2000-04-23 09:07:08 andreasm Exp $";
+static char rcsid[] = "$Id: guiUpdate.cc,v 1.3 2000-04-24 12:49:06 andreasm Exp $";
 
 #include "guiUpdate.h"
 
@@ -40,6 +49,8 @@ static char rcsid[] = "$Id: guiUpdate.cc,v 1.2 2000-04-23 09:07:08 andreasm Exp 
 #include "DeviceConfDialog.h"
 #include "RecordDialog.h"
 #include "RecordProgressDialog.h"
+#include "ExtractDialog.h"
+#include "ExtractProgressDialog.h"
 #include "ProcessMonitor.h"
 #include "CdDevice.h"
 
@@ -76,6 +87,12 @@ void guiUpdate(unsigned long level)
 
   if (RECORD_PROGRESS_POOL != NULL)
     RECORD_PROGRESS_POOL->update(level, tocEdit);
+
+  if (EXTRACT_DIALOG != NULL)
+    EXTRACT_DIALOG->update(level, tocEdit);
+
+  if (EXTRACT_PROGRESS_POOL != NULL)
+    EXTRACT_PROGRESS_POOL->update(level, tocEdit);
 }
 
 int guiUpdatePeriodic()
@@ -83,8 +100,13 @@ int guiUpdatePeriodic()
   if (CdDevice::updateDeviceStatus())
     guiUpdate(UPD_CD_DEVICE_STATUS);
 
-  if (CdDevice::updateDeviceProgress())
-    guiUpdate(UPD_PROGRESS_STATUS);
+  /*
+   * not used anymore since Gtk::Main::input signal will call
+   * CdDevice::updateProgress directly.
+
+     if (CdDevice::updateDeviceProgress())
+       guiUpdate(UPD_PROGRESS_STATUS);
+   */
 
   return 1;
 }

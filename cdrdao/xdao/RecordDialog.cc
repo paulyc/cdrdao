@@ -18,6 +18,15 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2000/04/23 09:07:08  andreasm
+ * * Fixed most problems marked with '//llanero'.
+ * * Added audio CD edit menus to MDIWindow.
+ * * Moved central storage of TocEdit object to MDIWindow.
+ * * AudioCdChild is now handled like an ordinary non modal dialog, i.e.
+ *   it has a normal 'update' member function now.
+ * * Added CdTextTable modal dialog.
+ * * Old functionality of xcdrdao is now available again.
+ *
  * Revision 1.3  2000/04/16 20:31:59  andreasm
  * Fixed radio button stuff.
  *
@@ -33,7 +42,7 @@
  *
  */
 
-static char rcsid[] = "$Id: RecordDialog.cc,v 1.4 2000-04-23 09:07:08 andreasm Exp $";
+static char rcsid[] = "$Id: RecordDialog.cc,v 1.5 2000-04-24 12:49:06 andreasm Exp $";
 
 #include <stdio.h>
 #include <limits.h>
@@ -51,7 +60,7 @@ static char rcsid[] = "$Id: RecordDialog.cc,v 1.4 2000-04-23 09:07:08 andreasm E
 
 #include "util.h"
 
-#define MAX_SPEED_ID 5
+#define MAX_SPEED_ID 7
 
 static RecordDialog::SpeedTable SPEED_TABLE[MAX_SPEED_ID + 1] = {
   { 0, "Max" },
@@ -59,7 +68,9 @@ static RecordDialog::SpeedTable SPEED_TABLE[MAX_SPEED_ID + 1] = {
   { 2, "2x" },
   { 4, "4x" },
   { 6, "6x" },
-  { 8, "8x" }
+  { 8, "8x" },
+  { 10, "10x" },
+  { 12, "12x" }
 };
 
 

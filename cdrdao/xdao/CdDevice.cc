@@ -1,6 +1,6 @@
 /*  cdrdao - write audio CD-Rs in disc-at-once mode
  *
- *  Copyright (C) 1998, 1999 Andreas Mueller <mueller@daneb.ping.de>
+ *  Copyright (C) 1998-2000 Andreas Mueller <mueller@daneb.ping.de>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,12 +18,18 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  1999/12/15 20:34:18  mueller
+ * CD image extraction added by Manuel Clos.
+ *
+ * Revision 1.2  1999/11/07 09:18:45  mueller
+ * Release 1.1.3
+ *
  * Revision 1.1  1999/09/03 16:05:14  mueller
  * Initial revision
  *
  */
 
-static char rcsid[] = "$Id: CdDevice.cc,v 1.1.1.1 2000-02-05 01:39:09 llanero Exp $";
+static char rcsid[] = "$Id: CdDevice.cc,v 1.2 2000-04-24 12:49:06 andreasm Exp $";
 
 #include <sys/time.h>
 #include <sys/types.h>
@@ -330,20 +336,27 @@ int CdDevice::updateStatus()
   return 0;
 }
 
-int CdDevice::updateProgress()
+void CdDevice::updateProgress(int fd, GdkInputCondition cond)
 {
   static char msgSync[4] = { 0xff, 0x00, 0xff, 0x00 };
-  int fd;
   fd_set fds;
   int state = 0;
   char buf[10];
-  DaoWritingProgress msg;
   struct timeval timeout = { 0, 0 };
 
   //message(0, "Rcvd msg");
 
-  if (process_ == NULL || (fd = process_->commFd()) < 0)
-    return 0;
+  if (process_ == NULL)
+    return;
+
+  if (!(cond & GDK_INPUT_READ))
+    return;
+
+  if (fd < 0 || fd != process_->commFd()) {
+    message(-3,
+	    "CdDevice::updateProgress called with illegal fild descriptor.");
+    return;
+  }
 
   FD_ZERO(&fds);
   FD_SET(fd, &fds);
@@ -358,7 +371,7 @@ int CdDevice::updateProgress()
     while (state < 4) {
       if (read(fd, buf, 1) != 1) {
 	//message(-2, "Reading of msg sync failed.");
-	return (progressStatusChanged_ != 0) ? 1 : 0;
+	return;
       }
 
       if (buf[0] == msgSync[state]) {
@@ -373,30 +386,58 @@ int CdDevice::updateProgress()
       }
     }
 
-    if (read(fd, (char *)&msg, sizeof(msg)) == sizeof(msg)) {
-      /*
-	message(0, "progress: %d %d %d %d", msg.status, msg.track,
-	msg.totalProgress, msg.bufferFillRate);
-	*/
-      if (msg.status >= 1 && msg.status <= 3 &&
-	  msg.track >= 0 && msg.track <= 0xaa &&
-	  msg.totalProgress >= 0 && msg.totalProgress <= 1000 &&
-	  msg.bufferFillRate >= 0 && msg.bufferFillRate <= 100) {
-	progressStatus_ = msg.status;
-	progressTrack_ = msg.track;
-	progressTotal_ = msg.totalProgress;
-	progressBufferFill_ = msg.bufferFillRate;
+    if (status_ == DEV_RECORDING) {
+      DaoWritingProgress msg;
 
-	progressStatusChanged_ = 1;
+      if (read(fd, (char *)&msg, sizeof(msg)) == sizeof(msg)) {
+	/*
+	  message(0, "progress: %d %d %d %d", msg.status, msg.track,
+	  msg.totalProgress, msg.bufferFillRate);
+	  */
+	if (msg.status >= 1 && msg.status <= 3 &&
+	    msg.track >= 0 && msg.track <= 0xaa &&
+	    msg.totalProgress >= 0 && msg.totalProgress <= 1000 &&
+	    msg.bufferFillRate >= 0 && msg.bufferFillRate <= 100) {
+	  progressStatus_ = msg.status;
+	  progressTrack_ = msg.track;
+	  progressTotal_ = msg.totalProgress;
+	  progressBufferFill_ = msg.bufferFillRate;
+
+	  progressStatusChanged_ = 1;
+	}
+      }
+      else {
+	message(-1, "Reading of record progress msg failed.");
       }
     }
-    else {
-      message(-1, "Reading of msg failed.");
-    }
+    else if (status_ == DEV_READING) {
+      ReadCdProgress msg;
 
+      if (read(fd, (char *)&msg, sizeof(msg)) == sizeof(msg)) {
+	/*
+	  message(0, "progress: %d %d %d %d", msg.status, msg.track,
+	  msg.totalProgress, msg.bufferFillRate);
+	  */
+	if (msg.status >= 1 && msg.status <= 2 &&
+	    msg.track >= 0 && msg.track <= 99 &&
+	    msg.trackProgress >= 0 && msg.trackProgress <= 1000) {
+	  progressStatus_ = msg.status;
+	  progressTrack_ = msg.track;
+	  progressTrackRelative_ = msg.trackProgress;
+
+	  progressStatusChanged_ = 1;
+	}
+      }
+      else {
+	message(-1, "Reading of record progress msg failed.");
+      }
+    }
   }
 
-  return (progressStatusChanged_ != 0) ? 1 : 0;
+  if (progressStatusChanged_)
+    guiUpdate(UPD_PROGRESS_STATUS);
+
+  return;
 }
 
 CdDevice::DeviceType CdDevice::deviceType() const
@@ -523,13 +564,12 @@ int CdDevice::recordDao(TocEdit *tocEdit, int simulate, int multiSession,
     status_ = DEV_RECORDING;
     free(tocFileName);
 
-    /*
     if (process_->commFd() >= 0) {
-      connect_to_method(Gtk_Main::instance()->input(process_->commFd(),
-						    GDK_INPUT_READ),
-			this, &CdDevice::updateProgress);
+      Gtk::Main::instance()->input.connect(slot(this,
+						&CdDevice::updateProgress),
+					   process_->commFd(),
+					   (GdkInputCondition)(GDK_INPUT_READ|GDK_INPUT_EXCEPTION));
     }
-    */
 
     return 0;
   }
@@ -592,10 +632,11 @@ int CdDevice::extractDao(char *tocFileName)
 
   args[n++] = "read-cd";
 
-//FIXME: What's this for?
   args[n++] = "--remote";
 
   args[n++] = "-v0";
+
+  args[n++] = "--read-raw";
 
   args[n++] = "--device";
 
@@ -643,21 +684,16 @@ int CdDevice::extractDao(char *tocFileName)
   if (process_ != NULL) {
     status_ = DEV_READING;
 
-//    free(tocFileName);
-
-    /*
     if (process_->commFd() >= 0) {
-      connect_to_method(Gtk_Main::instance()->input(process_->commFd(),
-						    GDK_INPUT_READ),
-			this, &CdDevice::updateProgress);
+      Gtk::Main::instance()->input.connect(slot(this,
+					       &CdDevice::updateProgress),
+					  process_->commFd(),
+					  (GdkInputCondition)(GDK_INPUT_READ|GDK_INPUT_EXCEPTION));
     }
-    */
 
     return 0;
   }
   else {
-//    unlink(tocFileName);
-//    free(tocFileName);
     return 1;
   }
 }
@@ -670,13 +706,11 @@ void CdDevice::abortDaoReading()
   }
 }
 
-void CdDevice::readProgress(int *status, int *track, int *totalProgress,
-		      int *bufferFill) const
+void CdDevice::readProgress(int *status, int *track, int *trackProgress) const
 {
   *status = progressStatus_;
   *track = progressTrack_;
-  *totalProgress = progressTotal_;
-  *bufferFill = progressBufferFill_;
+  *trackProgress = progressTrackRelative_;
 }
 
 void CdDevice::createScsiIf()
@@ -1049,6 +1083,10 @@ int CdDevice::updateDeviceStatus()
   return newStatus;
 }
 
+#if 0
+/* not used anymore since Gtk::Main::input signal will call
+ * CdDevice::updateProgress directly.
+ */
 int CdDevice::updateDeviceProgress()
 {
   int progress = 0;
@@ -1091,3 +1129,4 @@ int CdDevice::updateDeviceProgress()
 
   return progress;
 }
+#endif
