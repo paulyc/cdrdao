@@ -44,7 +44,8 @@ RecordHDTarget::RecordHDTarget()
   set_spacing(10);
 
   // device settings
-  Gtk::Frame *recordOptionsFrame = manage(new Gtk::Frame(" Record Options "));
+  Gtk::Frame *recordOptionsFrame =
+    manage(new Gtk::Frame(_(" Record Options ")));
 
   table = manage(new Gtk::Table(2, 2, false));
   table->set_row_spacings(2);
@@ -55,16 +56,16 @@ RecordHDTarget::RecordHDTarget()
   recordOptionsFrame->show_all();
   pack_start(*recordOptionsFrame, Gtk::PACK_SHRINK);
 
-  label = manage(new Gtk::Label("Directory: "));
+  label = manage(new Gtk::Label(_("Directory: ")));
   table->attach(*label, 0, 1, 0, 1, Gtk::FILL);
 
-  dirEntry_ = manage(new Gnome::UI::FileEntry("record_hd_target_dir_entry",
-                                              "Select Directory for Image"));
+  dirEntry_ = manage(new Gnome::UI::FileEntry(_("record_hd_target_dir_entry"),
+                                              _("Select Directory for Image")));
   dirEntry_->set_directory_entry(true);
 
   table->attach(*dirEntry_, 1, 2, 0, 1);
 
-  label = manage(new Gtk::Label("Name: "));
+  label = manage(new Gtk::Label(_("Name: ")));
   table->attach(*label, 0, 1, 1, 2, Gtk::FILL);
 
   fileNameEntry_ = manage(new Gtk::Entry);

@@ -18,7 +18,8 @@
  */
 
 #include <assert.h>
-#include <glib-object.h>
+#include <gtkmm.h>
+#include <libgnome/gnome-i18n.h>
 
 #include "Toc.h"
 #include "SoundIF.h"
@@ -94,10 +95,10 @@ AudioCDProject::AudioCDProject(int number, const char *name, TocEdit *tocEdit)
     std::vector<Info> menus, viewMenuTree;
 
     menus.push_back(Item(Icon(Gtk::StockID(Gtk::Stock::PROPERTIES)),
-                         "CD-TEXT...",
+                         _("CD-TEXT..."),
                          slot(*this, &AudioCDProject::cdTextDialog),
-                         "Edit CD-TEXT data"));
-    insert_menus("Edit/Project Info...", menus);
+                         _("Edit CD-TEXT data")));
+    insert_menus(_("Edit/Project Info..."), menus);
   }
   
   install_menu_hints();
@@ -228,7 +229,7 @@ void AudioCDProject::playStart(unsigned long start, unsigned long end)
       delete soundInterface_;
       soundInterface_ = NULL;
       guiUpdate(UPD_PLAY_STATUS);
-      statusMessage("WARNING: Cannot open \"/dev/dsp\"");
+      statusMessage(_("WARNING: Cannot open \"/dev/dsp\""));
       return;
     }
   }
@@ -365,58 +366,58 @@ void AudioCDProject::createToolbar()
   using namespace Gnome::UI::Items;
 
   std::vector<Info> toollist;
-  toollist.push_back(Item(Icon(Gtk::Stock::NEW), "New",
+  toollist.push_back(Item(Icon(Gtk::Stock::NEW), _("New"),
                           slot(*gcdmaster, &GCDMaster::newChooserWindow),
-                          "New Project"));
-  toollist.push_back(Item(Icon(Gtk::Stock::OPEN), "Open",
+                          _("New Project")));
+  toollist.push_back(Item(Icon(Gtk::Stock::OPEN), _("Open"),
                           bind(slot(*gcdmaster,&GCDMaster::openProject),
                                (ProjectChooser *)0),
-                          "Open a project"));
-  toollist.push_back(Item(Icon(Gtk::Stock::CLOSE), "Close",
+                          _("Open a project")));
+  toollist.push_back(Item(Icon(Gtk::Stock::CLOSE), _("Close"),
                           bind(slot(*gcdmaster, &GCDMaster::closeProject),
                                this),
-                          "Close current project"));
+                          _("Close current project")));
 
-  toollist.push_back(Item(Icon(Gtk::Stock::SAVE), "Save",
+  toollist.push_back(Item(Icon(Gtk::Stock::SAVE), _("Save"),
                           slot(*this, &Project::saveProject),
-                          "Save current project"));
+                          _("Save current project")));
 
-  toollist.push_back(Item(Icon(Gtk::Stock::CDROM), "Record",
+  toollist.push_back(Item(Icon(Gtk::Stock::CDROM), _("Record"),
                           slot(*this, &Project::recordToc2CD),
-                          "Record to CD"));
+                          _("Record to CD")));
 
   toollist.push_back(Separator());
-  toollist.push_back(Item(Icon(Icons::PLAY), "Play",
+  toollist.push_back(Item(Icon(Icons::PLAY), _("Play"),
                           slot(*this, &AudioCDProject::on_play_clicked),
-                          "Play"));
-  toollist.push_back(Item(Icon(Icons::STOP), "Stop",
+                          _("Play")));
+  toollist.push_back(Item(Icon(Icons::STOP), _("Stop"),
                           slot(*this, &AudioCDProject::on_stop_clicked),
-                          "Stop"));
-  toollist.push_back(Item(Icon(Icons::PAUSE), "Pause",
+                          _("Stop")));
+  toollist.push_back(Item(Icon(Icons::PAUSE), _("Pause"),
                           slot(*this, &AudioCDProject::on_pause_clicked),
-                          "Pause"));
+                          _("Pause")));
 
   toollist.push_back(Separator());
 
   std::vector<Info> radiotree;
-  radiotree.push_back(Item(Icon(Gtk::Stock::JUMP_TO), "Select",
+  radiotree.push_back(Item(Icon(Gtk::Stock::JUMP_TO), _("Select"),
                            slot(*this, &AudioCDProject::on_select_clicked),
-                           "Select Mode"));
-  radiotree.push_back(Item(Icon(Gtk::Stock::ZOOM_FIT), "Zoom",
+                           _("Select Mode")));
+  radiotree.push_back(Item(Icon(Gtk::Stock::ZOOM_FIT), _("Zoom"),
                            slot(*this, &AudioCDProject::on_zoom_clicked),
-                           "Zoom Mode"));
+                           _("Zoom Mode")));
   toollist.push_back(RadioTree(radiotree));
   toollist.push_back(Separator());
 
-  toollist.push_back(Item(Icon(Gtk::Stock::ZOOM_IN), "In",
+  toollist.push_back(Item(Icon(Gtk::Stock::ZOOM_IN), _("In"),
                           slot(*this, &AudioCDProject::on_zoom_in_clicked),
-                          "Zoom In"));
-  toollist.push_back(Item(Icon(Gtk::Stock::ZOOM_OUT), "Out",
+                          _("Zoom In")));
+  toollist.push_back(Item(Icon(Gtk::Stock::ZOOM_OUT), _("Out"),
                           slot(*this, &AudioCDProject::on_zoom_out_clicked),
-                          "Zoom Out"));
-  toollist.push_back(Item(Icon(Gtk::Stock::ZOOM_FIT), "Fit",
+                          _("Zoom Out")));
+  toollist.push_back(Item(Icon(Gtk::Stock::ZOOM_FIT), _("Fit"),
                           slot(*this, &AudioCDProject::on_zoom_fit_clicked),
-                          "Zoom Fit"));
+                          _("Zoom Fit")));
 
   Array<Info>& realtb = create_toolbar(toollist);
 
@@ -444,38 +445,38 @@ void AudioCDProject::createToolbar2()
   toolbar->tools().
     push_back(StockElem(Gtk::Stock::NEW,
                         slot(*gcdmaster, &GCDMaster::newChooserWindow),
-                        "New Project"));
+                        _("New Project")));
   toolbar->tools().
     push_back(StockElem(Gtk::Stock::OPEN,
                         bind(slot(*gcdmaster,&GCDMaster::openProject),
                              (ProjectChooser *)0),
-                        "Open a project"));
+                        _("Open a project")));
   toolbar->tools().
     push_back(StockElem(Gtk::Stock::CLOSE,
                         bind(slot(*gcdmaster, &GCDMaster::closeProject), this),
-                        "Close current project"));
+                        _("Close current project")));
 
   toolbar->tools().
     push_back(StockElem(Gtk::Stock::SAVE,
                         slot(*this, &Project::saveProject),
-                        "Save current project"));
+                        _("Save current project")));
 
   toolbar->tools().
     push_back(StockElem(Gtk::Stock::CDROM,
                         slot(*this, &Project::recordToc2CD),
-                        "Record to CD"));
+                        _("Record to CD")));
   toolbar->tools().
     push_back(StockElem(Gtk::Stock::ZOOM_IN,
                         slot(*this, &AudioCDProject::on_zoom_in_clicked),
-                        "Zoom In"));
+                        _("Zoom In")));
   toolbar->tools().
     push_back(StockElem(Gtk::Stock::ZOOM_OUT,
                         slot(*this, &AudioCDProject::on_zoom_out_clicked),
-                        "Zoom Out"));
+                        _("Zoom Out")));
   toolbar->tools().
     push_back(StockElem(Gtk::Stock::ZOOM_FIT,
                         slot(*this, &AudioCDProject::on_zoom_fit_clicked),
-                        "Zoom Fit"));
+                        _("Zoom Fit")));
 
   toolbar->show_all();
   add_docked(*toolbar, "some name", BONOBO_DOCK_ITEM_BEH_NORMAL,
@@ -536,13 +537,13 @@ bool AudioCDProject::appendTrack(const char* filename)
   switch(ret) {
   case 0:
     audioCDView_->fullView();
-    statusMessage("Appended track with audio data from \"%s\".", filename);
+    statusMessage(_("Appended track with audio data from \"%s\"."), filename);
     break;
   case 1:
-    statusMessage("Cannot open audio file \"%s\".", filename);
+    statusMessage(_("Cannot open audio file \"%s\"."), filename);
     break;
   case 2:
-    statusMessage("Audio file \"%s\" has wrong format.", filename);
+    statusMessage(_("Audio file \"%s\" has wrong format."), filename);
     break;
   }
   guiUpdate();
@@ -555,13 +556,13 @@ bool AudioCDProject::appendFile(const char* filename)
   switch (ret) {
   case 0:
     audioCDView_->fullView();
-    statusMessage("Appended audio data from \"%s\".", filename);
+    statusMessage(_("Appended audio data from \"%s\"."), filename);
     break;
   case 1:
-    statusMessage("Cannot open audio file \"%s\".", filename);
+    statusMessage(_("Cannot open audio file \"%s\"."), filename);
     break;
   case 2:
-    statusMessage("Audio file \"%s\" has wrong format.", filename);
+    statusMessage(_("Audio file \"%s\" has wrong format."), filename);
     break;
   }
   guiUpdate();
@@ -580,13 +581,13 @@ bool AudioCDProject::insertFile(const char* filename)
   case 0:
     view->sampleSelection(pos, pos+len-1);
     audioCDView_->fullView();
-    statusMessage("Inserted audio data from \"%s\".", filename);
+    statusMessage(_("Inserted audio data from \"%s\"."), filename);
     break;
   case 1:
-    statusMessage("Cannot open audio file \"%s\".", filename);
+    statusMessage(_("Cannot open audio file \"%s\"."), filename);
     break;
   case 2:
-    statusMessage("Audio file \"%s\" has wrong format.", filename);
+    statusMessage(_("Audio file \"%s\" has wrong format."), filename);
     break;
   }
   guiUpdate();

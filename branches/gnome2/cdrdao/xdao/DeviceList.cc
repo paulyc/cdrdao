@@ -45,9 +45,9 @@ DeviceList::DeviceList(CdDevice::DeviceType filterType)
 
   listModel_ = Gtk::ListStore::create(listColumns_);
   list_.set_model(listModel_);
-  list_.append_column("Vendor", listColumns_.vendor);
-  list_.append_column("Model", listColumns_.model);
-  list_.append_column("Status", listColumns_.status);
+  list_.append_column(_("Vendor"), listColumns_.vendor);
+  list_.append_column(_("Model"), listColumns_.model);
+  list_.append_column(_("Status"), listColumns_.status);
 
   Gtk::VBox *contents = new Gtk::VBox;
   contents->set_spacing(10);
@@ -71,13 +71,13 @@ DeviceList::DeviceList(CdDevice::DeviceType filterType)
 
   switch (filterType_) {
   case CdDevice::CD_ROM:
-    set_label(" Available Reader Devices ");
+    set_label(_(" Available Reader Devices "));
     break;
   case CdDevice::CD_R:
-    set_label(" Available Recorder Devices ");
+    set_label(_(" Available Recorder Devices "));
     break;
   case CdDevice::CD_RW:
-    set_label(" Available Recorder (RW) Devices ");
+    set_label(_(" Available Recorder (RW) Devices "));
     break;
   }
 

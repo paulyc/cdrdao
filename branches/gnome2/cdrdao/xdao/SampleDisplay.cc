@@ -23,6 +23,9 @@
 #include <assert.h>
 #include <iostream>
 
+#include <gtkmm.h>
+#include <gnome.h>
+
 #include "TocEdit.h"
 #include "SampleDisplay.h"
 #include "SampleManager.h"
@@ -147,15 +150,20 @@ SampleDisplay::SampleDisplay()
   selectedTrack_ = 0;
   selectedIndex_ = 0;
 
-  signal_expose_event().connect(slot(*this, &SampleDisplay::handle_expose_event));
-  signal_configure_event().connect(slot(*this, &SampleDisplay::handle_configure_event));
-  signal_motion_notify_event().connect(slot(*this,
-  		&SampleDisplay::handle_motion_notify_event));
-  signal_button_press_event().connect(slot(*this, &SampleDisplay::handleButtonPressEvent));
-  signal_button_release_event().connect(slot(*this,
-  		&SampleDisplay::handleButtonReleaseEvent));
-  signal_enter_notify_event().connect(slot(*this, &SampleDisplay::handleEnterEvent));
-  signal_leave_notify_event().connect(slot(*this, &SampleDisplay::handleLeaveEvent));
+  signal_expose_event().connect(slot(*this,
+                                     &SampleDisplay::handle_expose_event));
+  signal_configure_event().
+    connect(slot(*this, &SampleDisplay::handle_configure_event));
+  signal_motion_notify_event().
+    connect(slot(*this, &SampleDisplay::handle_motion_notify_event));
+  signal_button_press_event().
+    connect(slot(*this, &SampleDisplay::handleButtonPressEvent));
+  signal_button_release_event().
+    connect(slot(*this,	&SampleDisplay::handleButtonReleaseEvent));
+  signal_enter_notify_event().
+    connect(slot(*this, &SampleDisplay::handleEnterEvent));
+  signal_leave_notify_event().
+    connect(slot(*this, &SampleDisplay::handleLeaveEvent));
 
   set_events (Gdk::EXPOSURE_MASK
 	      | Gdk::LEAVE_NOTIFY_MASK
@@ -361,7 +369,7 @@ void SampleDisplay::setCursor(int ctrl, unsigned long sample)
 void SampleDisplay::getColor(const char *colorName, Gdk::Color *color)
 {
   if (!color->parse(colorName) || !get_colormap()->alloc_color(*color)) {
-    message(-1, "Cannot allocate color \"%s\"", colorName);
+    message(-1, _("Cannot allocate color \"%s\""), colorName);
     *color = get_style()->get_black();
   }
 }

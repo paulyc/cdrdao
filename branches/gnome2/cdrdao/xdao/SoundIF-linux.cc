@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.1.1.1.6.2  2004/01/06 19:03:36  poolshark
+ * Missing end in destructor
+ *
  * Revision 1.1.1.1.6.1  2004/01/05 00:34:03  poolshark
  * First checking of gnome2 port
  *
@@ -50,6 +53,8 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
+
+#include <gnome.h>
 
 #include "SoundIF.h"
 
@@ -175,7 +180,7 @@ int SoundIFImpl::openDevice()
     return 0; // already open
 
   if ((dspFd_ = open("/dev/dsp", O_WRONLY | O_NONBLOCK)) < 0) {
-    message(-1, "Cannot open \"/dev/dsp\": %s", strerror(errno));
+    message(-1, _("Cannot open \"/dev/dsp\": %s"), strerror(errno));
     return 1;
   }
 
@@ -202,25 +207,25 @@ int SoundIFImpl::setupDevice()
   
   int val = 44100;
   if (ioctl(dspFd_, SNDCTL_DSP_SPEED, &val) < 0) {
-    message(-1, "Cannot set sample rate to 44100: %s", strerror(errno));
+    message(-1, _("Cannot set sample rate to 44100: %s"), strerror(errno));
     return 1;
   }
 
   val = 2;
   if (ioctl(dspFd_, SNDCTL_DSP_CHANNELS, &val) < 0) {
-    message(-1, "Cannot setup 2 channels: %s", strerror(errno));
+    message(-1, _("Cannot setup 2 channels: %s"), strerror(errno));
     return 1;
   }
 
   val = AFMT_S16_LE;
   if (ioctl(dspFd_, SNDCTL_DSP_SETFMT, &val) < 0) {
-    message(-1, "Cannot setup sound format: %s", strerror(errno));
+    message(-1, _("Cannot setup sound format: %s"), strerror(errno));
     return 1;
   }
 
   if (val != AFMT_S16_LE) {
-    message(-1, "Sound device does not support "
-	    "little endian signed 16 bit samples.");
+    message(-1, _("Sound device does not support "
+                  "little endian signed 16 bit samples."));
     return 1;
   }
   

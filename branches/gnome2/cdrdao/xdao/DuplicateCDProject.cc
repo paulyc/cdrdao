@@ -32,7 +32,7 @@
 
 DuplicateCDProject::DuplicateCDProject()
 {
-  set_title("Duplicate CD");
+  set_title(_("Duplicate CD"));
 
   Gtk::VBox *vbox = new Gtk::VBox;
   vbox->set_border_width(10);
@@ -62,9 +62,9 @@ DuplicateCDProject::DuplicateCDProject()
   hbox->set_spacing(10);
 
   Gtk::VBox *frameBox = new Gtk::VBox;
-  simulate_rb = new Gtk::RadioButton("Simulate", 0);
-  simulateBurn_rb = new Gtk::RadioButton("Simulate and Burn", 0);
-  burn_rb = new Gtk::RadioButton("Burn", 0);
+  simulate_rb = new Gtk::RadioButton(_("Simulate"), 0);
+  simulateBurn_rb = new Gtk::RadioButton(_("Simulate and Burn"), 0);
+  burn_rb = new Gtk::RadioButton(_("Burn"), 0);
 
   frameBox->pack_start(*simulate_rb);
   frameBox->pack_start(*simulateBurn_rb);
@@ -77,7 +77,7 @@ DuplicateCDProject::DuplicateCDProject()
 
   Gtk::Image *pixmap = manage(new Gtk::Image(Icons::GCDMASTER,
                                              Gtk::ICON_SIZE_DIALOG));
-  Gtk::Label *startLabel = manage(new Gtk::Label("Start"));
+  Gtk::Label *startLabel = manage(new Gtk::Label(_("Start")));
   Gtk::VBox *startBox = manage(new Gtk::VBox);
   Gtk::Button *button = manage(new Gtk::Button());
   startBox->pack_start(*pixmap, false, false);
@@ -113,14 +113,15 @@ void DuplicateCDProject::start()
   std::string targetData = targetList->selection();
 
   if (sourceData.empty()) {
-      Gtk::MessageDialog d(*this, "Please select one reader device",
+    Gtk::MessageDialog d(*this, _("Please select one reader device"),
                            Gtk::MESSAGE_INFO);
       d.run();
       return;
   }
 
   if (targetData.empty()) {
-      Gtk::MessageDialog d(*this, "Please select at least one recorder device",
+    Gtk::MessageDialog d(*this,
+                         _("Please select at least one recorder device"),
                            Gtk::MESSAGE_INFO);
       d.run();
       return;
@@ -138,10 +139,11 @@ void DuplicateCDProject::start()
       // we can't do on the fly copying. More complex situations with
       // multiple target devices are not handled
       if (gnome_config_get_bool(SET_DUPLICATE_ONTHEFLY_WARNING)) {
-        Ask2Box msg(this, "Request", 1, 2, "To duplicate a CD using the "
-                    "same device for reading and writing",
-                    "you need to copy the CD to disk before burning", "",
-                    "Proceed and copy to disk before burning?", NULL);
+        Ask2Box msg(this, "Request", 1, 2,
+                    _("To duplicate a CD using the same device for reading "
+                      "and writing"),
+                    _("you need to copy the CD to disk before burning"), "",
+                    _("Proceed and copy to disk before burning?"), NULL);
 
         switch (msg.run()) {
         case 1: // proceed without on the fly
@@ -198,7 +200,7 @@ void DuplicateCDProject::start()
   if (writeDevice->duplicateDao(*this, simulate, multiSession, burnSpeed,
                                 eject, reload, buffer, onTheFly, correction,
                                 subChanReadMode, readDevice) != 0) {
-    Gtk::MessageDialog md(*this, "Cannot start disk-at-once duplication",
+    Gtk::MessageDialog md(*this, _("Cannot start disk-at-once duplication"),
                           Gtk::MESSAGE_ERROR);
     md.run();
   } else {

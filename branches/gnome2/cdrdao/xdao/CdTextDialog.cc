@@ -19,6 +19,8 @@
 
 #include "CdTextDialog.h"
 
+#include <gtkmm.h>
+#include <gnome.h>
 #include <libgnomeuimm.h>
 
 #include <stddef.h>
@@ -49,17 +51,18 @@ CdTextDialog::CdTextDialog()
     page_[i].performer = manage(new Gtk::Entry);
     page_[i].title = manage(new Gtk::Entry);
     page_[i].tabLabel = new Gtk::Label("");
-    page_[i].performerButton = new Gtk::CheckButton("Enable Perfomer Entries");
+    page_[i].performerButton =
+      new Gtk::CheckButton(_("Enable Perfomer Entries"));
     page_[i].performerButton->set_active(false);
     page_[i].performerButton->signal_toggled().
       connect(bind(slot(*this, &CdTextDialog::activatePerformerAction), i));
     page_[i].tracks = NULL;
-    page_[i].table->attach(*(new Gtk::Label("Performer")), 1, 2, 0, 1);
-    page_[i].table->attach(*(new Gtk::Label("Title")), 2, 3, 0, 1);
+    page_[i].table->attach(*(new Gtk::Label(_("Performer"))), 1, 2, 0, 1);
+    page_[i].table->attach(*(new Gtk::Label(_("Title"))), 2, 3, 0, 1);
 
     {
       Gtk::HBox *hbox = manage(new Gtk::HBox);
-      hbox->pack_end(*(new Gtk::Label("Album")));
+      hbox->pack_end(*(new Gtk::Label(_("Album"))));
 
       page_[i].table->attach(*hbox, 0, 1, 1, 2, Gtk::FILL);
       page_[i].table->attach(*(page_[i].title), 2, 3, 1, 2);
@@ -107,7 +110,7 @@ CdTextDialog::CdTextDialog()
   bbox->pack_start(*applyButton_);
   applyButton_->signal_clicked().connect(slot(*this, &CdTextDialog::applyAction));
   
-  Gtk::Button *fillButton = new Gtk::Button(" Fill Performer ");
+  Gtk::Button *fillButton = new Gtk::Button(_(" Fill Performer "));
   bbox->pack_start(*fillButton);
   fillButton->signal_clicked().connect(slot(*this, &CdTextDialog::fillPerformerAction));
 
@@ -118,7 +121,7 @@ CdTextDialog::CdTextDialog()
   get_action_area()->pack_start(*bbox);
 
   show_all_children();
-  set_title("CD-TEXT Entry");
+  set_title(_("CD-TEXT Entry"));
 }
 
 CdTextDialog::~CdTextDialog()
@@ -177,7 +180,7 @@ void CdTextDialog::adjustTableEntries(int n)
       page_[l].table->resize(3 + n, 3);
 
       for (i = trackEntries_; i < n; i++) {
-	sprintf(buf, "Track %02d", i + 1);
+	sprintf(buf, _("Track %02d"), i + 1);
 	
 	page_[l].tracks[i].performer = manage(new Gtk::Entry);
 	page_[l].tracks[i].performer->set_sensitive(performerActive);

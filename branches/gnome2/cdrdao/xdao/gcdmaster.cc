@@ -48,17 +48,11 @@ GCDMaster::GCDMaster()
 void GCDMaster::add(Project *project)
 {
   projects.push_back(project);
-
-  //cout << "Number of projects = " << projects.size() << endl;
-  //cout << "Number of choosers = " << choosers.size() << endl;
 }
 
 void GCDMaster::add(ProjectChooser *projectChooser)
 {
   choosers.push_back(projectChooser);
-
-  //cout << "Number of projects = " << projects.size() << endl;
-  //cout << "Number of choosers = " << choosers.size() << endl;
 }
 
 bool GCDMaster::openNewProject(const char* s)
@@ -117,7 +111,7 @@ void GCDMaster::readFileSelectorOKCB(ProjectChooser *projectChooser)
     }
     else
     {
-      Glib::ustring message("Error loading ");
+      Glib::ustring message(_("Error loading "));
       message += s;
       Gtk::MessageDialog(message, Gtk::MESSAGE_ERROR); 
     }

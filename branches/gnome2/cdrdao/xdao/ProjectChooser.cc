@@ -17,6 +17,9 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include <gtkmm.h>
+#include <gnome.h>
+
 #include "xcdrdao.h"
 #include "gcdmaster.h"
 #include "guiUpdate.h"
@@ -41,7 +44,7 @@ ProjectChooser::ProjectChooser()
   hbox->pack_start(*(manage(new Gtk::Image(Icons::OPEN,
                                            Gtk::ICON_SIZE_DIALOG))),
                    false, false, ICON_PADDING);
-  label = manage(new Gtk::Label("Open existing project"));
+  label = manage(new Gtk::Label(_("Open existing project")));
   hbox->pack_start(*label, false, false, LABEL_PADDING);
   openButton.add(*hbox);
   vbox.pack_start(openButton);
@@ -50,7 +53,7 @@ ProjectChooser::ProjectChooser()
   hbox->pack_start(*(manage(new Gtk::Image(Icons::AUDIOCD,
                                            Gtk::ICON_SIZE_DIALOG))),
                    false, false, ICON_PADDING);
-  label = manage(new Gtk::Label("New Audio CD project"));
+  label = manage(new Gtk::Label(_("New Audio CD project")));
   hbox->pack_start(*label, false, false, LABEL_PADDING);
   audioCDButton.add(*hbox);
   vbox.pack_start(audioCDButton);
@@ -59,7 +62,7 @@ ProjectChooser::ProjectChooser()
   hbox->pack_start(*(manage(new Gtk::Image(Icons::COPYCD,
                                            Gtk::ICON_SIZE_DIALOG))),
                    false, false, ICON_PADDING);
-  label = manage(new Gtk::Label("Duplicate CD"));
+  label = manage(new Gtk::Label(_("Duplicate CD")));
   hbox->pack_start(*label, false, false, LABEL_PADDING);
   copyCDButton.add(*hbox);
   vbox.pack_start(copyCDButton);
@@ -68,7 +71,7 @@ ProjectChooser::ProjectChooser()
   hbox->pack_start(*(manage(new Gtk::Image(Icons::DUMPCD,
                                            Gtk::ICON_SIZE_DIALOG))),
                    false, false, ICON_PADDING);
-  label = manage(new Gtk::Label("Copy CD to disk"));
+  label = manage(new Gtk::Label(_("Copy CD to disk")));
   hbox->pack_start(*label, false, false, LABEL_PADDING);
   dumpCDButton.add(*hbox);
   vbox.pack_start(dumpCDButton);

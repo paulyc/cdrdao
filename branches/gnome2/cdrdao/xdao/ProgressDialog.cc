@@ -21,7 +21,8 @@
 #include <stddef.h>
 #include <ctype.h>
 
-#include <libgnomeuimm.h>
+#include <gtkmm.h>
+#include <gnome.h>
 
 #include "ProgressDialog.h"
 #include "MessageBox.h"
@@ -50,10 +51,11 @@ ProgressDialog::ProgressDialog(ProgressDialogPool *father)
   trackProgress_ = manage(new Gtk::ProgressBar);
   totalProgress_ = manage(new Gtk::ProgressBar);
   bufferFillRate_ = manage(new Gtk::ProgressBar);
+  writerFillRate_ = manage(new Gtk::ProgressBar);
   tocName_ = manage(new Gtk::Label);
 
   hbox = manage(new Gtk::HBox);
-  label = manage(new Gtk::Label("Project: "));
+  label = manage(new Gtk::Label(_("Project: ")));
   hbox->pack_start(*label, Gtk::PACK_SHRINK);
   hbox->pack_start(*tocName_, Gtk::PACK_SHRINK);
   contents->pack_start(*hbox, Gtk::PACK_SHRINK);
@@ -63,22 +65,22 @@ ProgressDialog::ProgressDialog(ProgressDialogPool *father)
   contents->pack_start(*hbox, Gtk::PACK_SHRINK);
 
   hbox = manage(new Gtk::HBox(true, true));
-  label = manage(new Gtk::Label("Elapsed Time: ", 1));
+  label = manage(new Gtk::Label(_("Elapsed Time: "), 1));
   hbox->pack_start(*label, Gtk::PACK_SHRINK);
   currentTime_ = manage(new Gtk::Label());
   hbox->pack_start(*currentTime_, Gtk::PACK_SHRINK);
-  label = manage(new Gtk::Label("Remaining Time: ", 1));
+  label = manage(new Gtk::Label(_("Remaining Time: "), 1));
   hbox->pack_start(*label, Gtk::PACK_SHRINK);
   remainingTime_ = manage(new Gtk::Label("", 0));
   hbox->pack_start(*remainingTime_, Gtk::PACK_SHRINK);
   contents->pack_start(*hbox, Gtk::PACK_SHRINK);
 
-  table = manage(new Gtk::Table(3, 2, false));
+  table = manage(new Gtk::Table(4, 2, false));
   table->set_row_spacings(5);
   table->set_col_spacings(5);
   contents->pack_start(*table, Gtk::PACK_SHRINK);
 
-  trackLabel_ = manage(new Gtk::Label("Track:"));
+  trackLabel_ = manage(new Gtk::Label(_("Track:")));
   align = manage(new Gtk::Alignment(1.0, 0.5, 0.0, 0.0));
   align->add(*trackLabel_);
   table->attach(*align, 0, 1, 0, 1, Gtk::FILL);
@@ -87,7 +89,7 @@ ProgressDialog::ProgressDialog(ProgressDialogPool *father)
   hbox->pack_start(*trackProgress_);
   table->attach(*hbox, 1, 2, 0, 1);
 
-  label = manage(new Gtk::Label("Total:"));
+  label = manage(new Gtk::Label(_("Total:")));
   align = manage(new Gtk::Alignment(1.0, 0.5, 0.0, 0.0));
   align->add(*label);
   table->attach(*align, 0, 1, 1, 2, Gtk::FILL);
@@ -96,7 +98,7 @@ ProgressDialog::ProgressDialog(ProgressDialogPool *father)
   hbox->pack_start(*totalProgress_);
   table->attach(*hbox, 1, 2, 1, 2);
 
-  bufferFillRateLabel_ = manage(new Gtk::Label("Buffer:"));
+  bufferFillRateLabel_ = manage(new Gtk::Label(_("Input Buffer:")));
   align = manage(new Gtk::Alignment(1.0, 0.5, 0.0, 0.0));
   align->add(*bufferFillRateLabel_);
   table->attach(*align, 0, 1, 2, 3, Gtk::FILL);
@@ -104,6 +106,10 @@ ProgressDialog::ProgressDialog(ProgressDialogPool *father)
   hbox = manage(new Gtk::HBox);
   hbox->pack_start(*bufferFillRate_);
   table->attach(*hbox, 1, 2, 2, 3);
+  
+  writerFillRateLabel_ = manage(new Gtk::Label(_("Write Buffer:")));
+  table->attach(*writerFillRateLabel_, 0, 1, 3, 4, Gtk::FILL);
+  table->attach(*writerFillRate_, 1, 2, 3, 4);
   
   hbox = manage(new Gtk::HBox);
   hbox->pack_start(*contents, true, true, 10);
@@ -152,7 +158,7 @@ void ProgressDialog::start(CdDevice *device, const char *tocFileName)
 
   Glib::signal_timeout().connect(slot(*this, &ProgressDialog::time), 1000);
 
-  statusMsg_->set_text("Initializing...");
+  statusMsg_->set_text(_("Initializing..."));
   tocName_->set_text(tocFileName);
 
   setCloseButtonLabel(1);
@@ -194,8 +200,8 @@ void ProgressDialog::closeAction()
   switch (device_->action()) {
   case CdDevice::A_RECORD:
     {
-      Ask2Box msg(this, "Abort Recording", 0, 2, "Abort recording process?",
-                  NULL);
+      Ask2Box msg(this, _("Abort Recording"), 0, 2,
+                  _("Abort recording process?"), NULL);
 
       if (msg.run() == 1 && device_ != NULL) {
         cancelButton_->set_sensitive(false);
@@ -206,7 +212,8 @@ void ProgressDialog::closeAction()
 
   case CdDevice::A_READ:
     {        
-      Ask2Box msg(this, "Abort Reading", 0, 2, "Abort reading process?", NULL);
+      Ask2Box msg(this, _("Abort Reading"), 0, 2, _("Abort reading process?"),
+                  NULL);
 
       if (msg.run() == 1 && device_ != NULL) {
         cancelButton_->set_sensitive(false);
@@ -217,8 +224,8 @@ void ProgressDialog::closeAction()
 
   case CdDevice::A_DUPLICATE:
     {        
-      Ask2Box msg(this, "Abort Process", 0, 2, "Abort duplicating process?",
-                  NULL);
+      Ask2Box msg(this, _("Abort Process"), 0, 2,
+                  _("Abort duplicating process?"), NULL);
 
       if (msg.run() == 1 && device_ != NULL) {
         cancelButton_->set_sensitive(false);
@@ -229,7 +236,8 @@ void ProgressDialog::closeAction()
 
   case CdDevice::A_BLANK:
     {        
-      Ask2Box msg(this, "Abort Process", 0, 2, "Abort blanking process?",NULL);
+      Ask2Box msg(this, _("Abort Process"), 0, 2, _("Abort blanking process?"),
+                  NULL);
 
       if (msg.run() == 1 && device_ != NULL) {
         cancelButton_->set_sensitive(false);
@@ -249,6 +257,7 @@ void ProgressDialog::clear()
   actTrackProgress_ = 0;
   actTotalProgress_ = 0;
   actBufferFill_ = 0;
+  actWriterFill_ = 0;
 
   gettimeofday(&time_, NULL);
   currentTime_->set_text("0:00:00");
@@ -258,6 +267,7 @@ void ProgressDialog::clear()
   trackProgress_->set_fraction(0.0);
   totalProgress_->set_fraction(0.0);
   bufferFillRate_->set_fraction(0.0);
+  writerFillRate_->set_fraction(0.0);
   
   set_title("");
 }
@@ -270,6 +280,7 @@ void ProgressDialog::update(unsigned long level)
   int trackProgress;
   int totalProgress;
   int bufferFill;
+  int writerFill;
   char buf[40];
   std::string s;
 
@@ -282,7 +293,7 @@ void ProgressDialog::update(unsigned long level)
   
   if ((level & UPD_PROGRESS_STATUS) && device_->progressStatusChanged()) {
     device_->progress(&status, &totalTracks, &track, &trackProgress,
-		      &totalProgress, &bufferFill);
+		      &totalProgress, &bufferFill, &writerFill);
 
     if (status != actStatus_ || track != actTrack_) {
       actStatus_ = status;
@@ -292,7 +303,7 @@ void ProgressDialog::update(unsigned long level)
       case PGSMSG_RCD_ANALYZING:
       	actTrack_ = track;
 
-      	s = "Analyzing track ";
+      	s = _("Analyzing track ");
       	sprintf(buf, "%d of %d", track, totalTracks);
       	s += buf;
 
@@ -302,22 +313,22 @@ void ProgressDialog::update(unsigned long level)
       case PGSMSG_RCD_EXTRACTING:
       	actTrack_ = track;
 
-      	s = "Extracting ";
+      	s = _("Extracting ");
 	sprintf(buf, "%d", totalTracks);
 	s += buf;
-        s += " tracks...";
+        s += _(" tracks...");
 
       	statusMsg_->set_text(s);
 	break;
 
       case PGSMSG_WCD_LEADIN:
-	statusMsg_->set_text("Writing lead-in...");
+	statusMsg_->set_text(_("Writing lead-in..."));
 	break;
 
       case PGSMSG_WCD_DATA:
 	actTrack_ = track;
 
-	s = "Writing track ";
+	s = _("Writing track ");
 	sprintf(buf, "%d of %d", track, totalTracks);
 	s += buf;
 
@@ -325,11 +336,11 @@ void ProgressDialog::update(unsigned long level)
 	break;
 
       case PGSMSG_WCD_LEADOUT:
-	statusMsg_->set_text("Writing lead-out...");
+	statusMsg_->set_text(_("Writing lead-out..."));
 	break;
 
       case PGSMSG_BLK:
-	statusMsg_->set_text("Blanking...");
+	statusMsg_->set_text(_("Blanking..."));
 	break;
 
       }
@@ -352,6 +363,12 @@ void ProgressDialog::update(unsigned long level)
       if (bufferFill <= 1000)
         bufferFillRate_->set_fraction(bufferFill / 100.0);
     }
+
+    if (writerFill != actWriterFill_) {
+      actWriterFill_ = writerFill;
+      if (writerFill <= 1000)
+        writerFillRate_->set_fraction(writerFill / 100.0);
+    }
   }
   
   switch (device_->action()) {
@@ -359,15 +376,16 @@ void ProgressDialog::update(unsigned long level)
       if (device_->status() != CdDevice::DEV_RECORDING) {
 	switch (device_->exitStatus()) {
 	case 0:
-	  statusMsg_->set_text("Recording finished successfully.");
+	  statusMsg_->set_text(_("Recording finished successfully."));
 	  break;
 
 	case 255:
-	  statusMsg_->set_text("Cannot execute cdrdao. Please check your PATH.");
+	  statusMsg_->set_text(_("Cannot execute cdrdao. Please check "
+                                 "your PATH."));
 	  break;
 	  
 	default:
-	  statusMsg_->set_text("Recording aborted with error.");
+	  statusMsg_->set_text(_("Recording aborted with error."));
 	  break;
 	}
 
@@ -381,15 +399,16 @@ void ProgressDialog::update(unsigned long level)
     if (device_->status() != CdDevice::DEV_READING) {
       switch (device_->exitStatus()) {
       case 0:
-        statusMsg_->set_text("Reading finished successfully.");
+        statusMsg_->set_text(_("Reading finished successfully."));
         break;
 
       case 255:
-        statusMsg_->set_text("Cannot execute cdrdao. Please check your PATH.");
+        statusMsg_->set_text(_("Cannot execute cdrdao. Please check "
+                               "your PATH."));
         break;
 	
       default:
-        statusMsg_->set_text("Reading aborted.");
+        statusMsg_->set_text(_("Reading aborted."));
         break;
       }
       
@@ -404,15 +423,16 @@ void ProgressDialog::update(unsigned long level)
     if (device_->status() != CdDevice::DEV_RECORDING) {
       switch (device_->exitStatus()) {
       case 0:
-        statusMsg_->set_text("CD copying finished successfully.");
+        statusMsg_->set_text(_("CD copying finished successfully."));
         break;
 
       case 255:
-        statusMsg_->set_text("Cannot execute cdrdao. Please check your PATH.");
+        statusMsg_->set_text(_("Cannot execute cdrdao. Please check "
+                               "your PATH."));
         break;
 
       default:
-        statusMsg_->set_text("CD copying aborted with error.");
+        statusMsg_->set_text(_("CD copying aborted with error."));
         break;
       }
 
@@ -427,15 +447,16 @@ void ProgressDialog::update(unsigned long level)
     if (device_->status() != CdDevice::DEV_BLANKING) {
       switch (device_->exitStatus()) {
       case 0:
-        statusMsg_->set_text("Blanking finished successfully.");
+        statusMsg_->set_text(_("Blanking finished successfully."));
         break;
 
       case 255:
-        statusMsg_->set_text("Cannot execute cdrdao. Please check your PATH.");
+        statusMsg_->set_text(_("Cannot execute cdrdao. Please check "
+                               "your PATH."));
         break;
 	
       default:
-        statusMsg_->set_text("Blanking aborted with error.");
+        statusMsg_->set_text(_("Blanking aborted with error."));
         break;
       }
       
@@ -447,7 +468,7 @@ void ProgressDialog::update(unsigned long level)
     break;
 
   default:
-        statusMsg_->set_text("Unknow device action!");
+    statusMsg_->set_text(_("Unknow device action!"));
     break;
   }
 }
@@ -532,9 +553,13 @@ void ProgressDialog::needBufferProgress(bool visible)
   if (visible) {
     bufferFillRate_->show();
     bufferFillRateLabel_->show();
+    writerFillRate_->show();
+    writerFillRateLabel_->show();
   } else {
     bufferFillRate_->hide();
     bufferFillRateLabel_->hide();
+    writerFillRate_->hide();
+    writerFillRateLabel_->hide();
   }
 }
 

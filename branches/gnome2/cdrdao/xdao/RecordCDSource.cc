@@ -23,6 +23,9 @@
 #include <assert.h>
 #include <unistd.h>
 
+#include <gtkmm.h>
+#include <gnome.h>
+
 #include "RecordCDSource.h"
 #include "MessageBox.h"
 #include "xcdrdao.h"
@@ -38,18 +41,18 @@
 #define MAX_CORRECTION_ID 3
 
 static RecordCDSource::CorrectionTable CORRECTION_TABLE[MAX_CORRECTION_ID + 1] = {
-  { 3, "Jitter + scratch (slow)" },
-  { 2, "Jitter + checks" },
-  { 1, "Jitter correction" },
-  { 0, "No checking (fast)" }
+  { 3, N_("Jitter + scratch (slow)") },
+  { 2, N_("Jitter + checks") },
+  { 1, N_("Jitter correction") },
+  { 0, N_("No checking (fast)") }
 };
 
 #define MAX_SUBCHAN_READ_MODE_ID 2
 
 static RecordCDSource::SubChanReadModeTable SUBCHAN_READ_MODE_TABLE[MAX_SUBCHAN_READ_MODE_ID + 1] = {
-  { 0, "none" },
-  { 1, "R-W packed" },
-  { 2, "R-W raw" }
+  { 0, N_("none") },
+  { 1, N_("R-W packed") },
+  { 2, N_("R-W raw") }
 };
 
 
@@ -69,21 +72,21 @@ RecordCDSource::RecordCDSource(Gtk::Window *parent)
   pack_start(*DEVICES);
 
   // device settings
-  Gtk::Frame *extractOptionsFrame = new Gtk::Frame(" Read Options ");
+  Gtk::Frame *extractOptionsFrame = new Gtk::Frame(_(" Read Options "));
   Gtk::VBox *vbox = new Gtk::VBox;
   vbox->set_border_width(5);
   vbox->set_spacing(5);
   vbox->show();
   extractOptionsFrame->add(*vbox);
   
-  onTheFlyButton_ = new Gtk::CheckButton("Copy to disk before burning", 0);
+  onTheFlyButton_ = new Gtk::CheckButton(_("Copy to disk before burning"), 0);
   onTheFlyButton_->set_active(true);
   onTheFlyButton_->show();
   vbox->pack_start(*onTheFlyButton_);
 
   Gtk::HBox *hbox = new Gtk::HBox;
 //  hbox->show();
-  Gtk::Label *label = new Gtk::Label("Speed: ", 0);
+  Gtk::Label *label = new Gtk::Label(_("Speed: "), 0);
   label->show();
   hbox->pack_start(*label, false, false);
 
@@ -95,7 +98,7 @@ RecordCDSource::RecordCDSource(Gtk::Window *parent)
   adjustment->signal_value_changed().connect(SigC::slot(*this, &RecordCDSource::speedChanged));
   hbox->pack_start(*speedSpinButton_, false, false, 10);
 
-  speedButton_ = new Gtk::CheckButton("Use max.", 0);
+  speedButton_ = new Gtk::CheckButton(_("Use max."), 0);
   speedButton_->set_active(true);
   speedButton_->show();
   speedButton_->signal_toggled().connect(SigC::slot(*this, &RecordCDSource::speedButtonChanged));
@@ -105,7 +108,7 @@ RecordCDSource::RecordCDSource(Gtk::Window *parent)
   Gtk::Image* moreOptionsPixmap =
   	manage(new Gtk::Image(Gtk::StockID(Gtk::Stock::PROPERTIES),
                               Gtk::ICON_SIZE_SMALL_TOOLBAR));
-  Gtk::Label *moreOptionsLabel = manage(new Gtk::Label("More Options"));
+  Gtk::Label *moreOptionsLabel = manage(new Gtk::Label(_("More Options")));
   Gtk::HBox *moreOptionsBox = manage(new Gtk::HBox);
   moreOptionsBox->set_border_width(2);
   Gtk::Button *moreOptionsButton = manage(new Gtk::Button());
@@ -177,12 +180,12 @@ void RecordCDSource::moreOptions()
     table->set_col_spacings(10);
     table->set_border_width(5);
 
-    moreOptionsDialog_ = new Gtk::MessageDialog(*parent_, "Source options",
+    moreOptionsDialog_ = new Gtk::MessageDialog(*parent_, _("Source options"),
                                                 Gtk::MESSAGE_QUESTION,
                                                 Gtk::BUTTONS_CLOSE);
 
     Gtk::VBox *vbox = moreOptionsDialog_->get_vbox();
-    Gtk::Frame *frame = new Gtk::Frame(" More Source Options ");
+    Gtk::Frame *frame = new Gtk::Frame(_(" More Source Options "));
     vbox->pack_start(*frame);
     vbox = new Gtk::VBox;
     vbox->set_border_width(10);
@@ -191,11 +194,13 @@ void RecordCDSource::moreOptions()
 
     vbox->pack_start(*table);
 
-    continueOnErrorButton_ = new Gtk::CheckButton("Continue if errors found", 0);
+    continueOnErrorButton_ =
+      new Gtk::CheckButton(_("Continue if errors found"), 0);
     continueOnErrorButton_->set_active(false);
     table->attach(*continueOnErrorButton_, 0, 1, 0, 1);
 
-    ignoreIncorrectTOCButton_ = new Gtk::CheckButton("Ignore incorrect TOC", 0);
+    ignoreIncorrectTOCButton_ = new Gtk::CheckButton(_("Ignore incorrect TOC"),
+                                                     0);
     ignoreIncorrectTOCButton_->set_active(false);
     table->attach(*ignoreIncorrectTOCButton_, 0, 1, 1, 2);
 
@@ -215,7 +220,7 @@ void RecordCDSource::moreOptions()
   
     Gtk::Alignment *align;
 
-    label = new Gtk::Label("Audio Correction Method:");
+    label = new Gtk::Label(_("Audio Correction Method:"));
     align = new Gtk::Alignment(0, 0.5, 0, 1);
     align->add(*label);
     table->attach(*align, 0, 1, 2, 3, Gtk::FILL);
@@ -225,7 +230,8 @@ void RecordCDSource::moreOptions()
 
     for (int i = 0; i <= MAX_SUBCHAN_READ_MODE_ID; i++) {
       mitem = manage(new Gtk::MenuItem(SUBCHAN_READ_MODE_TABLE[i].name));
-      mitem->signal_activate().connect(bind(slot(*this, &RecordCDSource::setSubChanReadMode), i));
+      mitem->signal_activate().
+        connect(bind(slot(*this, &RecordCDSource::setSubChanReadMode), i));
       menu->append(*mitem);
     }
 
@@ -233,7 +239,7 @@ void RecordCDSource::moreOptions()
     subChanReadModeMenu_->set_menu(*menu);
     subChanReadModeMenu_->set_history(subChanReadMode_);
 
-    label = new Gtk::Label("Sub-Channel Reading Mode:");
+    label = new Gtk::Label(_("Sub-Channel Reading Mode:"));
     align = new Gtk::Alignment(0, 0.5, 0, 1);
     align->add(*label);
     table->attach(*align, 0, 1, 3, 4, Gtk::FILL);
