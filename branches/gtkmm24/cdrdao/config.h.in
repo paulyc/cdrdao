@@ -24,8 +24,14 @@
 /* Define to 1 if you have the `mlockall' function. */
 #undef HAVE_MLOCKALL
 
+/* "" */
+#undef HAVE_MP3_SUPPORT
+
 /* Define to 1 if you have the `munlockall' function. */
 #undef HAVE_MUNLOCKALL
+
+/* "" */
+#undef HAVE_OGG_SUPPORT
 
 /* Define to 1 if you have the `pthread_attr_setschedparam' function. */
 #undef HAVE_PTHREAD_ATTR_SETSCHEDPARAM
@@ -146,6 +152,10 @@
 
 /* Version number of package */
 #undef VERSION
+
+/* Define to 1 if your processor stores words with the most significant byte
+   first (like Motorola and SPARC, unlike Intel and VAX). */
+#undef WORDS_BIGENDIAN
 
 /* "" */
 #undef _P1003_1B_VISIBLE
