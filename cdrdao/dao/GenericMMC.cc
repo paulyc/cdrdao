@@ -19,6 +19,11 @@
 
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2000/06/19 20:17:37  andreasm
+ * Added CDDB reading to add CD-TEXT information to toc-files.
+ * Fixed bug in reading ATIP data in 'GenericMMC::diskInfo()'.
+ * Attention: CdrDriver.cc is currently configured to read TAO disks.
+ *
  * Revision 1.5  2000/06/10 14:48:05  andreasm
  * Tracks that are shorter than 4 seconds can be recorded now if the user confirms
  * it.
@@ -88,7 +93,7 @@
  *
  */
 
-static char rcsid[] = "$Id: GenericMMC.cc,v 1.6 2000-06-19 20:17:37 andreasm Exp $";
+static char rcsid[] = "$Id: GenericMMC.cc,v 1.7 2000-06-22 12:19:28 andreasm Exp $";
 
 #include <config.h>
 
@@ -353,6 +358,8 @@ int GenericMMC::performPowerCalibration()
     return 1;
   }
   
+  message(1, "Power calibration successful.");
+
   return 0;
 }
 
@@ -860,8 +867,17 @@ int GenericMMC::startDao()
   if (setWriteParameters() != 0)
     return 1;
 
-  if (!simulate_) 
-    performPowerCalibration();
+  if (!simulate_) {
+    if (performPowerCalibration() != 0) {
+      if (!force()) {
+	message(-2, "Use option --force to ignore this error.");
+	return 1;
+      }
+      else {
+	message(-2, "Ignored because of option --force.");
+      }
+    }
+  }
 
   // It does not hurt if the following command fails.
   // The Panasonic CW-7502 needs it, unfortunately it returns the wrong

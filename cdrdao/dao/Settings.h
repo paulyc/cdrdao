@@ -18,6 +18,11 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2000/06/19 20:17:37  andreasm
+ * Added CDDB reading to add CD-TEXT information to toc-files.
+ * Fixed bug in reading ATIP data in 'GenericMMC::diskInfo()'.
+ * Attention: CdrDriver.cc is currently configured to read TAO disks.
+ *
  * Revision 1.1  2000/06/06 22:26:13  andreasm
  * Updated list of supported drives.
  * Added saving of some command line settings to $HOME/.cdrdao.
@@ -32,6 +37,7 @@
 extern const char *SET_WRITE_SPEED;
 extern const char *SET_WRITE_DRIVER;
 extern const char *SET_WRITE_DEVICE;
+extern const char *SET_WRITE_BUFFERS;
 extern const char *SET_READ_DRIVER;
 extern const char *SET_READ_DEVICE;
 extern const char *SET_READ_PARANOIA_MODE;
