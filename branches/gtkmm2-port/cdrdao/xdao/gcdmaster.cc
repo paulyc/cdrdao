@@ -24,6 +24,7 @@
 #include "ProjectChooser.h"
 #include "TocEdit.h"
 #include "util.h"
+#include "AudioCDView.h"
 #include "AudioCDProject.h"
 #include "DuplicateCDProject.h"
 #include "BlankCDDialog.h"

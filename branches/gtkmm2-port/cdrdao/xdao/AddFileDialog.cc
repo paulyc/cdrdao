@@ -29,6 +29,7 @@
 #include "guiUpdate.h"
 #include "Sample.h"
 #include "util.h"
+#include "AudioCDView.h"
 #include "AudioCDProject.h"
 #include "xcdrdao.h"
 #include "AddFileDialog.h"
