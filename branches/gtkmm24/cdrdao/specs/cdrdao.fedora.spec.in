@@ -17,7 +17,7 @@ information like ISRC codes. All data that is written to the disc must
 be specified with a text file. Audio data may be in WAVE or raw
 format.
 
-%package gcdmaster
+%package -n gcdmaster
 Summary:        The Gnome2/GTK2 GUI front-end to cdrdao
 Group:          Applications/Multimedia
 Requires:       %{name} = %{epoch}:%{version}-%{release}
@@ -28,7 +28,7 @@ BuildRequires:  libvorbis-devel >= 0:1.0
 BuildRequires:  libao-devel >= 0:0.8
 # BuildRequires:  libmad-devel
 
-%description gcdmaster
+%description -n gcdmaster
 Gcdmaster is a GNOME2 GUI front-end to cdrdao that makes it easy to
 visualize and manipulate audio information before burning it onto
 CD. Its features include: cut/copy/paste of sound samples, track marks
@@ -67,7 +67,7 @@ rm -rf $RPM_BUILD_ROOT
 %{_mandir}/man1/cdrdao*
 %{_mandir}/man1/cue2toc*
 
-%files gcdmaster
+%files -n gcdmaster
 %defattr(-, root, root, -)
 %{_bindir}/gcdmaster
 %{_datadir}/gcdmaster
