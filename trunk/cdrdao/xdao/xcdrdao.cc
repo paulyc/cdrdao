@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.10  2000/05/25 20:12:55  llanero
+ * added BUGS and TASKS, changed name to GnomeCDMaster
+ *
  * Revision 1.9  2000/05/17 21:15:55  llanero
  * Beginings of Record Generic Dialog
  *
@@ -122,7 +125,7 @@ void message(int level, const char *fmt, ...)
   if (level < 0) {
     switch (level) {
     case -1:
-      fprintf(stderr, "Warning: ");
+      fprintf(stderr, "WARNING: ");
       break;
     case -2:
       fprintf(stderr, "ERROR: ");
