@@ -17,6 +17,7 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include <libgnomeuimm.h>
 
 #include "xcdrdao.h"
 #include "guiUpdate.h"
@@ -40,26 +41,26 @@ AudioCDChild::AudioCDChild(AudioCDProject *project)
 
   // Menu Stuff
   {
-    using namespace Gnome::UI;
+    using namespace Gnome::UI::Items;
     vector<Info> menus, viewMenuTree;
 
-    viewMenuTree.push_back(Item(Icon(GNOME_STOCK_MENU_BLANK),
+    viewMenuTree.push_back(Item(Icon(Gtk::Stock::ADD.id),
 			      N_("Add new track editor view"),
-			      slot(project, &AudioCDProject::newAudioCDView),
+			      slot(*project, &AudioCDProject::newAudioCDView),
 			      N_("Add new view of current project")));
 
-    menus.push_back(Gnome::Menus::View(viewMenuTree));
+    menus.push_back(Gnome::UI::Menus::View(viewMenuTree));
 
     project->insert_menus("Edit", menus);
   }
 
   zoomToolbar = new Gtk::Toolbar;
   zoomToolbar->set_border_width(2);
-  zoomToolbar->set_button_relief(GTK_RELIEF_NONE);
+//GTKMM2  zoomToolbar->set_button_relief(Gtk::RELIEF_NONE);
   zoomToolbar->show();
-  project->add_docked(*zoomToolbar, "zoomToolbar", GNOME_DOCK_ITEM_BEH_NORMAL,
-  		GNOME_DOCK_TOP, 1, 2, 0);
-  project->get_dock_item_by_name("zoomToolbar")->show();
+  project->add_docked(*zoomToolbar, "zoomToolbar", (BonoboDockItemBehavior)0,
+  		(BonoboDockPlacement)0, 1, 2, 0);
+//GTKMM2  project->get_dock_item_by_name("zoomToolbar")->show();
 
 }
 
