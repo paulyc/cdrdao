@@ -292,7 +292,7 @@ void GCDMaster::update(unsigned long level)
 
 void GCDMaster::configureDevices()
 {
-  DEVICE_CONF_DIALOG->start();
+  DEVICE_CONF_DIALOG->present();
 }
 
 void GCDMaster::blankCDRW()
