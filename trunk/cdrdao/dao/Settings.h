@@ -18,6 +18,12 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.1  2000/06/06 22:26:13  andreasm
+ * Updated list of supported drives.
+ * Added saving of some command line settings to $HOME/.cdrdao.
+ * Added test for multi session support in raw writing mode to GenericMMC.cc.
+ * Updated manual page.
+ *
  */
 
 #ifndef __SETTINGS_H__
@@ -29,6 +35,8 @@ extern const char *SET_WRITE_DEVICE;
 extern const char *SET_READ_DRIVER;
 extern const char *SET_READ_DEVICE;
 extern const char *SET_READ_PARANOIA_MODE;
+extern const char *SET_CDDB_SERVER_LIST;
+extern const char *SET_CDDB_TIMEOUT;
 
 class Settings {
 public:

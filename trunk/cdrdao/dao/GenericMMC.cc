@@ -19,6 +19,13 @@
 
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2000/06/10 14:48:05  andreasm
+ * Tracks that are shorter than 4 seconds can be recorded now if the user confirms
+ * it.
+ * The driver table is now read from an external file (.../share/cdrdao/drivers
+ * and $HOME/.cdrdao-drivers).
+ * Fixed bug the might prevented writing pure data CDs with some recorders.
+ *
  * Revision 1.4  2000/06/06 22:26:13  andreasm
  * Updated list of supported drives.
  * Added saving of some command line settings to $HOME/.cdrdao.
@@ -81,7 +88,7 @@
  *
  */
 
-static char rcsid[] = "$Id: GenericMMC.cc,v 1.5 2000-06-10 14:48:05 andreasm Exp $";
+static char rcsid[] = "$Id: GenericMMC.cc,v 1.6 2000-06-19 20:17:37 andreasm Exp $";
 
 #include <config.h>
 
@@ -1215,6 +1222,7 @@ DiskInfo *GenericMMC::diskInfo()
   memset(data, 0, dataLen);
 
   cmd[0] = 0x43; // READ TOC/PMA/ATIP
+  cmd[1] = 0x00;
   cmd[2] = 4; // get ATIP
   cmd[7] = 0;
   cmd[8] = dataLen; // data length
