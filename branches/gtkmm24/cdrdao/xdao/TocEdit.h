@@ -33,7 +33,6 @@ class TrackData;
 class TrackDataScrap;
 class SampleManager;
 class TocEditView;
-class Converter;
 
 class TocEdit {
 public:
@@ -115,7 +114,6 @@ public:
 private:
   Toc *toc_;
   SampleManager *sampleManager_;
-  Converter* converter_;
 
   char *filename_;
 

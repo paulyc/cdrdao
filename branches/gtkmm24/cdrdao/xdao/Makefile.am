@@ -10,7 +10,6 @@ gcdmaster_SOURCES = \
 	BlankCDDialog.cc 	\
 	CdDevice.cc 		\
 	CdTextDialog.cc 	\
-	Converter.cc		\
 	DeviceConfDialog.cc 	\
 	DeviceList.cc 		\
 	DumpCDProject.cc 	\
@@ -120,7 +119,6 @@ INCLUDES =					\
 AM_CXXFLAGS = @GTKMM2_CFLAGS@ @LIBGUIMM2_CFLAGS@
 
 man1_MANS = gcdmaster.man
-EXTRA_DIST = $(man1_MANS) $(glade_DATA) gcdmaster.desktop BUGS TASKS gcdmaster.png
 
 mimeinfodir = $(datadir)/mime-info
 mimeinfo_DATA = gcdmaster.keys gcdmaster.mime
@@ -130,3 +128,12 @@ desktop_DATA = gcdmaster.desktop
 
 icondir = $(datadir)/pixmaps
 icon_DATA = gcdmaster.png gcdmaster-doc.png
+
+EXTRA_DIST = \
+	$(man1_MANS)	\
+	$(glade_DATA)	\
+	$(mimeinfo_DATA)\
+	$(desktop_DATA)	\
+	$(icon_DATA)	\
+	BUGS TASKS
+

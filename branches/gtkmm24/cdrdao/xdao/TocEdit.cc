@@ -31,7 +31,6 @@
 #include "TrackData.h"
 #include "TrackDataList.h"
 #include "TrackDataScrap.h"
-#include "Converter.h"
 
 #include "guiUpdate.h"
 #include "SampleManager.h"
@@ -60,9 +59,6 @@ TocEdit::~TocEdit()
 {
   if (toc_)
     delete toc_;
-
-  if (converter_)
-    delete converter_;
 
   if (sampleManager_)
     delete sampleManager_;
@@ -97,8 +93,6 @@ void TocEdit::toc(Toc *t, const char *filename)
   sampleManager_ = new SampleManager(588);
 
   sampleManager_->setTocEdit(this);
-
-  converter_ = new Converter;
 
   if (toc_->length().samples() > 0) {
 
