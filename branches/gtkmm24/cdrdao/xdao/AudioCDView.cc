@@ -521,6 +521,9 @@ AudioCDView::drag_data_received_cb(const Glib::RefPtr<Gdk::DragContext>&
 
   case TARGET_URI_LIST:
 
+    if (project_->playStatus() != AudioCDProject::STOPPED)
+      return;
+
     std::string list = selection_data.get_data_as_string();
     int idx = 0, n;
 
