@@ -405,7 +405,7 @@ int TocEdit::curCreateAudioData(TrackData **data)
   }
 
   *data = new TrackData(cur_->file.c_str(), 0, len);
-  (*data)->convertedFilename(cur_->cfile.c_str());
+  (*data)->effectiveFilename(cur_->cfile.c_str());
 
   return 0;
 }
