@@ -1,6 +1,6 @@
 /*  cdrdao - write audio CD-Rs in disc-at-once mode
  *
- *  Copyright (C) 1998, 1999  Andreas Mueller <mueller@daneb.ping.de>
+ *  Copyright (C) 1998-2000  Andreas Mueller <mueller@daneb.ping.de>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.1.1.1  2000/02/05 01:38:51  llanero
+ * Uploaded cdrdao 1.1.3 with pre10 patch applied.
+ *
  */
 
 #ifndef __SETTINGS_H__
@@ -26,23 +29,7 @@
 extern const char *SET_CDRDAO_PATH;
 extern const char *SET_RECORD_EJECT_WARNING;
 extern const char *SET_RECORD_RELOAD_WARNING;
-
-class Settings {
-public:
-  Settings();
-  ~Settings();
-
-  int read(const char *);
-  int write(const char *) const; 
-
-  int getInteger(const char *) const;
-  const char *getString(const char *) const;
-
-  void set(const char *, int);
-  void set(const char *, const char *);
-
-private:
-  class SettingsImpl *impl_;
-};
+extern const char *SET_SECTION_DEVICES;
+extern const char *SET_DEVICES_NUM;
 
 #endif

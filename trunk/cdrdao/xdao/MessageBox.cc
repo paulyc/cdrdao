@@ -18,6 +18,15 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2000/04/23 09:07:08  andreasm
+ * * Fixed most problems marked with '//llanero'.
+ * * Added audio CD edit menus to MDIWindow.
+ * * Moved central storage of TocEdit object to MDIWindow.
+ * * AudioCdChild is now handled like an ordinary non modal dialog, i.e.
+ *   it has a normal 'update' member function now.
+ * * Added CdTextTable modal dialog.
+ * * Old functionality of xcdrdao is now available again.
+ *
  * Revision 1.2  2000/02/20 23:34:54  llanero
  * fixed scsilib directory (files mising ?-()
  * ported xdao to 1.1.8 / gnome (MDI) app
@@ -27,10 +36,12 @@
  *
  */
 
-static char rcsid[] = "$Id: MessageBox.cc,v 1.3 2000-04-23 09:07:08 andreasm Exp $";
+static char rcsid[] = "$Id: MessageBox.cc,v 1.4 2000-05-01 18:15:00 andreasm Exp $";
 
 #include <stddef.h>
 #include <stdarg.h>
+
+#include <gnome--.h>
 
 #include "MessageBox.h"
 
@@ -53,7 +64,35 @@ MessageBoxBase::~MessageBoxBase()
   dontShowAgain_ = NULL;
 }
 
-void MessageBoxBase::init(const char *title, int askDontShow,
+Gtk::Button *MessageBoxBase::createButton(const char *name)
+{
+  Gnome::Stock *pixmap = NULL;
+  const char *text;
+
+  if (strcmp(name, GNOME_STOCK_BUTTON_OK) == 0) {
+    pixmap = manage(Gnome::Stock::pixmap_widget(*this, name));
+    text = "Ok";
+  }
+  else if (strcmp(name, GNOME_STOCK_BUTTON_CANCEL) == 0) {
+    pixmap = manage(Gnome::Stock::pixmap_widget(*this, name));
+    text = "Cancel";
+  }
+  else if (strcmp(name, GNOME_STOCK_BUTTON_YES) == 0) {
+    pixmap = manage(Gnome::Stock::pixmap_widget(*this, name));
+    text = "Yes";
+  }
+  else if (strcmp(name, GNOME_STOCK_BUTTON_NO) == 0) {
+    pixmap = manage(Gnome::Stock::pixmap_widget(*this, name));
+    text = "No";
+  }
+
+  if (pixmap != NULL)
+    return Gnome::Stock::pixmap_button(*pixmap, text);
+  else 
+    return new Gtk::Button(name);
+}
+
+void MessageBoxBase::init(const char *type, const char *title, int askDontShow,
 			  int nButtons, int defaultButton, char *buttons[],
 			  va_list args)
 {
@@ -74,7 +113,8 @@ void MessageBoxBase::init(const char *title, int askDontShow,
 
   
   for (i = 1; i <= nButtons; i++) {
-    Gtk::Button* button = manage(new Gtk::Button(string(buttons[i - 1])));
+    //Gtk::Button* button = manage(new Gtk::Button(string(buttons[i - 1])));
+    Gtk::Button* button = manage(createButton(buttons[i - 1]));
     button->show();
     button->clicked.connect(bind(slot(this,&MessageBoxBase::buttonAction),i));
     bbox->add(*button);
@@ -104,8 +144,17 @@ void MessageBoxBase::init(const char *title, int askDontShow,
     contents->pack_start(*box, FALSE);
   }
 
+
   Gtk::HBox* hcontens = manage(new Gtk::HBox);
   hcontens->show();
+
+  /*
+  Gnome::Pixmap *typePixmap = manage(new Gnome::Pixmap("gnome-info.png"));
+  if (typePixmap != NULL) {
+    hcontens->pack_start(*typePixmap, FALSE, FALSE, 10);
+    typePixmap->show();
+  }
+  */
 
   hcontens->pack_start(*contents, TRUE, TRUE, 10);
   get_vbox()->pack_start(*hcontens, FALSE, FALSE, 10);
@@ -162,11 +211,11 @@ MessageBox::MessageBox(Gtk::Window *win, const char *title,
   va_list args;
   char *buttons[1];
 
-  buttons[0] = "Ok";
+  buttons[0] = GNOME_STOCK_BUTTON_OK;
 
   va_start(args, askDontShow);
 
-  init(title, askDontShow, 1, 1, buttons, args);
+  init(GNOME_MESSAGE_BOX_INFO, title, askDontShow, 1, 1, buttons, args);
 
   va_end(args);
 }
@@ -184,15 +233,16 @@ Ask2Box::Ask2Box(Gtk::Window *win, const char *title, int askDontShow,
   va_list args;
   char *buttons[2];
   
-  buttons[0] = "Yes";
-  buttons[1] = "No";
+  buttons[0] = GNOME_STOCK_BUTTON_YES;
+  buttons[1] = GNOME_STOCK_BUTTON_NO;
 
   if (defaultButton < 0 || defaultButton > 2)
     defaultButton = 0;
 
   va_start(args, defaultButton);
 
-  init(title, askDontShow, 2, defaultButton, buttons, args);
+  init(GNOME_MESSAGE_BOX_QUESTION, title, askDontShow, 2, defaultButton,
+       buttons, args);
 
   va_end(args);
   
@@ -209,16 +259,16 @@ Ask3Box::Ask3Box(Gtk::Window *win, const char *title, int askDontShow,
   va_list args;
   char *buttons[3];
   
-  buttons[0] = "Yes";
-  buttons[1] = "No";
-  buttons[2] = "Cancel";
+  buttons[0] = GNOME_STOCK_BUTTON_YES;
+  buttons[1] = GNOME_STOCK_BUTTON_NO;
+  buttons[2] = GNOME_STOCK_BUTTON_CANCEL;
 
   if (defaultButton < 0 || defaultButton > 3)
     defaultButton = 0;
 
   va_start(args, defaultButton);
 
-  init(title, askDontShow, 3, defaultButton, buttons, args);
+  init(GNOME_MESSAGE_BOX_QUESTION, title, askDontShow, 3, defaultButton, buttons, args);
 
   va_end(args);
   
