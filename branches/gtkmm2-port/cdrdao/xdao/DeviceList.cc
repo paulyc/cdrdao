@@ -30,7 +30,6 @@
 #include "Settings.h"
 
 #include "CdDevice.h"
-#include "guiUpdate.h"
 #include "TocEdit.h"
 
 #include "util.h"
@@ -103,7 +102,7 @@ DeviceList::DeviceList(CdDevice::DeviceType filterType)
   set_spacing(5);
 
   import();
-  signal_devicesStatusChanged.connect(slot(*this, &DeviceList::importStatus));
+  CdDevice::signal_statusChanged.connect(slot(*this, &DeviceList::importStatus));
   show();
 }
 
