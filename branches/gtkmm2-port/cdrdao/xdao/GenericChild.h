@@ -24,8 +24,6 @@
 #ifndef __GENERIC_CHILD_H__
 #define __GENERIC_CHILD_H__
 
-#include <gnome--.h>
-
 class TocEdit;
 
 class GenericChild : public Gtk::Widget
