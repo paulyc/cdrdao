@@ -64,3 +64,6 @@ INCLUDES =					\
 	-DGNOMEICONDIR=\""$(datadir)/pixmaps"\"
 
 AM_CXXFLAGS = @GTKMM2_CFLAGS@ @LIBGUIMM2_CFLAGS@
+
+man1_MANS = gcdmaster.man
+EXTRA_DIST = $(man1_MANS)
