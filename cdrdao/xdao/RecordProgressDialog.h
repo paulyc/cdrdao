@@ -18,6 +18,10 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2000/02/20 23:34:54  llanero
+ * fixed scsilib directory (files mising ?-()
+ * ported xdao to 1.1.8 / gnome (MDI) app
+ *
  * Revision 1.1.1.1  2000/02/05 01:38:46  llanero
  * Uploaded cdrdao 1.1.3 with pre10 patch applied.
  *
@@ -52,6 +56,7 @@ private:
   int finished_;
   int actStatus_;
   int actTrack_;
+  int actTrackProgress_;
   int actTotalProgress_;
   int actBufferFill_;
 
@@ -63,6 +68,7 @@ private:
   Gtk::Label *tocName_;
 
   Gtk::Label *statusMsg_;;
+  Gtk::ProgressBar *trackProgress_;
   Gtk::ProgressBar *totalProgress_;
   Gtk::ProgressBar *bufferFillRate_;
 
@@ -70,6 +76,7 @@ private:
 
   void update(unsigned long, TocEdit *);
   void start(CdDevice *, TocEdit *);
+  void start(CdDevice *, char *tocFileName);
   void stop();
   void closeAction();
   void clear();
@@ -85,6 +92,7 @@ public:
   void update(unsigned long, TocEdit *);
   
   RecordProgressDialog *start(CdDevice *, TocEdit *);
+  RecordProgressDialog *start(CdDevice *, char *tocFileName);
   void stop(RecordProgressDialog *);
 
 private:
