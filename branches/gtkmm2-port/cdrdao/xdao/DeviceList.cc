@@ -101,6 +101,9 @@ DeviceList::DeviceList(CdDevice::DeviceType filterType)
   }
 
   set_spacing(5);
+
+  import();
+  signal_devicesStatusChanged.connect(slot(*this, &DeviceList::importStatus));
   show();
 }
 
