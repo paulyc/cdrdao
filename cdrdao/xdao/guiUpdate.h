@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.3.4.1  2002/09/24 22:04:52  llanero
+ * gtkmm2 port and use a signal instead of guiUpdate for Device Status
+ *
  * Revision 1.3  2001/08/04 00:25:59  llanero
  * add UPD_PLAY_STATUS
  *
@@ -52,8 +55,5 @@
 #define UPD_PLAY_STATUS      0x00000800
 
 extern void guiUpdate(unsigned long level = 0);
-extern bool guiUpdatePeriodic();
-
-static SigC::Signal0<void> signal_devicesStatusChanged;
 
 #endif

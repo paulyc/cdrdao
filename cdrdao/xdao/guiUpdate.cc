@@ -20,7 +20,6 @@
 #include <libgnomeuimm.h>
 
 #include "xcdrdao.h"
-#include "gcdmaster.h"
 #include "DeviceConfDialog.h"
 #include "ProgressDialog.h"
 #include "ProcessMonitor.h"
@@ -32,22 +31,14 @@
 
 void guiUpdate(unsigned long level)
 {
-  if (gcdmaster == 0)
-    return;
+//GTKMM2  if (gcdmaster == 0)
+//GTKMM2    return;
 
-  gcdmaster->update(level);
+//GTKMM2  gcdmaster->update(level);
 
   if (DEVICE_CONF_DIALOG != NULL)
     DEVICE_CONF_DIALOG->update(level);
 
   if (PROGRESS_POOL != NULL)
     PROGRESS_POOL->update(level);
-}
-
-bool guiUpdatePeriodic()
-{
-  if (CdDevice::updateDeviceStatus())
-    signal_devicesStatusChanged();
-
-  return true;
 }
