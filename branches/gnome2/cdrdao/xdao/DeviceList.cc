@@ -44,9 +44,6 @@ DeviceList::DeviceList(CdDevice::DeviceType filterType)
 
   listModel_ = Gtk::ListStore::create(listColumns_);
   list_.set_model(listModel_);
-  list_.append_column("Bus", listColumns_.bus);
-  list_.append_column("Id", listColumns_.id);
-  list_.append_column("Lun", listColumns_.lun);
   list_.append_column("Vendor", listColumns_.vendor);
   list_.append_column("Model", listColumns_.model);
   list_.append_column("Status", listColumns_.status);
