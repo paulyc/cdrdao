@@ -186,6 +186,7 @@ void ProgressDialog::start(CdDevice *device, const char *tocFileName)
   tocName_->set_text(tocFileName);
 
   setCloseButtonLabel(1);
+  cancelButton_->set_sensitive(true);
 
   s = device->vendor();
   s += " ";
