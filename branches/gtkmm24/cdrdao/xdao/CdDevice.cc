@@ -502,7 +502,7 @@ void CdDevice::progress(int *status, int *totalTracks, int *track,
 // Starts a 'cdrdao' for reading whole cd.
 // Return: 0: OK, process succesfully launched
 //         1: error occured
-int CdDevice::extractDao(Project& parent, const char *tocFileName,
+int CdDevice::extractDao(Gtk::Window& parent, const char *tocFileName,
                          int correction, int readSubChanMode)
 {
   char *args[30];
@@ -611,7 +611,7 @@ void CdDevice::abortDaoReading()
 // Starts a 'cdrdao' for duplicating a CD.
 // Return: 0: OK, process succesfully launched
 //         1: error occured
-int CdDevice::duplicateDao(Project& parent, int simulate, int multiSession,
+int CdDevice::duplicateDao(Gtk::Window& parent, int simulate, int multiSession,
                            int speed, int eject, int reload, int buffer,
                            int onthefly, int correction, int readSubChanMode, 
 			   CdDevice *readdev)
@@ -766,7 +766,7 @@ void CdDevice::abortDaoDuplication()
 // Starts a 'cdrdao' for blanking a CD.
 // Return: 0: OK, process succesfully launched
 //         1: error occured
-int CdDevice::blank(Project* parent, int fast, int speed, int eject,
+int CdDevice::blank(Gtk::Window* parent, int fast, int speed, int eject,
                     int reload)
 {
   char *args[20];
