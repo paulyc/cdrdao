@@ -337,7 +337,7 @@ public:
 			     WCD_LEADOUT = PGSMSG_WCD_LEADOUT };
   int sendWriteCdProgressMsg(WriteCdProgressType type, int totalTracks,
 			     int track, int trackProgress, int totalProgress,
-			     int bufferFillRate);
+			     int bufferFillRate, int writeBufferFill = 0);
 
   int sendBlankCdProgressMsg(int totalProgress);
 
