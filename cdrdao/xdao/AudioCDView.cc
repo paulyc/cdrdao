@@ -24,6 +24,7 @@
 #include "xcdrdao.h"
 #include "guiUpdate.h"
 #include "MessageBox.h"
+#include "SampleManager.h"
 #include "SampleDisplay.h"
 #include "TocEdit.h"
 #include "TocEditView.h"
@@ -82,8 +83,12 @@ AudioCDView::AudioCDView(AudioCDChild *child, AudioCDProject *project)
   Gtk::Label *label;
   Gtk::HBox *selectionInfoBox = new Gtk::HBox;
 
-//FIXME: Calculate entry width for the current font.
-  gint entry_width = 90;
+  //Calculate entry width for the current font.
+  Glib::RefPtr<Pango::Layout> layout = Pango::Layout::create(Gtk::Widget::get_pango_context());
+  layout->set_text("000:00:00.000");
+  int width, height;
+  layout->get_pixel_size(width, height);
+  gint entry_width = width;
 
   markerPos_ = new Gtk::Entry;
   markerPos_->set_editable(true);
@@ -240,6 +245,12 @@ AudioCDView::AudioCDView(AudioCDChild *child, AudioCDProject *project)
       Gtk::Widget *menuitem = arrayInfo[i].get_widget();
     }
   }
+
+  tocEditView_->signal_markerSet.connect(slot(*this, &AudioCDView::markerSetUpdate));
+  tocEditView_->signal_sampleSelectionSet.connect(slot(*this, &AudioCDView::selectionSetUpdate));
+  tocEditView_->signal_trackMarkSelected.connect(slot(*this, &AudioCDView::trackMarkSelectedUpdate));
+  tocEditView_->signal_samplesChanged.connect(slot(*this, &AudioCDView::samplesUpdate));
+  tocEditView_->tocEdit()->sampleManager()->signal_samplesChanged.connect(slot(*this, &AudioCDView::samplesUpdate));
 }
 
 AudioCDView::~AudioCDView()
@@ -265,9 +276,9 @@ void AudioCDView::getSelection(unsigned long &start, unsigned long &end)
     tocEditView_->sampleView(&start, &end);
 }
 
-void AudioCDView::updatePlayPos(unsigned long pos)
+void AudioCDView::updatePlayPos(bool managed, unsigned long pos)
 {
-  sampleDisplay_->setCursor(1, pos);
+  sampleDisplay_->setCursor(managed, pos);
   cursorPos_->set_text(cdchild->sample2string(pos));
 }
 
@@ -275,18 +286,6 @@ void AudioCDView::update(unsigned long level)
 {
   if (level & (UPD_TOC_DIRTY | UPD_TOC_DATA)) {
     cursorPos_->set_text("");
-  }
-
-  if (level & UPD_TRACK_MARK_SEL) {
-    int trackNr, indexNr;
-
-    if (tocEditView_->trackSelection(&trackNr) && 
-	tocEditView_->indexSelection(&indexNr)) {
-      sampleDisplay_->setSelectedTrackMarker(trackNr, indexNr);
-    }
-    else {
-      sampleDisplay_->setSelectedTrackMarker(0, 0);
-    }
   }
 
   if (level & UPD_SAMPLES) {
@@ -299,34 +298,6 @@ void AudioCDView::update(unsigned long level)
     sampleDisplay_->updateTrackMarks();
   }
 
-  if (level & UPD_SAMPLE_MARKER) {
-    unsigned long marker;
-
-    if (tocEditView_->sampleMarker(&marker)) {
-      markerPos_->set_text(cdchild->sample2string(marker));
-      sampleDisplay_->setMarker(marker);
-    }
-    else {
-      markerPos_->set_text("");
-      sampleDisplay_->clearMarker();
-    }
-  }
-
-  if (level & UPD_SAMPLE_SEL) {
-    unsigned long start, end;
-
-    if (tocEditView_->sampleSelection(&start, &end)) {
-      selectionStartPos_->set_text(cdchild->sample2string(start));
-      selectionEndPos_->set_text(cdchild->sample2string(end));
-      sampleDisplay_->setRegion(start, end);
-    }
-    else {
-      selectionStartPos_->set_text("");
-      selectionEndPos_->set_text("");
-      sampleDisplay_->setRegion(1, 0);
-    }
-  }
-
   if (trackInfoDialog_ != 0)
     trackInfoDialog_->update(level, tocEditView_);
 
@@ -336,6 +307,13 @@ void AudioCDView::update(unsigned long level)
   if (addSilenceDialog_ != 0)
     addSilenceDialog_->update(level, tocEditView_);
 
+}
+
+void AudioCDView::samplesUpdate()
+{
+  unsigned long smin, smax;
+  tocEditView_->sampleView(&smin, &smax);
+  sampleDisplay_->updateToc(smin, smax);
 }
 
 int AudioCDView::getMarker(unsigned long *sample)
@@ -359,10 +337,36 @@ void AudioCDView::trackMarkSelectedCallback(const Track *, int trackNr,
   guiUpdate();
 }
 
+void AudioCDView::trackMarkSelectedUpdate()
+{
+  int trackNr, indexNr;
+
+  if (tocEditView_->trackSelection(&trackNr) && 
+    tocEditView_->indexSelection(&indexNr)) {
+    sampleDisplay_->setSelectedTrackMarker(trackNr, indexNr);
+  }
+  else {
+    sampleDisplay_->setSelectedTrackMarker(0, 0);
+  }
+}
+
 void AudioCDView::markerSetCallback(unsigned long sample)
 {
   tocEditView_->sampleMarker(sample);
-  guiUpdate();
+}
+
+void AudioCDView::markerSetUpdate()
+{
+  unsigned long marker;
+
+  if (tocEditView_->sampleMarker(&marker)) {
+    markerPos_->set_text(cdchild->sample2string(marker));
+    sampleDisplay_->setMarker(marker);
+  }
+  else {
+    markerPos_->set_text("");
+    sampleDisplay_->clearMarker();
+  }
 }
 
 void AudioCDView::selectionSetCallback(unsigned long start,
@@ -378,6 +382,22 @@ void AudioCDView::selectionSetCallback(unsigned long start,
   guiUpdate();
 }
 
+void AudioCDView::selectionSetUpdate()
+{
+  unsigned long start, end;
+
+  if (tocEditView_->sampleSelection(&start, &end)) {
+    selectionStartPos_->set_text(cdchild->sample2string(start));
+    selectionEndPos_->set_text(cdchild->sample2string(end));
+    sampleDisplay_->setRegion(start, end);
+  }
+  else {
+    selectionStartPos_->set_text("");
+    selectionEndPos_->set_text("");
+    sampleDisplay_->setRegion(1, 0);
+  }
+}
+
 void AudioCDView::cursorMovedCallback(unsigned long pos)
 {
   cursorPos_->set_text(cdchild->sample2string(pos));
@@ -386,7 +406,7 @@ void AudioCDView::cursorMovedCallback(unsigned long pos)
 void AudioCDView::viewModifiedCallback(unsigned long start, unsigned long end)
 {
   tocEditView_->sampleView(start, end);
-  guiUpdate();
+//  guiUpdate();
 }
 
 void AudioCDView::markerSet()
