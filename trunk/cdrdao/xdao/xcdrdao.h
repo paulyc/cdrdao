@@ -18,6 +18,11 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.8  2001/03/02 01:46:32  llanero
+ * more work on the new mdi.
+ * killed MDIWINDOW
+ * per *view* toolbars, ...
+ *
  * Revision 1.7  2001/02/27 03:13:22  llanero
  * some work in the new MDI mode
  *
@@ -65,6 +70,8 @@
 
 #ifndef __XCDRDAO_H__
 #define __XCDRDAO_H__
+
+#define APP_NAME "Gnome CD Master"
 
 extern class GCDMaster *gcdmaster;
 //FIXME extern class MDIWindow *MDI_WINDOW;
