@@ -72,7 +72,7 @@ AudioCDView::AudioCDView(AudioCDChild *child, AudioCDProject *project)
   sampleDisplay_ = new SampleDisplay;
   sampleDisplay_->setTocEdit(child->tocEdit());
 
-//GTKMM2  sampleDisplay_->set_default_size(200,200);
+  sampleDisplay_->set_size_request(200,200);
   
   vbox->pack_start(*sampleDisplay_, TRUE, TRUE);
   sampleDisplay_->show();
@@ -90,21 +90,21 @@ AudioCDView::AudioCDView(AudioCDChild *child, AudioCDProject *project)
 
   markerPos_ = new Gtk::Entry;
   markerPos_->set_editable(true);
-//GTKMM2  markerPos_->set_default_size(entry_width, 0);
+  markerPos_->set_size_request(entry_width, -1);
   markerPos_->signal_activate().connect(slot(*this, &AudioCDView::markerSet));
 
   cursorPos_ = new Gtk::Entry;
-//GTKMM2  cursorPos_->set_default_size(entry_width, 0);
+  cursorPos_->set_size_request(entry_width, -1);
   cursorPos_->set_editable(false);
 
   selectionStartPos_ = new Gtk::Entry;
   selectionStartPos_->set_editable(true);
-//GTKMM2  selectionStartPos_->set_default_size(entry_width, 0);
+  selectionStartPos_->set_size_request(entry_width, -1);
   selectionStartPos_->signal_activate().connect(slot(*this, &AudioCDView::selectionSet));
 
   selectionEndPos_ = new Gtk::Entry;
   selectionEndPos_->set_editable(true);
-//GTKMM2  selectionEndPos_->set_default_size(entry_width, 0);
+  selectionEndPos_->set_size_request(entry_width, -1);
   selectionEndPos_->signal_activate().connect(slot(*this, &AudioCDView::selectionSet));
 
   label = new Gtk::Label("Cursor: ");
@@ -662,7 +662,7 @@ void AudioCDView::trackInfo()
   }
   else
   {
-      Gtk::MessageDialog(*project_, "Please select a track first", Gtk::MESSAGE_INFO);
+      Gtk::MessageDialog(*project_, "Please select a track first", Gtk::MESSAGE_INFO).run();
   }
 
 }
