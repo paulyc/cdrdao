@@ -1,6 +1,6 @@
 /*  cdrdao - write audio CD-Rs in disc-at-once mode
  *
- *  Copyright (C) 1998  Andreas Mueller <mueller@daneb.ping.de>
+ *  Copyright (C) 1998-2000  Andreas Mueller <mueller@daneb.ping.de>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,6 +18,12 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.10  1999/12/12 13:37:33  mueller
+ * Added DAE command for Matshita CD-ROM drives.
+ *
+ * Revision 1.9  1999/11/07 09:17:08  mueller
+ * Release 1.1.3
+ *
  * Revision 1.8  1999/04/05 18:48:37  mueller
  * Added driver options.
  * Added read-cd patch from Leon Woestenberg.
@@ -49,7 +55,7 @@
 
 #define OPT_PLEX_USE_PARANOIA   0x0001 // always use paranoia method for DAE
 #define OPT_PLEX_DAE_READ10     0x0002 // use READ10 for DAE
-
+#define OPT_PLEX_DAE_D4_12      0x0004 // use 12 byte command 0xD4 for DAE
 
 
 class Toc;

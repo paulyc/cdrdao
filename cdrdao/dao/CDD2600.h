@@ -1,6 +1,6 @@
 /*  cdrdao - write audio CD-Rs in disc-at-once mode
  *
- *  Copyright (C) 1998  Andreas Mueller <mueller@daneb.ping.de>
+ *  Copyright (C) 1998-2000  Andreas Mueller <mueller@daneb.ping.de>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.13  1999/11/07 09:17:08  mueller
+ * Release 1.1.3
+ *
  * Revision 1.12  1999/04/05 11:04:10  mueller
  * Added driver option flags.
  *
@@ -116,6 +119,7 @@ private:
   int readAudioRange(int fd, long start, long end,
 		     int startTrack, int endTrack, TrackInfo *);
 
+  int nextWritableAddress(long *lba, int showError);
 
 
 };
