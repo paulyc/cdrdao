@@ -117,7 +117,8 @@ static gchar *INDEX_EXTEND_XPM_DATA[] = {
 SampleDisplay::SampleDisplay()
 {
   adjustment_ = new Gtk::Adjustment(0.0, 0.0, 1.0);
-  adjustment_->signal_value_changed().connect(slot(*this, &SampleDisplay::scrollTo));
+  adjustment_->signal_value_changed().connect(slot(*this,
+                                                   &SampleDisplay::scrollTo));
 
   trackManager_ = NULL;
 
@@ -137,12 +138,12 @@ SampleDisplay::SampleDisplay()
 
   chanSep_ = 10;
 
-  cursorControlExtern_ = 0;
+  cursorControlExtern_ = false;
   cursorDrawn_ = 0;
   cursorX_ = 0;
 
   markerSet_ = 0;
-  selectionSet_ = 0;
+  selectionSet_ = false;
   regionSet_ = 0;
   dragMode_ = DRAG_NONE;
 
@@ -181,7 +182,7 @@ void SampleDisplay::setTocEdit(TocEdit *t)
   Toc *toc = tocEdit_->toc();
 
   markerSet_ = 0;
-  selectionSet_ = 0;
+  selectionSet_ = false;
   regionSet_ = 0;
 
   minSample_ = 0;
@@ -353,10 +354,10 @@ int SampleDisplay::getRegion(unsigned long *start, unsigned long *end)
 void SampleDisplay::setCursor(int ctrl, unsigned long sample)
 {
   if (ctrl == 0) {
-    cursorControlExtern_ = 0;
+    cursorControlExtern_ = false;
   }
   else {
-    cursorControlExtern_ = 1;
+    cursorControlExtern_ = true;
 
     gint x = sample2pixel(sample);
     if (x >= 0)
@@ -556,6 +557,7 @@ bool SampleDisplay::handleButtonPressEvent(GdkEventButton *event)
 
   dragMode_ = DRAG_NONE;
 
+  // e.g. if audio is playing
   if (cursorControlExtern_)
     return true;
 
@@ -598,10 +600,12 @@ bool SampleDisplay::handleButtonReleaseEvent(GdkEventButton *event)
   if (event->button == 1 && dragMode_ != DRAG_NONE) {
     if (dragMode_ == DRAG_SAMPLE_MARKER) {
       if (dragStart_ - x >= -5 && dragStart_ - x <= 5) {
+        selectionSet_ = false;
+        selectionCleared();
 	markerSet(pixel2sample(dragStart_));
       }
       else {
-	selectionSet_ = 1;
+	selectionSet_ = true;
 	if (x > dragStart_) {
 	  selectionStartSample_ = pixel2sample(dragStart_);
 	  selectionEndSample_ = pixel2sample(x);
@@ -1097,7 +1101,7 @@ void SampleDisplay::drawCursor(gint x)
   cursorDrawn_ = 1;
   cursorX_ = x;
 
-  if (cursorControlExtern_ == 0)
+  if (cursorControlExtern_ == false)
     cursorMoved(pixel2sample(x));
 }
 

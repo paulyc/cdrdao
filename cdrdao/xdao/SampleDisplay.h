@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.5.6.1  2004/01/05 00:34:03  poolshark
+ * First checking of gnome2 port
+ *
  * Revision 1.2  2003/12/13 02:29:44  denis
  * Fixed font issues with sample display
  *
@@ -69,7 +72,8 @@ class Toc;
 class Sample;
 class TocEdit;
 
-class SampleDisplay : public Gtk::DrawingArea {
+class SampleDisplay : public Gtk::DrawingArea
+{
 private:
   enum DragMode { DRAG_NONE, DRAG_SAMPLE_MARKER, DRAG_TRACK_MARKER };
 
@@ -117,15 +121,15 @@ private:
   unsigned long maxSample_;
   unsigned long resolution_;
 
-  int cursorDrawn_;
+  int  cursorDrawn_;
   gint cursorX_;
-  int cursorControlExtern_;
+  bool cursorControlExtern_;
 
   int markerSet_;
   gint markerX_;
   unsigned long markerSample_;
 
-  int selectionSet_;
+  bool selectionSet_;
   unsigned long selectionStartSample_;
   unsigned long selectionEndSample_;
   gint selectionStart_;
@@ -164,15 +168,16 @@ public:
   SampleDisplay();
 
   void setTocEdit(TocEdit *);
-  int getSelection(unsigned long *start, unsigned long *end);
+  int  getSelection(unsigned long *start, unsigned long *end);
   void setSelectedTrackMarker(int trackNr, int indexNr);
   void setMarker(unsigned long sample);
   void clearMarker();
-  int getMarker(unsigned long *);
+  void unselect();
+  int  getMarker(unsigned long *);
   void setView(unsigned long start, unsigned long end);
   void getView(unsigned long *start, unsigned long *end);
   void setRegion(unsigned long start, unsigned long end);
-  int getRegion(unsigned long *start, unsigned long *end);
+  int  getRegion(unsigned long *start, unsigned long *end);
   Gtk::Adjustment *getAdjustment() { return adjustment_; }
   void updateTrackMarks();
   void setCursor(int, unsigned long);
@@ -182,6 +187,7 @@ public:
   SigC::Signal1<void, unsigned long> markerSet;
   SigC::Signal1<void, unsigned long> cursorMoved;
   SigC::Signal2<void, unsigned long, unsigned long> selectionSet;
+  SigC::Signal0<void> selectionCleared;
   SigC::Signal3<void, const Track *, int, int> trackMarkSelected;
   SigC::Signal4<void, const Track *, int, int, unsigned long> trackMarkMoved;
   SigC::Signal2<void, unsigned long, unsigned long> viewModified;

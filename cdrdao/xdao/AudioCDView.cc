@@ -89,17 +89,18 @@ AudioCDView::AudioCDView(AudioCDChild *child, AudioCDProject *project)
 
   cursorPos_ = new Gtk::Label;
   cursorPos_->set_size_request(entry_width, -1);
-  // cursorPos_->set_editable(false);
 
   selectionStartPos_ = new Gtk::Entry;
   selectionStartPos_->set_editable(true);
   selectionStartPos_->set_size_request(entry_width, -1);
-  selectionStartPos_->signal_activate().connect(slot(*this, &AudioCDView::selectionSet));
+  selectionStartPos_->signal_activate().
+      connect(slot(*this, &AudioCDView::selectionSet));
 
   selectionEndPos_ = new Gtk::Entry;
   selectionEndPos_->set_editable(true);
   selectionEndPos_->set_size_request(entry_width, -1);
-  selectionEndPos_->signal_activate().connect(slot(*this, &AudioCDView::selectionSet));
+  selectionEndPos_->signal_activate().
+      connect(slot(*this, &AudioCDView::selectionSet));
 
   label = new Gtk::Label(_("Cursor: "));
   selectionInfoBox->pack_start(*label, FALSE, FALSE);
@@ -139,6 +140,8 @@ AudioCDView::AudioCDView(AudioCDChild *child, AudioCDProject *project)
                         &AudioCDView::markerSetCallback));
   sampleDisplay_->selectionSet.connect(slot(*this,
                         &AudioCDView::selectionSetCallback));
+  sampleDisplay_->selectionCleared.connect(slot(*this,
+                        &AudioCDView::selectionClearedCallback));
   sampleDisplay_->cursorMoved.connect(slot(*this,
   			&AudioCDView::cursorMovedCallback));
   sampleDisplay_->trackMarkSelected.connect(slot(*this,
@@ -417,18 +420,24 @@ void AudioCDView::markerSetCallback(unsigned long sample)
 }
 
 void AudioCDView::selectionSetCallback(unsigned long start,
-				      unsigned long end)
+                                       unsigned long end)
 {
-  if (mode_ == ZOOM) {
+  if (mode_ == ZOOM ) {
     tocEditView_->sampleView(start, end);
   }
   else {
     tocEditView_->sampleSelection(start, end);
   }
 
-  //cout << "selectionSetCallback called" << endl;
-
   guiUpdate();
+}
+
+void AudioCDView::selectionClearedCallback()
+{
+  if (mode_ != ZOOM) {
+    tocEditView_->sampleSelectionClear();
+    guiUpdate();
+  }
 }
 
 void AudioCDView::cursorMovedCallback(unsigned long pos)
@@ -457,8 +466,10 @@ void AudioCDView::markerSet()
 
 void AudioCDView::selectionSet()
 {
-  unsigned long s1 = cdchild->string2sample(selectionStartPos_->get_text().c_str());
-  unsigned long s2 = cdchild->string2sample(selectionEndPos_->get_text().c_str());
+  unsigned long s1 =
+    cdchild->string2sample(selectionStartPos_->get_text().c_str());
+  unsigned long s2 =
+    cdchild->string2sample(selectionEndPos_->get_text().c_str());
 
   tocEditView_->sampleSelection(s1, s2);
   guiUpdate();
