@@ -18,6 +18,15 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2000/04/23 09:07:08  andreasm
+ * * Fixed most problems marked with '//llanero'.
+ * * Added audio CD edit menus to MDIWindow.
+ * * Moved central storage of TocEdit object to MDIWindow.
+ * * AudioCdChild is now handled like an ordinary non modal dialog, i.e.
+ *   it has a normal 'update' member function now.
+ * * Added CdTextTable modal dialog.
+ * * Old functionality of xcdrdao is now available again.
+ *
  * Revision 1.3  2000/04/16 20:31:20  andreasm
  * Added missing stdio.h includes.
  *
@@ -30,7 +39,7 @@
  *
  */
 
-static char rcsid[] = "$Id: RecordProgressDialog.cc,v 1.4 2000-04-23 09:07:08 andreasm Exp $";
+static char rcsid[] = "$Id: RecordProgressDialog.cc,v 1.5 2000-05-24 18:42:44 llanero Exp $";
 
 #include <stdio.h>
 #include <stddef.h>
@@ -62,7 +71,11 @@ RecordProgressDialog::RecordProgressDialog(RecordProgressDialogPool *father)
 
   statusMsg_ = new Gtk::Label(string("XXXXXXXXXXXXXXXXXXX"));
   totalProgress_ = new Gtk::ProgressBar;
+  totalProgress_->set_show_text(TRUE);
+  totalProgress_->set_format_string("Starting...");    
   bufferFillRate_ = new Gtk::ProgressBar;
+  bufferFillRate_->set_show_text(TRUE);
+  bufferFillRate_->set_format_string("Starting...");    
   tocName_ = new Gtk::Label;
   abortLabel_ = new Gtk::Label(string(" Abort "));
   closeLabel_ = new Gtk::Label(string(" Dismiss "));
@@ -232,6 +245,7 @@ void RecordProgressDialog::update(unsigned long level, TocEdit *tocEdit)
   int totalProgress;
   int bufferFill;
   char buf[20];
+  char bufProgress[30];
   string s;
 
   if (!active_ || device_ == NULL)
@@ -280,19 +294,23 @@ void RecordProgressDialog::update(unsigned long level, TocEdit *tocEdit)
       actTotalProgress_ = totalProgress;
 
       totalProgress_->set_percentage(gfloat(totalProgress) / 1000.0);
+      sprintf(bufProgress, "%.2f %%%%", gfloat(totalProgress/10.0));
+      totalProgress_->set_format_string(bufProgress);
     }
 
     if (bufferFill != actBufferFill_) {
       actBufferFill_ = bufferFill;
 
       bufferFillRate_->set_percentage(gfloat(bufferFill) / 100.0);
+      sprintf(bufProgress, "%.2f %%%%", gfloat(bufferFill/1.0));
+      bufferFillRate_->set_format_string(bufProgress);
     }
   }
 
   if (device_->status() != CdDevice::DEV_RECORDING) {
     switch (device_->exitStatus()) {
     case 0:
-      statusMsg_->set_text(string("Recoring finished successfully."));
+      statusMsg_->set_text(string("Recording finished successfully."));
       break;
 
     case 255:
@@ -300,7 +318,7 @@ void RecordProgressDialog::update(unsigned long level, TocEdit *tocEdit)
       break;
 
     default:
-      statusMsg_->set_text(string("Recoring aborted with error."));
+      statusMsg_->set_text(string("Recording aborted with error."));
       break;
     }
 
