@@ -47,7 +47,12 @@ public:
 
   void indexSelection(int);
   int indexSelection(int *) const;
-  
+
+  SigC::Signal0<void> signal_markerSet;
+  SigC::Signal0<void> signal_sampleSelectionSet;
+  SigC::Signal0<void> signal_trackMarkSelected;
+  SigC::Signal0<void> signal_samplesChanged;
+
 private:
   TocEdit *tocEdit_;
 
@@ -67,6 +72,7 @@ private:
   int indexSelectionValid_;
   int indexSelection_;
 
+  bool updating_;
 };
 
 #endif

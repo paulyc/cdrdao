@@ -34,6 +34,7 @@ TocEditView::TocEditView(TocEdit *t)
   sampleViewMin_ = sampleViewMax_ = 0;
   trackSelectionValid_ = 0;
   indexSelectionValid_ = 0;
+  updating_ = 0;
 }
 
 TocEditView::~TocEditView()
@@ -57,7 +58,7 @@ void TocEditView::sampleMarker(unsigned long sample)
     sampleMarkerValid_ = 0;
   }
 
-  tocEdit_->updateLevel_ |= UPD_SAMPLE_MARKER;
+  signal_markerSet();
 }
 
 int TocEditView::sampleMarker(unsigned long *sample) const
@@ -88,15 +89,16 @@ void TocEditView::sampleSelection(unsigned long smin, unsigned long smax)
     sampleSelectionValid_ = 0;
   }
   
-  tocEdit_->updateLevel_ |= UPD_SAMPLE_SEL;
+  signal_sampleSelectionSet();
 }
 
 void TocEditView::sampleSelectionClear()
 {
   if (sampleSelectionValid_)
-    tocEdit_->updateLevel_ |= UPD_SAMPLE_SEL;
-
-  sampleSelectionValid_ = 0;
+  {
+    sampleSelectionValid_ = 0;
+    signal_sampleSelectionSet();
+  }
 }
 
 int TocEditView::sampleSelection(unsigned long *smin, unsigned long *smax) const
@@ -111,11 +113,18 @@ int TocEditView::sampleSelection(unsigned long *smin, unsigned long *smax) const
 
 void TocEditView::sampleView(unsigned long smin, unsigned long smax)
 {
+  if (updating_)
+    return;
+  else
+    updating_ = 1;
+
   if (smin <= smax && smax < tocEdit_->lengthSample()) {
     sampleViewMin_ = smin;
     sampleViewMax_ = smax;
-    tocEdit_->updateLevel_ |= UPD_SAMPLES;
+    signal_samplesChanged();
   }
+
+  updating_ = 0;
 }
 
 void TocEditView::sampleView(unsigned long *smin, unsigned long *smax) const
@@ -131,7 +140,7 @@ void TocEditView::sampleViewFull()
   if ((sampleViewMax_ = tocEdit_->lengthSample()) > 0)
     sampleViewMax_ -= 1;
 
-  tocEdit_->updateLevel_ |= UPD_SAMPLES;
+  signal_samplesChanged();
 }
 
 void TocEditView::sampleViewUpdate()
@@ -148,7 +157,7 @@ void TocEditView::sampleViewUpdate()
     else
       sampleViewMin_ = 0;
 
-    tocEdit_->updateLevel_ |= UPD_SAMPLES;
+    signal_samplesChanged();
   }
 }
 
@@ -156,12 +165,12 @@ void TocEditView::sampleViewInclude(unsigned long smin, unsigned long smax)
 {
   if (smin < sampleViewMin_) {
     sampleViewMin_ = smin;
-    tocEdit_->updateLevel_ |= UPD_SAMPLES;
+    signal_samplesChanged();
   }
 
   if (smax < tocEdit_->lengthSample() && smax > sampleViewMax_) {
     sampleViewMax_ = smax;
-    tocEdit_->updateLevel_ |= UPD_SAMPLES;
+    signal_samplesChanged();
   }
 }
 
@@ -175,8 +184,7 @@ void TocEditView::trackSelection(int tnum)
     trackSelectionValid_ = 0;
   }
 
-  tocEdit_->updateLevel_ |= UPD_TRACK_MARK_SEL;
-
+  signal_trackMarkSelected();
 }
 
 int TocEditView::trackSelection(int *tnum) const
@@ -197,7 +205,7 @@ void TocEditView::indexSelection(int inum)
     indexSelectionValid_ = 0;
   }
 
-  tocEdit_->updateLevel_ |= UPD_TRACK_MARK_SEL;
+  signal_trackMarkSelected();
 }
 
 int TocEditView::indexSelection(int *inum) const
