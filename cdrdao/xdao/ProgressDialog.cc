@@ -224,7 +224,7 @@ void ProgressDialog::closeAction()
     case CdDevice::A_RECORD:
         {
         Ask2Box msg(this, "Abort Recording", false,
-		  "Abort recording process?", "This will leave the disc in a unreadable state.");
+		  "Abort recording process?", "This will leave the disc in an unreadable state.");
 
   	  if (msg.run() == 1) {
           if (device_ != NULL) 
