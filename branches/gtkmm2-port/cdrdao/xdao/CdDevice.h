@@ -28,7 +28,7 @@ class CdDevice : public SigC::Object {
 public:
   enum Status { DEV_READY, DEV_RECORDING, DEV_READING, DEV_WAITING, DEV_BUSY,
 		DEV_NO_DISK, DEV_BLANKING, DEV_FAULT, DEV_UNKNOWN };
-  enum DeviceType { CD_R, CD_RW, CD_ROM };
+  enum DeviceType { CD_ALL, CD_R, CD_RW, CD_ROM };
 
   enum Action { A_RECORD, A_READ, A_DUPLICATE, A_BLANK, A_NONE };
 
@@ -121,6 +121,7 @@ public:
 
   static bool updateDeviceStatus();
   static SigC::Signal0<void> signal_statusChanged;
+  static SigC::Signal0<void> signal_devicesChanged;
 
   /* not used anymore since Gtk::Main::input signal will call
    * CdDevice::updateProgress directly.
