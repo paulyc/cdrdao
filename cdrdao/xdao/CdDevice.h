@@ -20,9 +20,6 @@
 #ifndef __CD_DEVICE_H__
 #define __CD_DEVICE_H__
 
-#include <sigc++/object.h>
-#include <gdk/gdk.h>
-
 class TocEdit;
 class Process;
 class ScsiIf;
@@ -58,7 +55,7 @@ public:
 
   Action action() const;
 
-  void updateProgress(int fd, GdkInputCondition);
+  bool updateProgress(Glib::IOCondition);
 
   int autoSelectDriver();
 
