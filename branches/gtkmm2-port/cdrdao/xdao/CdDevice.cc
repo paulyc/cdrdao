@@ -27,7 +27,7 @@
 #include <ctype.h>
 #include <assert.h>
 
-#include <gnome.h>
+#include <libgnomeuimm.h>
 
 #include "TocEdit.h"
 #include "CdDevice.h"
@@ -341,10 +341,11 @@ int CdDevice::updateStatus()
   return 0;
 }
 
-void CdDevice::updateProgress(int fd, GdkInputCondition cond)
+bool CdDevice::updateProgress(Glib::IOCondition cond)
 {
   static char msgSync[4] = { 0xff, 0x00, 0xff, 0x00 };
   fd_set fds;
+  int fd;
   int state = 0;
   char buf[10];
   struct timeval timeout = { 0, 0 };
@@ -352,16 +353,12 @@ void CdDevice::updateProgress(int fd, GdkInputCondition cond)
   //message(0, "Rcvd msg");
 
   if (process_ == NULL)
-    return;
+    return false;
 
-  if (!(cond & GDK_INPUT_READ))
-    return;
+  fd = process_->commFd();
 
-  if (fd < 0 || fd != process_->commFd()) {
-    message(-3,
-	    "CdDevice::updateProgress called with illegal fild descriptor.");
-    return;
-  }
+  if (!(cond & Gdk::INPUT_READ))
+    return true;
 
   FD_ZERO(&fds);
   FD_SET(fd, &fds);
@@ -376,7 +373,7 @@ void CdDevice::updateProgress(int fd, GdkInputCondition cond)
     while (state < 4) {
       if (read(fd, buf, 1) != 1) {
 	//message(-2, "Reading of msg sync failed.");
-	return;
+	return true;
       }
 
       if (buf[0] == msgSync[state]) {
@@ -421,7 +418,7 @@ void CdDevice::updateProgress(int fd, GdkInputCondition cond)
   if (progressStatusChanged_)
     guiUpdate(UPD_PROGRESS_STATUS);
 
-  return;
+  return true;
 }
 
 CdDevice::DeviceType CdDevice::deviceType() const
@@ -554,10 +551,10 @@ int CdDevice::recordDao(TocEdit *tocEdit, int simulate, int multiSession,
     free(tocFileName);
 
     if (process_->commFd() >= 0) {
-      Gtk::Main::instance()->input.connect(slot(this,
+      Glib::signal_io().connect(slot(*this,
 						&CdDevice::updateProgress),
 					   process_->commFd(),
-					   (GdkInputCondition)(GDK_INPUT_READ|GDK_INPUT_EXCEPTION));
+					   (Glib::IOCondition)(Glib::IO_IN|Glib::IO_PRI|Glib::IO_ERR|Glib::IO_HUP));
     }
 
     return 0;
@@ -680,10 +677,10 @@ int CdDevice::extractDao(const char *tocFileName, int correction)
     action_ = A_READ;
 
     if (process_->commFd() >= 0) {
-      Gtk::Main::instance()->input.connect(slot(this,
-					       &CdDevice::updateProgress),
-					  process_->commFd(),
-					  (GdkInputCondition)(GDK_INPUT_READ|GDK_INPUT_EXCEPTION));
+      Glib::signal_io().connect(slot(*this,
+						&CdDevice::updateProgress),
+					   process_->commFd(),
+					   (Glib::IOCondition)(Glib::IO_IN|Glib::IO_PRI|Glib::IO_ERR|Glib::IO_HUP));
     }
     return 0;
   }
@@ -835,9 +832,10 @@ int CdDevice::duplicateDao(int simulate, int multiSession, int speed,
     action_ = A_DUPLICATE;
 
     if (process_->commFd() >= 0) {
-      Gtk::Main::instance()->input.connect(slot(this, &CdDevice::updateProgress),
+      Glib::signal_io().connect(slot(*this,
+						&CdDevice::updateProgress),
 					   process_->commFd(),
-					   (GdkInputCondition)(GDK_INPUT_READ|GDK_INPUT_EXCEPTION));
+					   (Glib::IOCondition)(Glib::IO_IN|Glib::IO_PRI|Glib::IO_ERR|Glib::IO_HUP));
     }
 
     return 0;
@@ -943,10 +941,10 @@ int CdDevice::blank(int fast, int speed, int eject, int reload)
     action_ = A_BLANK;
 
     if (process_->commFd() >= 0) {
-      Gtk::Main::instance()->input.connect(slot(this,
+      Glib::signal_io().connect(slot(*this,
 						&CdDevice::updateProgress),
 					   process_->commFd(),
-					   (GdkInputCondition)(GDK_INPUT_READ|GDK_INPUT_EXCEPTION));
+					   (Glib::IOCondition)(Glib::IO_IN|Glib::IO_PRI|Glib::IO_ERR|Glib::IO_HUP));
     }
     return 0;
   }
