@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2001/04/17 23:10:30  llanero
+ * More Fixes and cleanup
+ *
  * Revision 1.5  2000/11/05 12:24:41  andreasm
  * Improved handling of TocEdit views. Introduced a new class TocEditView that
  * holds all view data (displayed sample range, selected sample range,
@@ -53,8 +56,6 @@
 #ifndef __ADD_FILE_DIALOG_H__
 #define __ADD_FILE_DIALOG_H__
 
-#include <gtk--.h>
-
 class TocEditView;
 class AudioCDProject;
 
@@ -65,21 +66,16 @@ public:
   AddFileDialog(AudioCDProject *);
   ~AddFileDialog();
 
-  void start(TocEditView *);
-  void stop();
+  void setView(TocEditView *);
 
   void mode(Mode);
   void update(unsigned long level, TocEditView *);
 
-  gint delete_event_impl(GdkEventAny*);
-
 private:
   AudioCDProject *project_;
   TocEditView *tocEditView_;
-  int active_;
   Mode mode_;
 
-  void closeAction();
   void applyAction();
     
 };

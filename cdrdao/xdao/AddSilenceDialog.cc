@@ -22,13 +22,13 @@
 #include <math.h>
 #include <assert.h>
 
-#include "AddSilenceDialog.h"
+#include <libgnomeuimm.h>
 
 #include "TocEdit.h"
 #include "TocEditView.h"
 #include "guiUpdate.h"
-
 #include "Sample.h"
+#include "AddSilenceDialog.h"
 
 
 AddSilenceDialog::AddSilenceDialog()
@@ -38,7 +38,6 @@ AddSilenceDialog::AddSilenceDialog()
   Gtk::HBox *hbox;
 
   tocEditView_ = NULL;
-  active_ = 0;
   mode_ = M_APPEND;
 
   minutes_ = new Gtk::Entry;
@@ -61,25 +60,25 @@ AddSilenceDialog::AddSilenceDialog()
   vbox->show();
   
   Gtk::Label *label = new Gtk::Label("Minutes:");
-  table->attach(*label, 0, 1, 0, 1, GTK_SHRINK);
+  table->attach(*label, 0, 1, 0, 1, Gtk::SHRINK);
   label->show();
   table->attach(*minutes_, 1, 2, 0, 1);
   minutes_->show();
 
   label = new Gtk::Label("Seconds:");
-  table->attach(*label, 0, 1, 1, 2, GTK_SHRINK);
+  table->attach(*label, 0, 1, 1, 2, Gtk::SHRINK);
   label->show();
   table->attach(*seconds_, 1, 2, 1, 2);
   seconds_->show();
 
   label = new Gtk::Label("Frames:");
-  table->attach(*label, 0, 1, 2, 3, GTK_SHRINK);
+  table->attach(*label, 0, 1, 2, 3, Gtk::SHRINK);
   label->show();
   table->attach(*frames_, 1, 2, 2, 3);
   frames_->show();
 
   label = new Gtk::Label("Samples:");
-  table->attach(*label, 0, 1, 3, 4, GTK_SHRINK);
+  table->attach(*label, 0, 1, 3, 4, Gtk::SHRINK);
   label->show();
   table->attach(*samples_, 1, 2, 3, 4);
   samples_->show();
@@ -93,22 +92,22 @@ AddSilenceDialog::AddSilenceDialog()
 
   get_vbox()->show();
 
-  Gtk::HButtonBox *bbox = new Gtk::HButtonBox(GTK_BUTTONBOX_SPREAD);
+  Gtk::HButtonBox *bbox = new Gtk::HButtonBox(Gtk::BUTTONBOX_SPREAD);
 
   applyButton_ = new Gtk::Button(" Apply ");
   bbox->pack_start(*applyButton_);
   applyButton_->show();
-  applyButton_->clicked.connect(slot(this, &AddSilenceDialog::applyAction));
+  applyButton_->signal_clicked().connect(slot(*this, &AddSilenceDialog::applyAction));
 
   button = new Gtk::Button(" Clear ");
   bbox->pack_start(*button);
   button->show();
-  button->clicked.connect(slot(this, &AddSilenceDialog::clearAction));
+  button->signal_clicked().connect(slot(*this, &AddSilenceDialog::clearAction));
 
   button = new Gtk::Button(" Close ");
   bbox->pack_start(*button);
   button->show();
-  button->clicked.connect(slot(this, &AddSilenceDialog::closeAction));
+  button->signal_clicked().connect(slot(*this, &AddSilenceDialog::hide));
 
   get_action_area()->pack_start(*bbox);
   bbox->show();
@@ -134,32 +133,13 @@ void AddSilenceDialog::mode(Mode m)
   }
 }
 
-void AddSilenceDialog::start(TocEditView *view)
+void AddSilenceDialog::setView(TocEditView *view)
 {
-  if (active_) {
-    get_window().raise();
-    return;
-  }
-
-  active_ = 1;
-
-  update(UPD_ALL, view);
-  show();
-}
-
-void AddSilenceDialog::stop()
-{
-  if (active_) {
-    hide();
-    active_ = 0;
-  }
+  tocEditView_ = view;
 }
 
 void AddSilenceDialog::update(unsigned long level, TocEditView *view)
 {
-  if (!active_)
-    return;
-
   if (view == NULL) {
     applyButton_->set_sensitive(FALSE);
     tocEditView_ = NULL;
@@ -178,18 +158,6 @@ void AddSilenceDialog::update(unsigned long level, TocEditView *view)
   }
 
   tocEditView_ = view;
-}
-
-
-gint AddSilenceDialog::delete_event_impl(GdkEventAny*)
-{
-  stop();
-  return 1;
-}
-
-void AddSilenceDialog::closeAction()
-{
-  stop();
 }
 
 void AddSilenceDialog::clearAction()
