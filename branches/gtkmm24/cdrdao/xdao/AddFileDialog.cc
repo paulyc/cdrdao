@@ -101,15 +101,6 @@ void AddFileDialog::stop()
   }
 }
 
-void AddFileDialog::update(unsigned long level)
-{
-  if (level & UPD_EDITABLE_STATE) {
-    if (project_->tocEdit()) {
-      get_ok_button()->set_sensitive(project_->tocEdit()->editable());
-    }
-  }
-}
-
 bool AddFileDialog::on_delete_event(GdkEventAny*)
 {
   stop();
@@ -123,11 +114,6 @@ void AddFileDialog::closeAction()
 
 void AddFileDialog::applyAction()
 {
-  if (!project_->tocEdit() ||
-      !project_->tocEdit()->editable()) {
-    return;
-  }
-
   Glib::ArrayHandle<std::string> sfiles = get_selections();
   std::list<std::string> files;
 

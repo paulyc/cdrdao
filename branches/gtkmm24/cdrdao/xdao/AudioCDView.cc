@@ -524,22 +524,7 @@ AudioCDView::drag_data_received_cb(const Glib::RefPtr<Gdk::DragContext>& context
       std::string str = g_strdup(static_cast <char *>(names->data));
       const char *file = stripCwd(str.c_str());
 
-      switch (tocEditView_->tocEdit()->appendTrack(file)) {
-      case 0:
-//FIXME: llanero this one probably afects TocDialog, ...
-//FIXME: this whole func seems to not work for me ... verify
-//        guiUpdate();
-        project_->statusMessage(_("Appended track with audio data from "
-                                  "\"%s\"."), file);
-        break;
-      case 1:
-        project_->statusMessage(_("Cannot open audio file \"%s\"."), file);
-        break;
-      case 2:
-        project_->statusMessage(_("Audio file \"%s\" has wrong format."),
-                                file);
-        break;
-      }
+      tocEditView_->tocEdit()->queueAppendTrack(file);
       names = g_list_remove(names, names->data);
       if (names == NULL)
         break;

@@ -34,7 +34,6 @@
 #include "gcdmaster.h"
 #include "xcdrdao.h"
 #include "RecordTocDialog.h"
-#include "SampleManager.h"
 #include "Icons.h"
 #include "MessageBox.h"
 
@@ -57,7 +56,24 @@ AudioCDProject::AudioCDProject(int number, const char *name, TocEdit *tocEdit,
     tocEdit_ = new TocEdit(NULL, NULL);
   else
     tocEdit_ = tocEdit;
+  
+  // Connect TocEdit signals to us.
+  tocEdit_->signalStatusMessage.
+    connect(sigc::mem_fun(*this, &AudioCDProject::status));
+  tocEdit_->signalProgressFraction.
+    connect(sigc::mem_fun(*this, &AudioCDProject::progress));
+  tocEdit_->signalFullView.
+    connect(sigc::mem_fun(*this, &AudioCDProject::fullView));
+  tocEdit_->signalSampleSelection.
+    connect(sigc::mem_fun(*this, &AudioCDProject::sampleSelection));
+  tocEdit_->signalCancelEnable.
+    connect(sigc::mem_fun(*this, &AudioCDProject::cancelEnable));
+  tocEdit_->signalError.
+    connect(sigc::mem_fun(*this, &AudioCDProject::errorDialog));
 
+  if (tocEdit_->isQueueActive())
+    cancelEnable(true);
+                                                     
   if (strlen(name) == 0)
     {
       char buf[20];
@@ -215,20 +231,63 @@ void AudioCDProject::add_menus(Glib::RefPtr<Gtk::UIManager> m_refUIManager)
   action->set_sensitive(false);
 
   audioCDView_->add_menus (m_refUIManager);
-  audioCDView_->signal_tocModified.connect(sigc::mem_fun(*this, &AudioCDProject::update));
+  audioCDView_->signal_tocModified.
+    connect(sigc::mem_fun(*this, &AudioCDProject::update));
 }
 
-void AudioCDProject::configureAppBar (Gnome::UI::AppBar *s, Gtk::ProgressBar* p,
-                                      Gtk::Button *b)
+void AudioCDProject::configureAppBar(Gnome::UI::AppBar *s, Gtk::ProgressBar* p,
+                                     Gtk::Button *b)
 {
   statusbar_ = s;
   progressbar_ = p;
   progressButton_ = b;
-  audioCDView_->tocEditView()->tocEdit()->sampleManager()->
-      setProgressBar(p);
-  audioCDView_->tocEditView()->tocEdit()->sampleManager()->
-      setAbortButton(progressButton_);
+
+  if (tocEdit_) {
+    tocEdit_->signalProgressPulse.
+      connect(sigc::mem_fun(*progressbar_, &Gtk::ProgressBar::pulse));
+    signalCancelClicked.connect(sigc::mem_fun(*tocEdit_,
+                                              &TocEdit::queueAbort));
+    if (tocEdit_->isQueueActive())
+      progressButton_->set_sensitive(true);
+  }
+
+  progressButton_->signal_clicked().
+      connect(sigc::mem_fun(*this, &AudioCDProject::on_cancel_clicked));
+  progressbar_->set_pulse_step(0.01);
 };
+
+void AudioCDProject::status(const char* msg)
+{
+  statusMessage(msg);
+}
+
+void AudioCDProject::errorDialog(const char* msg)
+{
+  Gtk::MessageDialog md(*(getParentWindow()), msg, false, Gtk::MESSAGE_ERROR);
+  md.run();
+}
+
+void AudioCDProject::progress(double val)
+{
+  progressbar_->set_fraction(val);
+}
+
+void AudioCDProject::fullView()
+{
+  if (audioCDView_)
+    audioCDView_->fullView();
+}
+
+void AudioCDProject::sampleSelection(unsigned long start, unsigned long len)
+{
+  audioCDView_->tocEditView()->sampleSelection(start, len);
+}
+
+void AudioCDProject::cancelEnable(bool enable)
+{
+  if (progressButton_)
+    progressButton_->set_sensitive(enable);
+}
 
 bool AudioCDProject::closeProject()
 {
@@ -323,11 +382,23 @@ void AudioCDProject::update(unsigned long level)
     action = m_refActionGroup->get_action ("Stop");
     action->set_sensitive(sensitivity[playStatus_][2]);
   }
+
+  if (level & UPD_EDITABLE_STATE) {
+    bool editable = tocEdit_->editable();
+    Glib::RefPtr<Gtk::Action> action;
+    action = m_refActionGroup->get_action ("Play");
+    action->set_sensitive(editable);
+  }
 }
 
 void AudioCDProject::playStart()
 {
   unsigned long start, end;
+
+  if (tocEdit_ && !tocEdit_->editable())
+    return;
+
+  tocEdit_->blockEdit();
 
   if (audioCDView_ && audioCDView_->tocEditView()) {
     if (!audioCDView_->tocEditView()->sampleSelection(&start, &end))
@@ -347,7 +418,8 @@ void AudioCDProject::playStart(unsigned long start, unsigned long end)
   if (playStatus_ == PAUSED)
     {
       playStatus_ = PLAYING;
-      Glib::signal_idle().connect(sigc::mem_fun(*this,&AudioCDProject::playCallback));
+      Glib::signal_idle().
+        connect(sigc::mem_fun(*this,&AudioCDProject::playCallback));
       return;
     }
 
@@ -542,105 +614,42 @@ void AudioCDProject::on_select_clicked()
     audioCDView_->setMode(AudioCDView::SELECT);
 }
 
+void AudioCDProject::on_cancel_clicked()
+{
+    signalCancelClicked();
+}
+
 bool AudioCDProject::appendTracks(std::list<std::string>& files)
 {
-  int ret = tocEdit()->appendTracks(files);
-  const char* singlefn = (files.size() > 1 ? 0 : (*(files.begin())).c_str());
-
-  switch(ret) {
-  case 0:
-    audioCDView_->fullView();
-    if (!singlefn)
-      statusMessage(_("Appended %d tracks."), files.size());
-    else {
-      if (TrackData::audioFileType(singlefn) == TrackData::WAVE) {
-        statusMessage(_("Appended track with WAV audio from \"%s\"."),
-                      singlefn);
-      } else {
-        statusMessage(_("Appended track with raw audio samples from \"%s\"."),
-                      singlefn);
-      }
-    }
-    break;
-  case 1:
-    if (singlefn)
-      statusMessage(_("Cannot open audio file \"%s\"."), singlefn);
-    else
-      statusMessage(_("Cannot open audio file."));
-    break;
-  case 2:
-    if (singlefn)
-      statusMessage(_("Audio file \"%s\" has wrong format."), singlefn);
-    else
-      statusMessage(_("Audio file has wrong format."));
-    break;
+  std::list<std::string>::iterator i = files.begin();
+  for (; i != files.end(); i++) {
+    tocEdit()->queueAppendTrack((*i).c_str());
   }
-
-  guiUpdate();
-  return (ret == 0);
+  return true;
 }
 
 bool AudioCDProject::appendFiles(std::list<std::string>& files)
 {
-  int ret = tocEdit()->appendFiles(files);
-  const char* singlefn = (files.size() > 1 ? 0 : (*(files.begin())).c_str());
-
-  switch (ret) {
-  case 0:
-    audioCDView_->fullView();
-    if (singlefn)
-      statusMessage(_("Appended audio data from \"%s\"."), singlefn);
-    else
-      statusMessage(_("Appended audio data from %d files."), files.size());
-    break;
-  case 1:
-    if (singlefn)
-      statusMessage(_("Cannot open audio file \"%s\"."), singlefn);
-    else
-      statusMessage(_("Cannot open audio file."));
-    break;
-  case 2:
-    if (singlefn)
-      statusMessage(_("Audio file \"%s\" has wrong format."), singlefn);
-    else
-      statusMessage(_("Audio file has wrong format."));
-    break;
+  std::list<std::string>::iterator i = files.begin();
+  for (; i != files.end(); i++) {
+    tocEdit()->queueAppendFile((*i).c_str());
   }
-  guiUpdate();
-  return (ret == 0);
+  return true;
 }
 
 bool AudioCDProject::insertFiles(std::list<std::string>& files)
 {
-  const char* singlefn = (files.size() > 1 ? 0 : (*(files.begin())).c_str());
+  unsigned long pos;
+
   TocEditView* view = audioCDView_->tocEditView();
   if (!view) return false;
-
-  unsigned long pos, len;
   view->sampleMarker(&pos);
-  int ret = tocEdit()->insertFiles(files, pos, &len);
 
-  switch(ret) {
-  case 0:
-    view->sampleSelection(pos, pos+len-1);
-    if (singlefn)
-      statusMessage(_("Inserted audio data from \"%s\"."), singlefn);
-    else
-      statusMessage(_("Inserted audio data from %d files."), files.size());
-    break;
-  case 1:
-    if (singlefn)
-      statusMessage(_("Cannot open audio file \"%s\"."), singlefn);
-    else
-      statusMessage(_("Cannot open audio file."));
-    break;
-  case 2:
-    if (singlefn)
-      statusMessage(_("Audio file \"%s\" has wrong format."), singlefn);
-    else
-      statusMessage(_("Audio file has wrong format."));
-    break;
-  }
-  guiUpdate();
-  return (ret == 0);
+  std::list<std::string>::iterator i = files.end();
+  do {
+    i--;
+    tocEdit()->queueInsertFile((*i).c_str(), pos);
+  } while (i != files.begin());
+
+  return true;
 }

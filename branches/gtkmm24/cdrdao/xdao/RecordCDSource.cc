@@ -27,7 +27,6 @@
 #include <gnome.h>
 
 #include "RecordCDSource.h"
-#include "MessageBox.h"
 #include "xcdrdao.h"
 #include "Settings.h"
 
