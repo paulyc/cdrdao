@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2000/05/01 18:13:18  andreasm
+ * Fixed too small mode page buffer.
+ *
  * Revision 1.1.1.1  2000/02/05 01:38:06  llanero
  * Uploaded cdrdao 1.1.3 with pre10 patch applied.
  *
@@ -55,7 +58,7 @@
  *
  */
 
-static char rcsid[] = "$Id: dao.cc,v 1.2 2000-05-01 18:13:18 andreasm Exp $";
+static char rcsid[] = "$Id: dao.cc,v 1.3 2000-06-06 22:26:13 andreasm Exp $";
 
 #include <config.h>
 
@@ -998,8 +1001,8 @@ static int getSharedMemory(long nofBuffers,
   (*shmSegment)->id = -1;
 
   (*shmSegment)->buffer = new char[sizeof(BufferHeader) +
-				   nofBuffers * sizeof(Buffer) +
-				   nofBuffers * bufferSize];
+				  nofBuffers * sizeof(Buffer) +
+				  nofBuffers * bufferSize];
 
   if ( (*shmSegment)->buffer == NULL) {
     message(-2, "Cannot allocated memory for ring buffer.");
