@@ -18,6 +18,10 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.12  2000/07/17 22:08:33  llanero
+ * DeviceList is now a class
+ * RecordGenericDialog and RecordCDTarget first implemented.
+ *
  * Revision 1.11  2000/06/10 14:49:49  andreasm
  * Changed Warning to WARNING in 'message()'.
  *
@@ -230,8 +234,9 @@ int main (int argc, char* argv[])
   }
   
   MDI_WINDOW = new MDIWindow(tocEdit);
-//FIXME: MDI STUFF  MDI_WINDOW->open_toplevel();
-
+//  MDI_WINDOW->add_child(*AUDIOCD_CHILD);
+//  MDI_WINDOW->add_view(*AUDIOCD_CHILD);
+//  MDI_WINDOW->open_toplevel();
   MDI_WINDOW->show();
 
   guiUpdate();

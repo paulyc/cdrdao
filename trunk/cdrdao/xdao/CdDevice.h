@@ -18,6 +18,11 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2000/05/01 18:15:00  andreasm
+ * Switch to gnome-config settings.
+ * Adapted Message Box to Gnome look, unfortunately the Gnome::MessageBox is
+ * not implemented in gnome--, yet.
+ *
  * Revision 1.4  2000/04/29 14:46:38  llanero
  * added the "buffers" option to the Record Dialog.
  *
@@ -71,6 +76,7 @@ public:
   const char *product() const;
 
   Status status() const;
+  Process *process() const;
 
   int exitStatus() const;
 
@@ -102,6 +108,10 @@ public:
 
   int extractDao(char *tocFileName, int correction);
   void abortDaoReading();
+
+  int duplicateDao(int simulate, int multiSession, int speed,
+		int eject, int reload, int buffer, int onthefly, CdDevice *readdev);
+  void abortDaoDuplication();
     
   int progressStatusChanged();
   void recordProgress(int *status, int *track, int *totalProgress,
