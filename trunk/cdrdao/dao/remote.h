@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2000/11/05 19:20:59  andreasm
+ * Unified progress messages sent from cdrdao to gcdmaster.
+ *
  * Revision 1.3  2000/10/08 16:39:41  andreasm
  * Remote progress message now always contain the track relative and total
  * progress and the total number of processed tracks.
@@ -42,7 +45,8 @@
 #define PGSMSG_WCD_LEADIN      3
 #define PGSMSG_WCD_DATA        4
 #define PGSMSG_WCD_LEADOUT     5
-#define PGSMSG_MAX PGSMSG_WCD_LEADOUT
+#define PGSMSG_BLK             6
+#define PGSMSG_MAX PGSMSG_BLK
 
 struct ProgressMsg {
   int status;         // see PGSMSG_* constants
