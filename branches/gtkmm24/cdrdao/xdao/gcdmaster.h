@@ -75,7 +75,8 @@ public:
   void openProject();
   void newChooserWindow();
   void newAudioCDProject2();
-  void newAudioCDProject(const char *name, TocEdit *tocEdit);
+  void newAudioCDProject(const char *name, TocEdit *tocEdit,
+                         const char* tracks = NULL);
   void newDuplicateCDProject();
   void newDumpCDProject();
 

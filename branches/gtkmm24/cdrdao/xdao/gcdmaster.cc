@@ -190,22 +190,30 @@ void GCDMaster::add(ProjectChooser *projectChooser)
 
 bool GCDMaster::openNewProject(const char* s)
 {
-  TocEdit *tocEdit = new TocEdit(NULL, NULL);
+  TocEdit* tocEdit;
 
-  if (s != NULL && *s != 0 && s[strlen(s) - 1] != '/')
-  {
+  if (s == NULL || *s == 0 || s[strlen(s) - 1] == '/')
+    return true;
+
+  FileExtension type = fileExtension(s);
+  switch (type) {
+
+  case FE_M3U:
+    newAudioCDProject("", NULL, s);
+    break;
+
+  case FE_TOC:
+    tocEdit = new TocEdit(NULL, NULL);
     if (tocEdit->readToc(stripCwd(s)) == 0)
-    {
-      //FIXME: We should test what type of project it is
-      //       AudioCD, ISO. No problem now.
-
-      //cout << "Read ok" << endl;
-
       newAudioCDProject(stripCwd(s), tocEdit);
-    }
     else
       return false;
+    break;
+
+  default:
+    break;
   }
+
   return true;
 }
 
@@ -343,11 +351,13 @@ void GCDMaster::newChooserWindow()
   }
 }
 
-void GCDMaster::newAudioCDProject(const char *name, TocEdit *tocEdit)
+void GCDMaster::newAudioCDProject(const char *name, TocEdit *tocEdit,
+                                  const char* tracks)
 {
   if (!project_)
   {
-    AudioCDProject *project = new AudioCDProject(project_number++, name, tocEdit, this);
+    AudioCDProject *project = new AudioCDProject(project_number++, name,
+                                                 tocEdit, this);
     project->add_menus (m_refUIManager);
     project->configureAppBar (statusbar_, progressbar_, progressButton_);
     project->show();
@@ -358,16 +368,18 @@ void GCDMaster::newAudioCDProject(const char *name, TocEdit *tocEdit)
     notebook_.remove_page ();
     notebook_.set_show_tabs (false);
     notebook_.append_page (*project);
+    if (tracks)
+      project->appendTrack(tracks);
   }
   else
   {
     GCDMaster *gcdmaster = new GCDMaster;
-    gcdmaster->newAudioCDProject2 ();
+    gcdmaster->newAudioCDProject("", NULL, tracks);
     gcdmaster->show();
   }
 }
 
-void GCDMaster::newAudioCDProject2 ()
+void GCDMaster::newAudioCDProject2()
 {
   newAudioCDProject("", NULL);
 }

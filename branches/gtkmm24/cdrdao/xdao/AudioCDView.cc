@@ -542,25 +542,17 @@ AudioCDView::drag_data_received_cb(const Glib::RefPtr<Gdk::DragContext>&
         continue;
 
       // Process m3u file.
-      const char* e = fileExtension(fn.c_str());
-      if (strcasecmp(e, "m3u") == 0) {
-        std::list<std::string> list;
-        if (parseM3u(fn.c_str(), list)) {
-          project_->appendTracks(list);
-        }
-        return;
-      }
+      FileExtension type = fileExtension(fn.c_str());
 
-      TrackData::FileType type = TrackData::audioFileType(fn.c_str());
-      if (type == TrackData::WAVE
+      if (type == FE_WAV || type == FE_M3U
 #ifdef HAVE_MP3_SUPPORT
-          || type == TrackData::MP3
+          || type == FE_MP3
 #endif
 #ifdef HAVE_OGG_SUPPORT
-          || type == TrackData::OGG
+          || type == FE_OGG
 #endif
           ) {
-        tocEditView_->tocEdit()->queueAppendTrack(fn.c_str());
+        project_->appendTrack(fn.c_str());
       }
     }
     break;

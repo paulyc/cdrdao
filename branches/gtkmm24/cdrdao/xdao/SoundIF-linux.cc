@@ -27,18 +27,13 @@
 # endif
 
 #include <stdio.h>
-#include <assert.h>
-#include <string.h>
-#include <errno.h>
-#include <unistd.h>
-#include <fcntl.h>
+#include <gtkmm.h>
+#include <gnome.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
-
-#include <gnome.h>
+#include <fcntl.h>
 
 #include "SoundIF.h"
-
 #include "Sample.h"
 #include "util.h"
 
