@@ -19,6 +19,9 @@
 
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.1.1.1  2000/02/05 01:34:46  llanero
+ * Uploaded cdrdao 1.1.3 with pre10 patch applied.
+ *
  * Revision 1.8  1999/04/05 11:03:01  mueller
  * Added CD-TEXT support.
  *
@@ -369,12 +372,6 @@ track > [ Track *tr, int lineNr ]
          message(-2,
                  "%s:%d: START %s behind or at track end.\n", filename_,
 	         startPosLine, startPos.str());
-         error_ = 1;
-       }
-
-       if ($tr->length().lba() - $tr->start().lba() < Msf(0, 4, 0).lba()) {
-         message(-2, "%s:%d: Track length (excluding pre-gap) must be at least 4 seconds.\n",
-                 filename_, $lineNr);
          error_ = 1;
        }
     >>
