@@ -131,13 +131,6 @@ SampleDisplay::SampleDisplay():
 
   trackManager_ = NULL;
 
-  //  pixmap_ = NULL;
-  // trackMarkerPixmap_ = indexMarkerPixmap_ = NULL;
-  // trackMarkerSelectedPixmap_ = indexMarkerSelectedPixmap_ = NULL;
-  // trackExtendPixmap_ = indexExtendPixmap_ = NULL;
-
-  //drawGc_ = NULL;
-  
   width_ = height_ = chanHeight_ = lcenter_ = rcenter_ = 0;
   timeLineHeight_ = timeLineY_ = 0;
   timeTickWidth_ = 0;
@@ -523,6 +516,13 @@ bool SampleDisplay::handle_configure_event (GdkEventConfigure *event)
   width_ = get_width();
   height_ = get_height();
 
+  // Don't even try to do anything smart if we haven't received a
+  // reasonable window size yet. This will keep pixmap_ to NULL. This
+  // is important because during startup we don't control how the
+  // configure_event are timed wrt to gcdmaster bringup.
+  if (width_ <= 1 || height_ <= 1)
+    return true;
+
   chanHeight_ = (height_ - timeLineHeight_ - trackLineHeight_ - 2) / 2;
 
   lcenter_ = chanHeight_ / 2 + trackLineHeight_;
@@ -764,6 +764,9 @@ bool SampleDisplay::handleLeaveEvent(GdkEventCrossing *event)
 void SampleDisplay::redraw(gint x, gint y, gint width, gint height,
 			   int drawMask)
 {
+  if (pixmap_ == 0)
+    return;
+
   get_window()->draw_drawable(drawGc_, pixmap_, x, y, x, y, width, height);
 
   if ((drawMask & 0x02) == 0)
@@ -813,7 +816,7 @@ void SampleDisplay::updateSamples()
 
   Toc *toc = tocEdit_->toc();
 
-  if (!pixmap_)
+  if (pixmap_ == 0)
     return;
 
   gint halfHeight = chanHeight_ / 2;
@@ -991,11 +994,8 @@ void SampleDisplay::updateSamples()
       gint pos1;
       gint lastPosLeft, lastPosRight;
 
-      //printf("Drawing exact, res=%ld pres=%g %ld-%ld\n", res, pres, minSample_, maxSample_);
-
       if (reader.seekSample(minSample_) == 0 &&
 	  reader.readSamples(sampleBuf, len) == len) {
-	//printf("Drawing exact1\n");
 
 	for (j = 1, di = sampleStartX_ + pres;
 	     j < len && di < sampleEndX_ + 1; j++, di += pres) {
@@ -1093,7 +1093,7 @@ void SampleDisplay::updateSamples()
 
 void SampleDisplay::drawCursor(gint x)
 {
-  if (!pixmap_)
+  if (pixmap_ == 0)
     return;
 
   if (x < sampleStartX_ || x > sampleEndX_)
@@ -1127,7 +1127,7 @@ void SampleDisplay::drawTimeTick(gint x, gint y, unsigned long sample)
 {
   char buf[50];
 
-  if (!pixmap_)
+  if (pixmap_ == 0)
     return;
 
   unsigned long min = sample / (60 * 44100);
