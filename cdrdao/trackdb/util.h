@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.1.1.1  2000/02/05 01:32:34  llanero
+ * Uploaded cdrdao 1.1.3 with pre10 patch applied.
+ *
  * Revision 1.4  1999/03/27 19:51:04  mueller
  * Added 'strdup3CC()'.
  *
@@ -39,6 +42,7 @@ class Sample;
 
 char *strdupCC(const char *s);
 char *strdup3CC(const char *s1, const char *s2, const char *s3);
+char *strdupvCC(const char *s1, ...);
 
 long fullRead(int fd, void *buf, long count);
 long fullWrite(int fd, const void *buf, long count);
