@@ -19,7 +19,7 @@
 
 #include <stddef.h>
 
-#include <sigc++/signal.h>
+#include <sigc++/sigc++.h>
 
 #include "util.h"
 #include "Toc.h"
