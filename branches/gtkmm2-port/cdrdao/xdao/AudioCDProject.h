@@ -41,10 +41,10 @@ private:
   unsigned long playBurst_;
   unsigned long playPosition_;
   Sample *playBuffer_;
-  int playing_;
   int playAbort_;
+  unsigned long delay_;
 
-  bool playCallback();
+  void playCallback();
 
   AudioCDChild *audioCDChild_;
   AudioCDView *audioCDView_;
@@ -60,10 +60,6 @@ private:
 public:
   AudioCDProject(int number, const char *name, TocEdit *tocEdit);
   bool closeProject();
-  Gtk::Toolbar *getPlayToolbar();
-
-  unsigned long playPosition();
-  unsigned long getDelay();
 
 private:
   Gtk::Widget *playStartButton_;
@@ -83,13 +79,13 @@ private:
   void playStart();
   void playPause();
   void playStop();
+  bool playCursorUpdate();
 
   TocEditView *tocEditView_;
   void zoomx2();
   void zoomOut();
   void fullView();
   void zoomIn();
-
 };
 #endif
 

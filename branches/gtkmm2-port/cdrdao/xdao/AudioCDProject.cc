@@ -32,6 +32,8 @@
 #include "RecordTocDialog.h"
 #include "AudioCDProject.h"
 
+#define PLAY_CURSOR_UPDATE 100
+
 AudioCDProject::AudioCDProject(int number, const char *name, TocEdit *tocEdit)
 {
   hbox = new Gtk::HBox;
@@ -43,9 +45,10 @@ AudioCDProject::AudioCDProject(int number, const char *name, TocEdit *tocEdit)
   tocInfoDialog_ = 0;
   cdTextDialog_ = 0;
   playStatus_ = STOPPED;
-  playBurst_ = 588 * 10;
+  playBurst_ = 588 * 5;
   playBuffer_ = new Sample[playBurst_];
   soundInterface_ = NULL;
+  delay_ = 0;
 
   if (tocEdit == NULL)
     tocEdit_ = new TocEdit(NULL, NULL);
@@ -56,7 +59,7 @@ AudioCDProject::AudioCDProject(int number, const char *name, TocEdit *tocEdit)
   {
     char buf[20];
     if (projectNumber_ == 0)
-      sprintf(buf, "unnamed.toc", projectNumber_);
+      sprintf(buf, "unnamed.toc");
     else
       sprintf(buf, "unnamed-%i.toc", projectNumber_);
     tocEdit_->filename(buf);
@@ -147,6 +150,8 @@ AudioCDProject::AudioCDProject(int number, const char *name, TocEdit *tocEdit)
   tocEditView_->sampleViewFull();
 
   show_all();
+
+  if(!Glib::thread_supported()) Glib::thread_init();
 }
 
 bool AudioCDProject::closeProject()
@@ -239,7 +244,8 @@ void AudioCDProject::playStart()
   if (playStatus_ == PAUSED)
   {
     playStatus_ = PLAYING;
-    Glib::signal_idle().connect(slot(*this, &AudioCDProject::playCallback));
+    Glib::Thread::create(slot(*this, &AudioCDProject::playCallback), false);
+    Glib::signal_timeout().connect(slot(*this, &AudioCDProject::playCursorUpdate), PLAY_CURSOR_UPDATE);
     return;
   }
   else
@@ -249,7 +255,6 @@ void AudioCDProject::playStart()
 
   if (tocEdit_->lengthSample() == 0)
   {
-    guiUpdate(UPD_PLAY_STATUS);
     return;
   }
 
@@ -258,7 +263,6 @@ void AudioCDProject::playStart()
     if (soundInterface_->init() != 0) {
       delete soundInterface_;
       soundInterface_ = NULL;
-      guiUpdate(UPD_PLAY_STATUS);
 	  statusMessage("WARNING: Cannot open \"/dev/dsp\"");
       return;
     }
@@ -266,7 +270,6 @@ void AudioCDProject::playStart()
 
   if (soundInterface_->start() != 0)
   {
-    guiUpdate(UPD_PLAY_STATUS);
     return;
   }
 
@@ -274,14 +277,12 @@ void AudioCDProject::playStart()
   if (tocReader.openData() != 0) {
     tocReader.init(NULL);
     soundInterface_->end();
-    guiUpdate(UPD_PLAY_STATUS);
     return;
     }
 
   if (tocReader.seekSample(start) != 0) {
     tocReader.init(NULL);
     soundInterface_->end();
-    guiUpdate(UPD_PLAY_STATUS);
     return;
   }
 
@@ -290,16 +291,13 @@ void AudioCDProject::playStart()
   playStatus_ = PLAYING;
   playAbort_ = 0;
 
-  level |= UPD_PLAY_STATUS;
-
 //FIXME: Selection / Zooming does not depend
 //       on the Child, but the View.
 //       we should have different blocks!
   tocEdit_->blockEdit();
 
-  guiUpdate(level);
-
-  Glib::signal_idle().connect(slot(*this, &AudioCDProject::playCallback));
+  Glib::Thread::create(slot(*this, &AudioCDProject::playCallback), false);
+  Glib::signal_timeout().connect(slot(*this, &AudioCDProject::playCursorUpdate), PLAY_CURSOR_UPDATE);
 }
 
 void AudioCDProject::playPause()
@@ -312,7 +310,8 @@ void AudioCDProject::playPause()
   else
   {
     playStatus_ = PLAYING;
-    Glib::signal_idle().connect(slot(*this, &AudioCDProject::playCallback));
+    Glib::Thread::create(slot(*this, &AudioCDProject::playCallback), false);
+    Glib::signal_timeout().connect(slot(*this, &AudioCDProject::playCursorUpdate), PLAY_CURSOR_UPDATE);
   }
 }
 
@@ -330,7 +329,6 @@ void AudioCDProject::playStop()
     playStatus_ = STOPPED;
     tocEdit_->unblockEdit();
     playStatus_ = STOPPED;
-    guiUpdate(UPD_PLAY_STATUS);
   }
   else
   {
@@ -338,63 +336,55 @@ void AudioCDProject::playStop()
   }
 }
 
-bool AudioCDProject::playCallback()
+void AudioCDProject::playCallback()
 {
   unsigned long level = 0;
+  long len;
 
-  long len = playLength_ > playBurst_ ? playBurst_ : playLength_;
+  while (1) {
+    len = playLength_ > playBurst_ ? playBurst_ : playLength_;
 
-  if (playStatus_ == PAUSED)
+    if (playStatus_ == PAUSED)
+      return;
+
+    if (tocReader.readSamples(playBuffer_, len) != len ||
+        soundInterface_->play(playBuffer_, len) != 0) {
+      soundInterface_->end();
+      tocReader.init(NULL);
+      playStatus_ = STOPPED;
+      tocEdit_->unblockEdit();
+      return;
+    }
+
+    playLength_ -= len;
+    playPosition_ += len;
+
+    delay_ = soundInterface_->getDelay();
+
+    if (len == 0 || playAbort_ != 0) {
+      soundInterface_->end();
+      tocReader.init(NULL);
+      playStatus_ = STOPPED;
+      tocEdit_->unblockEdit();
+      return;
+    }
+  }
+}
+
+bool AudioCDProject::playCursorUpdate()
+{
+  if (playStatus_ == PLAYING)
   {
-    level |= UPD_PLAY_STATUS;
-    guiUpdate(level);
-    return 0; // remove idle handler
+    if (delay_ <= playPosition_)
+      audioCDView_->updatePlayPos(1, playPosition_ - delay_);
+  }
+  else
+  {
+    audioCDView_->updatePlayPos(0, 0);
+    return false;
   }
 
-  if (tocReader.readSamples(playBuffer_, len) != len ||
-      soundInterface_->play(playBuffer_, len) != 0) {
-    soundInterface_->end();
-    tocReader.init(NULL);
-    playStatus_ = STOPPED;
-    level |= UPD_PLAY_STATUS;
-    tocEdit_->unblockEdit();
-    guiUpdate(level);
-    return 0; // remove idle handler
-  }
-
-  playLength_ -= len;
-  playPosition_ += len;
-
-  unsigned long delay = soundInterface_->getDelay();
-
-  if (delay <= playPosition_)
-//    level |= UPD_PLAY_STATUS;
-    audioCDView_->updatePlayPos(playPosition() - getDelay());
-
-  if (len == 0 || playAbort_ != 0) {
-    soundInterface_->end();
-    tocReader.init(NULL);
-    playStatus_ = STOPPED;
-    level |= UPD_PLAY_STATUS;
-    tocEdit_->unblockEdit();
-    audioCDView_->updatePlayPos(0);
-    guiUpdate(level);
-    return 0; // remove idle handler
-  }
-  else {
-    guiUpdate(level);
-    return 1; // keep idle handler
-  }
-}
-
-unsigned long AudioCDProject::playPosition()
-{
-  return playPosition_;
-}
-
-unsigned long AudioCDProject::getDelay()
-{
-  return soundInterface_->getDelay();
+  return true;
 }
 
 void AudioCDProject::zoomx2()
@@ -410,7 +400,6 @@ void AudioCDProject::zoomx2()
   end = center + len / 4;
 
   tocEditView_->sampleView(start, end);
-  guiUpdate();
 }
 
 void AudioCDProject::zoomOut()
@@ -432,14 +421,11 @@ void AudioCDProject::zoomOut()
     end = tocEditView_->tocEdit()->toc()->length().samples() - 1;
 
   audioCDView_->tocEditView()->sampleView(start, end);
-  guiUpdate();
 }
 
 void AudioCDProject::fullView()
 {
   tocEditView_->sampleViewFull();
-
-  guiUpdate();
 }
 
 void AudioCDProject::zoomIn()
@@ -448,6 +434,5 @@ void AudioCDProject::zoomIn()
 
   if (tocEditView_->sampleSelection(&start, &end)) {
     tocEditView_->sampleView(start, end);
-    guiUpdate();
   }
 }
