@@ -29,7 +29,6 @@
 #include "guiUpdate.h"
 #include "gcdmaster.h"
 #include "MessageBox.h"
-#include "AudioCDChild.h"
 #include "AudioCDView.h"
 #include "TocEdit.h"
 #include "TocEditView.h"

@@ -24,7 +24,6 @@
 #include "Toc.h"
 #include "SoundIF.h"
 #include "AudioCDProject.h"
-#include "AudioCDChild.h"
 #include "AudioCDView.h"
 #include "TocEdit.h"
 #include "TocEditView.h"
@@ -37,6 +36,7 @@
 #include "RecordTocDialog.h"
 #include "SampleManager.h"
 #include "Icons.h"
+#include "MessageBox.h"
 
 AudioCDProject::AudioCDProject(int number, const char *name, TocEdit *tocEdit,
     Gtk::Window *parent)
@@ -71,9 +71,7 @@ AudioCDProject::AudioCDProject(int number, const char *name, TocEdit *tocEdit,
   updateWindowTitle();
 
 
-  audioCDChild_ = new AudioCDChild(this);
-
-  audioCDView_ = audioCDChild_->view();
+  audioCDView_ = new AudioCDView(this);
   hbox_.pack_start(*audioCDView_, TRUE, TRUE);
   audioCDView_->tocEditView()->sampleViewFull();
 
@@ -234,17 +232,35 @@ void AudioCDProject::configureAppBar (Gnome::UI::AppBar *s, Gtk::ProgressBar* p,
 
 bool AudioCDProject::closeProject()
 {
-  if (audioCDChild_ && audioCDChild_->closeProject()) {
-    delete audioCDChild_;
-    audioCDChild_ = NULL;
-
-    if (tocInfoDialog_)   delete tocInfoDialog_;
-    if (cdTextDialog_)    delete cdTextDialog_;
-    if (recordTocDialog_) delete recordTocDialog_;
-
-    return true;
+  if (!tocEdit_->editable()) {
+    tocBlockedMsg(_("Close Project"));
+    return false;
   }
-  return false;  // Do not close the project
+
+  if (tocEdit_->tocDirty()) {
+    gchar *message;
+    
+    message = g_strdup_printf(_("Project %s not saved."),
+                              tocEdit_->filename());
+
+    Ask2Box msg(getParentWindow (), _("Close"), 0, 2, message, "",
+                _("Continue?"), NULL);
+    g_free(message);
+
+    if (msg.run() != 1)
+      return false;
+  }
+
+  if (audioCDView_) {
+    delete audioCDView_;
+    audioCDView_ = NULL;
+  }
+
+  if (tocInfoDialog_)   delete tocInfoDialog_;
+  if (cdTextDialog_)    delete cdTextDialog_;
+  if (recordTocDialog_) delete recordTocDialog_;
+
+  return true;
 }
 
 void AudioCDProject::recordToc2CD()
@@ -281,7 +297,7 @@ void AudioCDProject::update(unsigned long level)
   if (level & (UPD_TOC_DIRTY | UPD_TOC_DATA))
     updateWindowTitle();
 
-  audioCDChild_->update(level);
+  audioCDView_->update(level);
 
   if (tocInfoDialog_)
     tocInfoDialog_->update(level, tocEdit_);
@@ -387,14 +403,16 @@ void AudioCDProject::playStart(unsigned long start, unsigned long end)
 
   guiUpdate(level);
 
-  Glib::signal_idle().connect(sigc::mem_fun(*this, &AudioCDProject::playCallback));
+  Glib::signal_idle().connect(sigc::mem_fun(*this,
+                                            &AudioCDProject::playCallback));
 }
 
 void AudioCDProject::playPause()
 {
   if (playStatus_ == PAUSED) {
     playStatus_ = PLAYING;
-    Glib::signal_idle().connect(sigc::mem_fun(*this, &AudioCDProject::playCallback));
+    Glib::signal_idle().connect(sigc::mem_fun(*this,
+                                              &AudioCDProject::playCallback));
   } else if (playStatus_ == PLAYING) {
     playStatus_ = PAUSED;
   }

@@ -16,66 +16,6 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
-/*
- * $Log: not supported by cvs2svn $
- * Revision 1.6  2004/02/12 01:13:32  poolshark
- * Merge from gnome2 branch
- *
- * Revision 1.5.6.1  2004/01/05 00:34:03  poolshark
- * First checking of gnome2 port
- *
- * Revision 1.3  2004/01/01 00:04:58  denis
- * Made scan progress use the Gnome APP progressbar
- *
- * Revision 1.2  2003/12/29 09:31:48  denis
- * fixed all dialogs
- *
- * Revision 1.1.1.1  2003/12/09 05:32:28  denis
- * Fooya
- *
- * Revision 1.5  2002/01/20 20:43:37  andreasm
- * Added support for sub-channel reading and writing.
- * Adapted to autoconf-2.52.
- * Adapted to gcc-3.0.
- *
- * Revision 1.4  2000/09/24 17:39:07  andreasm
- * Fixed length of processed data per idle signal call so that playback does
- * not jump when audio data scanning is active.
- *
- * Revision 1.3  2000/04/23 09:07:08  andreasm
- * * Fixed most problems marked with '//llanero'.
- * * Added audio CD edit menus to MDIWindow.
- * * Moved central storage of TocEdit object to MDIWindow.
- * * AudioCdChild is now handled like an ordinary non modal dialog, i.e.
- *   it has a normal 'update' member function now.
- * * Added CdTextTable modal dialog.
- * * Old functionality of xcdrdao is now available again.
- *
- * Revision 1.2  2000/02/20 23:34:54  llanero
- * fixed scsilib directory (files mising ?-()
- * ported xdao to 1.1.8 / gnome (MDI) app
- *
- * Revision 1.1.1.1  2000/02/05 01:39:52  llanero
- * Uploaded cdrdao 1.1.3 with pre10 patch applied.
- *
- * Revision 1.6  1999/08/07 16:27:28  mueller
- * Applied patch from Yves Bastide:
- * * prefixing member function names with their class name in connect_to_method
- * * explicitly `const_cast'ing a cast to const
- *
- * Revision 1.5  1999/05/24 18:10:25  mueller
- * Adapted to new reading interface of 'trackdb'.
- *
- * Revision 1.4  1999/03/06 13:55:18  mueller
- * Adapted to Gtk-- version 0.99.1
- *
- * Revision 1.3  1999/01/30 19:45:43  mueller
- * Fixes for compilation with Gtk-- 0.11.1.
- *
- * Revision 1.1  1998/11/20 18:56:06  mueller
- * Initial revision
- *
- */
 
 #include <stdio.h>
 #include <limits.h>
@@ -340,7 +280,8 @@ int SampleManagerImpl::scanToc(unsigned long start, unsigned long end)
   if (withGui_) {
     if (progressBar_) progressBar_->set_fraction(0.0);
     if (abortButton_) abortButton_->set_sensitive(true);
-    Glib::signal_idle().connect(mem_fun(*this, &SampleManagerImpl::readSamples));
+    Glib::signal_idle().connect(mem_fun(*this,
+                                        &SampleManagerImpl::readSamples));
     tocEdit_->blockEdit();
   } else {
     while (readSamples());

@@ -28,7 +28,6 @@
 #include "util.h"
 
 #include "AudioCDProject.h"
-#include "AudioCDChild.h"
 #include "AudioCDView.h"
 #include "Project.h"
 #include "TrackInfoDialog.h"
@@ -37,12 +36,11 @@
 #include <gtkmm.h>
 #include <gnome.h>
 
-AudioCDView::AudioCDView(AudioCDChild *child, AudioCDProject *project) 
+AudioCDView::AudioCDView(AudioCDProject *project) 
     : addFileDialog_(project)
 {
   char buf[20];
   gint viewNumber = project->getViewNumber();
-  cdchild = child;
   project_ = project;
   tocEditView_ = new TocEditView(project->tocEdit());
 
@@ -63,7 +61,7 @@ AudioCDView::AudioCDView(AudioCDChild *child, AudioCDProject *project)
   signal_drag_data_received().connect(sigc::mem_fun(*this, &AudioCDView::drag_data_received_cb));
 #endif
   sampleDisplay_ = new SampleDisplay;
-  sampleDisplay_->setTocEdit(child->tocEdit());
+  sampleDisplay_->setTocEdit(project->tocEdit());
 
   sampleDisplay_->set_size_request(200,200);
   
@@ -307,7 +305,7 @@ void AudioCDView::update(unsigned long level)
     unsigned long marker;
 
     if (tocEditView_->sampleMarker(&marker)) {
-      markerPos_->set_text(cdchild->sample2string(marker));
+      markerPos_->set_text(sample2string(marker));
       sampleDisplay_->setMarker(marker);
     }
     else {
@@ -320,8 +318,8 @@ void AudioCDView::update(unsigned long level)
     unsigned long start, end;
 
     if (tocEditView_->sampleSelection(&start, &end)) {
-      selectionStartPos_->set_text(cdchild->sample2string(start));
-      selectionEndPos_->set_text(cdchild->sample2string(end));
+      selectionStartPos_->set_text(sample2string(start));
+      selectionEndPos_->set_text(sample2string(end));
       sampleDisplay_->setRegion(start, end);
     }
     else {
@@ -334,14 +332,18 @@ void AudioCDView::update(unsigned long level)
   if (level & UPD_PLAY_STATUS) {
     switch (project_->getPlayStatus()) {
       case AudioCDProject::PLAYING:
-        sampleDisplay_->setCursor(1, project_->playPosition() - project_->getDelay());
-// FIXME: What about using a separate cursor for playing?
-        cursorPos_->set_text(cdchild->sample2string(project_->playPosition() - project_->getDelay()));
+        sampleDisplay_->setCursor(1, project_->playPosition() -
+                                  project_->getDelay());
+        // FIXME: What about using a separate cursor for playing?
+        cursorPos_->set_text(sample2string(project_->playPosition() -
+                                           project_->getDelay()));
         break;
       case AudioCDProject::PAUSED:
-        sampleDisplay_->setCursor(1, project_->playPosition() - project_->getDelay());
-// FIXME: What about using a separate cursor for playing?
-        cursorPos_->set_text(cdchild->sample2string(project_->playPosition() - project_->getDelay()));
+        sampleDisplay_->setCursor(1, project_->playPosition() -
+                                  project_->getDelay());
+        // FIXME: What about using a separate cursor for playing?
+        cursorPos_->set_text(sample2string(project_->playPosition() -
+                                           project_->getDelay()));
         break;
       case AudioCDProject::STOPPED:
         sampleDisplay_->setCursor(0, 0);
@@ -472,7 +474,7 @@ void AudioCDView::selectionClearedCallback()
 
 void AudioCDView::cursorMovedCallback(unsigned long pos)
 {
-  cursorPos_->set_text(cdchild->sample2string(pos));
+  cursorPos_->set_text(sample2string(pos));
 }
 
 void AudioCDView::viewModifiedCallback(unsigned long start, unsigned long end)
@@ -490,7 +492,7 @@ void AudioCDView::setMode(Mode m)
 // Called when the user enters a value in the marker entry
 void AudioCDView::markerSet()
 {
-  unsigned long s = cdchild->string2sample(markerPos_->get_text().c_str());
+  unsigned long s = string2sample(markerPos_->get_text().c_str());
 
   tocEditView_->sampleMarker(s);
   update (UPD_SAMPLE_MARKER);
@@ -500,9 +502,9 @@ void AudioCDView::markerSet()
 void AudioCDView::selectionSet()
 {
   unsigned long s1 =
-    cdchild->string2sample(selectionStartPos_->get_text().c_str());
+    string2sample(selectionStartPos_->get_text().c_str());
   unsigned long s2 =
-    cdchild->string2sample(selectionEndPos_->get_text().c_str());
+    string2sample(selectionEndPos_->get_text().c_str());
 
   tocEditView_->sampleSelection(s1, s2);
   update (UPD_SAMPLE_SEL);
@@ -843,4 +845,46 @@ void AudioCDView::insertSilence()
 
   addSilenceDialog_->mode(AddSilenceDialog::M_INSERT);
   addSilenceDialog_->start(tocEditView_);
+}
+
+const char *AudioCDView::sample2string(unsigned long sample)
+{
+  static char buf[50];
+
+  unsigned long min = sample / (60 * 44100);
+  sample %= 60 * 44100;
+
+  unsigned long sec = sample / 44100;
+  sample %= 44100;
+
+  unsigned long frame = sample / 588;
+  sample %= 588;
+
+  sprintf(buf, "%2lu:%02lu:%02lu.%03lu", min, sec, frame, sample);
+  
+  return buf;
+}
+
+unsigned long AudioCDView::string2sample(const char *str)
+{
+  int m = 0;
+  int s = 0;
+  int f = 0;
+  int n = 0;
+
+  sscanf(str, "%d:%d:%d.%d", &m, &s, &f, &n);
+
+  if (m < 0)
+    m = 0;
+
+  if (s < 0 || s > 59)
+    s = 0;
+
+  if (f < 0 || f > 74)
+    f = 0;
+
+  if (n < 0 || n > 587)
+    n = 0;
+
+  return Msf(m, s, f).samples() + n;
 }
