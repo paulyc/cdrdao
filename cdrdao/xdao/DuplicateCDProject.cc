@@ -103,7 +103,7 @@ DuplicateCDProject::DuplicateCDProject()
 
   install_menu_hints();
 
-  guiUpdate(UPD_ALL);
+  CdDevice::signal_statusChanged.connect(slot(*this, &DuplicateCDProject::devicesStatusChanged));
 }
 
 DuplicateCDProject::~DuplicateCDProject()
@@ -118,7 +118,7 @@ void DuplicateCDProject::start()
   DeviceList *targetList = CDTarget->getDeviceList();
 
   if (sourceList->selectionEmpty()) {
-    Gtk::MessageDialog("Please select one reader device", Gtk::MESSAGE_INFO).run();
+    Gtk::MessageDialog(*this, "Please select one reader device", Gtk::MESSAGE_INFO).run();
     return;
   }
 
@@ -203,8 +203,6 @@ void DuplicateCDProject::start()
     if (writeDevice->duplicateDao(simulate, multiSession, burnSpeed,
         eject, reload, buffer, onTheFly, correction, sourceDev) != 0)
       Gtk::MessageDialog(*this, "Cannot start disk-at-once duplication", Gtk::MESSAGE_ERROR).run();
-    else
-      guiUpdate(UPD_CD_DEVICE_STATUS);
   }
 }
 
@@ -213,23 +211,17 @@ bool DuplicateCDProject::closeProject()
   return true;  // Close the project
 }
 
-void DuplicateCDProject::update(unsigned long level)
+void DuplicateCDProject::devicesStatusChanged()
 {
-  CDSource->update(level);
-  CDTarget->update(level);
+  DeviceList *sourceList = CDSource->getDeviceList();
+  DeviceList *targetList = CDTarget->getDeviceList();
 
-  if (level & UPD_CD_DEVICE_STATUS)
-  {
-    DeviceList *sourceList = CDSource->getDeviceList();
-    DeviceList *targetList = CDTarget->getDeviceList();
-  
-    targetList->selectOne();
-  
-    CdDevice *targetDev = targetList->getFirstSelected();
-  
-    if (targetDev == 0)
-      sourceList->selectOne();
-    else
-      sourceList->selectOneBut(targetDev);
-  }
+  targetList->selectOne();
+
+  CdDevice *targetDev = targetList->getFirstSelected();
+
+  if (targetDev == 0)
+    sourceList->selectOne();
+  else
+    sourceList->selectOneBut(targetDev);
 }
