@@ -17,7 +17,7 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include "guiUpdate.h"
+#include <libgnomeuimm.h>
 
 #include "xcdrdao.h"
 #include "gcdmaster.h"
@@ -26,6 +26,7 @@
 #include "ProcessMonitor.h"
 #include "CdDevice.h"
 #include "TocEdit.h"
+#include "guiUpdate.h"
 
 #include "util.h"
 
@@ -43,10 +44,10 @@ void guiUpdate(unsigned long level)
     PROGRESS_POOL->update(level);
 }
 
-int guiUpdatePeriodic()
+bool guiUpdatePeriodic()
 {
   if (CdDevice::updateDeviceStatus())
-    guiUpdate(UPD_CD_DEVICE_STATUS);
+    signal_devicesStatusChanged();
 
-  return 1;
+  return true;
 }
