@@ -38,6 +38,7 @@
 // Static class members
 std::list<Project *> GCDMaster::projects;
 std::list<ProjectChooser *> GCDMaster::choosers;
+std::list<GCDMaster *> GCDMaster::apps;
 
 GCDMaster::GCDMaster() : Gnome::UI::App("gcdmaster", APP_NAME)
 {
@@ -343,7 +344,7 @@ void GCDMaster::newAudioCDProject(const char *name, TocEdit *tocEdit)
   {
     AudioCDProject *project = new AudioCDProject(project_number++, name, tocEdit, this);
     project->add_menus (m_refUIManager);
-    project->configureAppBar (statusbar_, progressButton_);
+    project->configureAppBar (statusbar_, progressbar_, progressButton_);
     project->show();
     add(project);
     project_ = project;

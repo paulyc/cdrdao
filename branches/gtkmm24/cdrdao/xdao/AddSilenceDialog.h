@@ -38,6 +38,7 @@ public:
 
   void mode(Mode);
   void update(unsigned long level, TocEditView *);
+  sigc::signal1<void, unsigned long> signal_tocModified;
 
   bool on_delete_event(GdkEventAny*);
 

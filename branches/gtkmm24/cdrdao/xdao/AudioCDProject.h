@@ -87,7 +87,8 @@ public:
                  Gtk::Window *parent);
 
   void add_menus (Glib::RefPtr<Gtk::UIManager> m_refUIManager);
-  void configureAppBar (Gnome::UI::AppBar *s, Gtk::Button *b);
+  void configureAppBar (Gnome::UI::AppBar *s, Gtk::ProgressBar* p,
+                        Gtk::Button *b);
 
   bool            closeProject();
 

@@ -248,7 +248,8 @@ int TocEdit::addTrackMarker(long lba)
 
   if (ret == 0) {
     tocDirty(1);
-    updateLevel_ |= UPD_TOC_DATA | UPD_TRACK_DATA;
+//llanero: different views
+//    updateLevel_ |= UPD_TOC_DATA | UPD_TRACK_DATA;
   }
 
   return ret;
@@ -263,7 +264,8 @@ int TocEdit::addIndexMarker(long lba)
 
   if (ret == 0) {
     tocDirty(1);
-    updateLevel_ |= UPD_TRACK_DATA;
+//llanero: different views
+//    updateLevel_ |= UPD_TRACK_DATA;
   }
 
   return ret;
@@ -278,7 +280,8 @@ int TocEdit::addPregap(long lba)
 
   if (ret == 0) {
     tocDirty(1);
-    updateLevel_ |= UPD_TRACK_DATA;
+//llanero: different views
+//    updateLevel_ |= UPD_TRACK_DATA;
   }
 
   return ret;
@@ -293,7 +296,8 @@ int TocEdit::removeTrackMarker(int trackNr, int indexNr)
 
   if (ret == 0) {
     tocDirty(1);
-    updateLevel_ |= UPD_TOC_DATA | UPD_TRACK_DATA;
+//llanero: different views
+//    updateLevel_ |= UPD_TOC_DATA | UPD_TRACK_DATA;
   }
 
   return ret;
@@ -492,6 +496,7 @@ int TocEdit::insertFiles(std::list<std::string>& tracks, unsigned long pos,
   return ret;
 }
 
+//FIXME: BUG: not working!
 int TocEdit::appendSilence(unsigned long length)
 {
   if (!modifyAllowed())
@@ -718,7 +723,8 @@ int TocEdit::removeTrackData(TocEditView *view)
       view->sampleMarker(selMin);
 
       tocDirty(1);
-      updateLevel_ |= UPD_TOC_DATA | UPD_TRACK_DATA | UPD_SAMPLE_SEL | UPD_SAMPLE_MARKER | UPD_SAMPLES ;
+//llanero: different views
+//      updateLevel_ |= UPD_TOC_DATA | UPD_TRACK_DATA | UPD_SAMPLE_SEL | UPD_SAMPLE_MARKER | UPD_SAMPLES ;
     }
     break;
 
@@ -760,7 +766,8 @@ int TocEdit::insertTrackData(TocEditView *view)
       view->sampleSelection(marker, marker + len - 1);
     
       tocDirty(1);
-      updateLevel_ |= UPD_TOC_DATA | UPD_TRACK_DATA | UPD_SAMPLE_SEL;
+//llanero: different views
+//      updateLevel_ |= UPD_TOC_DATA | UPD_TRACK_DATA | UPD_SAMPLE_SEL;
     }
   }
   else {

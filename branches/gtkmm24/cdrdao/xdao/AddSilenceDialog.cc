@@ -117,6 +117,7 @@ void AddSilenceDialog::start(TocEditView *view)
   active_ = true;
   update(UPD_ALL, view);
   present();
+  tocEditView_ = view;
 }
 
 void AddSilenceDialog::stop()
@@ -223,11 +224,15 @@ void AddSilenceDialog::applyAction()
     switch (mode_) {
     case M_APPEND:
       tocEdit->appendSilence(length);
+      update (UPD_TOC_DATA | UPD_TRACK_DATA | UPD_SAMPLE_SEL, tocEditView_);
+      signal_tocModified (UPD_TOC_DATA | UPD_TRACK_DATA | UPD_SAMPLE_SEL);
       break;
     case M_INSERT:
       if (tocEditView_->sampleMarker(&pos)) {
         if (tocEdit->insertSilence(length, pos) == 0) {
           tocEditView_->sampleSelection(pos, pos + length - 1);
+          update (UPD_TOC_DATA | UPD_TRACK_DATA, tocEditView_);
+          signal_tocModified (UPD_TOC_DATA | UPD_TRACK_DATA);
         }
       }
       break;

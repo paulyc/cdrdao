@@ -32,6 +32,7 @@ protected:
   Gtk::HBox* hbox;
 
   Gnome::UI::AppBar* statusbar_;
+  Gtk::ProgressBar* progressbar_;  
   Gtk::Button* progressButton_;  
   int projectNumber_;
   gint viewNumber;

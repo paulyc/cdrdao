@@ -217,14 +217,17 @@ void AudioCDProject::add_menus(Glib::RefPtr<Gtk::UIManager> m_refUIManager)
   action->set_sensitive(false);
 
   audioCDView_->add_menus (m_refUIManager);
+  audioCDView_->signal_tocModified.connect(sigc::mem_fun(*this, &AudioCDProject::update));
 }
 
-void AudioCDProject::configureAppBar (Gnome::UI::AppBar *s, Gtk::Button *b)
+void AudioCDProject::configureAppBar (Gnome::UI::AppBar *s, Gtk::ProgressBar* p,
+                                      Gtk::Button *b)
 {
   statusbar_ = s;
+  progressbar_ = p;
   progressButton_ = b;
   audioCDView_->tocEditView()->tocEdit()->sampleManager()->
-      setProgressBar(statusbar_->get_progress());
+      setProgressBar(p);
   audioCDView_->tocEditView()->tocEdit()->sampleManager()->
       setAbortButton(progressButton_);
 };

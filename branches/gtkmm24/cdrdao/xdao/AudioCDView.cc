@@ -133,7 +133,7 @@ AudioCDView::AudioCDView(AudioCDChild *child, AudioCDProject *project)
 //                      BONOBO_DOCK_ITEM_BEH_NEVER_VERTICAL,
 //                      BONOBO_DOCK_BOTTOM, 1, 1, 0);
 //  Gtk::Widget* w = Glib::wrap(GTK_WIDGET(project->get_dock_item_by_name(buf)));
-  pack_start (*selectionInfoBox);
+  pack_start (*selectionInfoBox, FALSE, FALSE);
   selectionInfoBox->show();
 
   setMode(SELECT);
@@ -366,8 +366,9 @@ void AudioCDView::zoomIn()
   unsigned long start, end;
 
   if (tocEditView_->sampleSelection(&start, &end)) {
-    tocEditView_->sampleView(start, end);
-    guiUpdate();
+    if (tocEditView_->sampleView(start, end)) {
+      update (UPD_SAMPLES);
+    }
   }
 }
 
@@ -383,8 +384,9 @@ void AudioCDView::zoomx2()
   start = center - len / 4;
   end = center + len / 4;
 
-  tocEditView_->sampleView(start, end);
-  guiUpdate();
+  if (tocEditView_->sampleView(start, end)) {
+    update (UPD_SAMPLES);
+  }
 }
 
 void AudioCDView::zoomOut()
@@ -405,15 +407,15 @@ void AudioCDView::zoomOut()
   if (end >= tocEditView_->tocEdit()->toc()->length().samples())
     end = tocEditView_->tocEdit()->toc()->length().samples() - 1;
 
-  tocEditView_->sampleView(start, end);
-  guiUpdate();
+  if (tocEditView_->sampleView(start, end)) {
+    update (UPD_SAMPLES);
+  }
 }
 
 void AudioCDView::fullView()
 {
   tocEditView_->sampleViewFull();
-
-  guiUpdate();
+  update (UPD_SAMPLES);
 }
 
 int AudioCDView::getMarker(unsigned long *sample)
@@ -434,33 +436,37 @@ void AudioCDView::trackMarkSelectedCallback(const Track *, int trackNr,
 {
   tocEditView_->trackSelection(trackNr);
   tocEditView_->indexSelection(indexNr);
-  guiUpdate();
+  update (UPD_TRACK_MARK_SEL);
 }
 
+// Called when the user clicks on the SampleDisplay
 void AudioCDView::markerSetCallback(unsigned long sample)
 {
   tocEditView_->sampleMarker(sample);
-  guiUpdate();
+  update (UPD_SAMPLE_MARKER);
 }
 
+// Called when the user makes a selection on the SampleDisplay
 void AudioCDView::selectionSetCallback(unsigned long start,
                                        unsigned long end)
 {
   if (mode_ == ZOOM ) {
-    tocEditView_->sampleView(start, end);
+    if (tocEditView_->sampleView(start, end)) {
+      update (UPD_SAMPLES);
+    }
   }
   else {
     tocEditView_->sampleSelection(start, end);
+    update (UPD_SAMPLE_SEL);
   }
-
-  guiUpdate();
 }
 
 void AudioCDView::selectionClearedCallback()
 {
   if (mode_ != ZOOM) {
-    tocEditView_->sampleSelectionClear();
-    guiUpdate();
+    if (tocEditView_->sampleSelectionClear()) {
+      update (UPD_SAMPLE_SEL);
+    }
   }
 }
 
@@ -471,8 +477,9 @@ void AudioCDView::cursorMovedCallback(unsigned long pos)
 
 void AudioCDView::viewModifiedCallback(unsigned long start, unsigned long end)
 {
-  tocEditView_->sampleView(start, end);
-  guiUpdate();
+  if (tocEditView_->sampleView(start, end)) {
+    update (UPD_SAMPLES);
+  }
 }
 
 void AudioCDView::setMode(Mode m)
@@ -480,14 +487,16 @@ void AudioCDView::setMode(Mode m)
   mode_ = m;
 }
 
+// Called when the user enters a value in the marker entry
 void AudioCDView::markerSet()
 {
   unsigned long s = cdchild->string2sample(markerPos_->get_text().c_str());
 
   tocEditView_->sampleMarker(s);
-  guiUpdate();
+  update (UPD_SAMPLE_MARKER);
 }
 
+// Called when the user enters a value in one of the two selection entries
 void AudioCDView::selectionSet()
 {
   unsigned long s1 =
@@ -496,7 +505,7 @@ void AudioCDView::selectionSet()
     cdchild->string2sample(selectionEndPos_->get_text().c_str());
 
   tocEditView_->sampleSelection(s1, s2);
-  guiUpdate();
+  update (UPD_SAMPLE_SEL);
 }
 
 void
@@ -515,7 +524,9 @@ AudioCDView::drag_data_received_cb(const Glib::RefPtr<Gdk::DragContext>& context
 
       switch (tocEditView_->tocEdit()->appendTrack(file)) {
       case 0:
-        guiUpdate();
+//FIXME: llanero this one probably afects TocDialog, ...
+//FIXME: this whole func seems to not work for me ... verify
+//        guiUpdate();
         project_->statusMessage(_("Appended track with audio data from "
                                   "\"%s\"."), file);
         break;
@@ -564,7 +575,7 @@ void AudioCDView::cutTrackData()
   switch (project_->tocEdit()->removeTrackData(tocEditView_)) {
   case 0:
     project_->statusMessage(_("Removed selected samples."));
-    guiUpdate();
+    signal_tocModified(UPD_TOC_DATA | UPD_TRACK_DATA | UPD_SAMPLE_SEL | UPD_SAMPLE_MARKER | UPD_SAMPLES);
     break;
   case 1:
     project_->statusMessage(_("Please select samples."));
@@ -586,7 +597,7 @@ void AudioCDView::pasteTrackData()
   switch (project_->tocEdit()->insertTrackData(tocEditView_)) {
   case 0:
     project_->statusMessage(_("Pasted samples."));
-    guiUpdate();
+    signal_tocModified(UPD_TOC_DATA | UPD_TRACK_DATA | UPD_SAMPLE_SEL);
     break;
   case 1:
     project_->statusMessage(_("No samples in scrap."));
@@ -611,7 +622,7 @@ void AudioCDView::addTrackMark()
     case 0:
       project_->statusMessage(_("Added track mark at %s%s."), Msf(lba).str(),
                               snapped ? _(" (snapped to next block)") : "");
-      guiUpdate();
+      signal_tocModified(UPD_TOC_DATA | UPD_TRACK_DATA | UPD_SAMPLE_MARKER);
       break;
 
     case 2:
@@ -653,7 +664,7 @@ void AudioCDView::addIndexMark()
     case 0:
       project_->statusMessage(_("Added index mark at %s%s."), Msf(lba).str(),
                               snapped ? _(" (snapped to next block)") : "");
-      guiUpdate();
+      signal_tocModified(UPD_TRACK_DATA | UPD_SAMPLE_MARKER);
       break;
 
     case 2:
@@ -689,7 +700,7 @@ void AudioCDView::addPregap()
     case 0:
       project_->statusMessage(_("Added pre-gap mark at %s%s."), Msf(lba).str(),
                               snapped ? _(" (snapped to next block)") : "");
-      guiUpdate();
+      signal_tocModified(UPD_TRACK_DATA | UPD_SAMPLE_MARKER);
       break;
 
     case 2:
@@ -727,7 +738,7 @@ void AudioCDView::removeTrackMark()
     switch (project_->tocEdit()->removeTrackMarker(trackNr, indexNr)) {
     case 0:
       project_->statusMessage(_("Removed track/index marker."));
-      guiUpdate();
+      signal_tocModified(UPD_TOC_DATA | UPD_TRACK_DATA | UPD_SAMPLE_MARKER);
       break;
     case 1:
       project_->statusMessage(_("Cannot remove first track."));
@@ -789,7 +800,7 @@ void AudioCDView::trackMarkMovedCallback(const Track *, int trackNr,
   tocEditView_->trackSelection(trackNr);
   tocEditView_->indexSelection(indexNr);
 
-  guiUpdate();
+  update (UPD_TRACK_MARK_SEL);
 }
 
 void AudioCDView::appendTrack()
@@ -815,6 +826,9 @@ void AudioCDView::appendSilence()
   if (addSilenceDialog_ == 0) {
     addSilenceDialog_ = new AddSilenceDialog();
     addSilenceDialog_->set_transient_for(*project_->getParentWindow ());
+    addSilenceDialog_->signal_tocModified.connect(sigc::mem_fun(
+                                                  *this, &AudioCDView::update));
+
   }
 
   addSilenceDialog_->mode(AddSilenceDialog::M_APPEND);
