@@ -18,6 +18,15 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2000/04/23 09:07:08  andreasm
+ * * Fixed most problems marked with '//llanero'.
+ * * Added audio CD edit menus to MDIWindow.
+ * * Moved central storage of TocEdit object to MDIWindow.
+ * * AudioCdChild is now handled like an ordinary non modal dialog, i.e.
+ *   it has a normal 'update' member function now.
+ * * Added CdTextTable modal dialog.
+ * * Old functionality of xcdrdao is now available again.
+ *
  * Revision 1.2  2000/02/20 23:34:54  llanero
  * fixed scsilib directory (files mising ?-()
  * ported xdao to 1.1.8 / gnome (MDI) app
@@ -298,7 +307,7 @@ int SampleManagerImpl::scanToc(unsigned long start, unsigned long end)
     withGui_ = 1;
   }
   else {
-    burstBlock_ = 500;
+    burstBlock_ = 75;
     percentStep_ = gfloat(burstBlock_) / gfloat(len);
     withGui_ = 1;
   }
