@@ -19,6 +19,10 @@
 
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2000/06/10 14:44:47  andreasm
+ * Tracks that are shorter than 4 seconds do not lead to a fatal error anymore.
+ * The user has the opportunity to record such tracks now.
+ *
  * Revision 1.1.1.1  2000/02/05 01:34:46  llanero
  * Uploaded cdrdao 1.1.3 with pre10 patch applied.
  *
@@ -237,6 +241,7 @@ toc > [ Toc *t ]
             error_ = 1;
           }
          delete[] catalog;
+	 catalog = NULL;
        } 
      >> 
    | tocType > [ toctype ]
