@@ -53,15 +53,15 @@ AudioCDView::AudioCDView(AudioCDChild *child, AudioCDProject *project)
 
   std::list<Gtk::TargetEntry> drop_types;
 
-  drop_types.push_back(Gtk::TargetEntry("text/uri-list", 0, TARGET_URI_LIST));
+  drop_types.push_back(Gtk::TargetEntry("text/uri-list", Gtk::TargetFlags(0), TARGET_URI_LIST));
 
   drag_dest_set(drop_types,
                 Gtk::DEST_DEFAULT_MOTION |
                 Gtk::DEST_DEFAULT_HIGHLIGHT |
                 Gtk::DEST_DEFAULT_DROP);
-
-  signal_drag_data_received().connect(slot(*this, &AudioCDView::drag_data_received_cb));
-
+#if 0
+  signal_drag_data_received().connect(sigc::mem_fun(*this, &AudioCDView::drag_data_received_cb));
+#endif
   sampleDisplay_ = new SampleDisplay;
   sampleDisplay_->setTocEdit(child->tocEdit());
 
@@ -85,7 +85,7 @@ AudioCDView::AudioCDView(AudioCDChild *child, AudioCDProject *project)
   markerPos_ = new Gtk::Entry;
   markerPos_->set_editable(true);
   markerPos_->set_size_request(entry_width, -1);
-  markerPos_->signal_activate().connect(slot(*this, &AudioCDView::markerSet));
+  markerPos_->signal_activate().connect(sigc::mem_fun(*this, &AudioCDView::markerSet));
 
   cursorPos_ = new Gtk::Label;
   cursorPos_->set_size_request(entry_width, -1);
@@ -94,13 +94,13 @@ AudioCDView::AudioCDView(AudioCDChild *child, AudioCDProject *project)
   selectionStartPos_->set_editable(true);
   selectionStartPos_->set_size_request(entry_width, -1);
   selectionStartPos_->signal_activate().
-      connect(slot(*this, &AudioCDView::selectionSet));
+      connect(sigc::mem_fun(*this, &AudioCDView::selectionSet));
 
   selectionEndPos_ = new Gtk::Entry;
   selectionEndPos_->set_editable(true);
   selectionEndPos_->set_size_request(entry_width, -1);
   selectionEndPos_->signal_activate().
-      connect(slot(*this, &AudioCDView::selectionSet));
+      connect(sigc::mem_fun(*this, &AudioCDView::selectionSet));
 
   label = new Gtk::Label(_("Cursor: "));
   selectionInfoBox->pack_start(*label, FALSE, FALSE);
@@ -136,19 +136,19 @@ AudioCDView::AudioCDView(AudioCDChild *child, AudioCDProject *project)
 
   setMode(SELECT);
 
-  sampleDisplay_->markerSet.connect(slot(*this,
+  sampleDisplay_->markerSet.connect(sigc::mem_fun(*this,
                         &AudioCDView::markerSetCallback));
-  sampleDisplay_->selectionSet.connect(slot(*this,
+  sampleDisplay_->selectionSet.connect(sigc::mem_fun(*this,
                         &AudioCDView::selectionSetCallback));
-  sampleDisplay_->selectionCleared.connect(slot(*this,
+  sampleDisplay_->selectionCleared.connect(sigc::mem_fun(*this,
                         &AudioCDView::selectionClearedCallback));
-  sampleDisplay_->cursorMoved.connect(slot(*this,
+  sampleDisplay_->cursorMoved.connect(sigc::mem_fun(*this,
   			&AudioCDView::cursorMovedCallback));
-  sampleDisplay_->trackMarkSelected.connect(slot(*this,
+  sampleDisplay_->trackMarkSelected.connect(sigc::mem_fun(*this,
   			&AudioCDView::trackMarkSelectedCallback));
-  sampleDisplay_->trackMarkMoved.connect(slot(*this,
+  sampleDisplay_->trackMarkMoved.connect(sigc::mem_fun(*this,
   			&AudioCDView::trackMarkMovedCallback));
-  sampleDisplay_->viewModified.connect(slot(*this,
+  sampleDisplay_->viewModified.connect(sigc::mem_fun(*this,
 		        &AudioCDView::viewModifiedCallback));
 
   tocEditView_->sampleViewFull();
@@ -162,79 +162,79 @@ AudioCDView::AudioCDView(AudioCDChild *child, AudioCDProject *project)
     
     menus.push_back(Item(Icon(Gtk::StockID(Gtk::Stock::PROPERTIES)),
                          _("Track Info..."),
-                         slot(*this, &AudioCDView::trackInfo),
+                         sigc::mem_fun(*this, &AudioCDView::trackInfo),
                          _("Edit track data")));
   
     menus.push_back(Separator());
   
     info = Item(Icon(Gtk::StockID(Gtk::Stock::CUT)),
                 _("Cut"),
-                slot(*this, &AudioCDView::cutTrackData),
+                sigc::mem_fun(*this, &AudioCDView::cutTrackData),
                 _("Cut out selected samples"));
-    info.set_accel(Gtk::Menu::AccelKey("<control>x"));
+    info.set_accel(Gtk::AccelKey("<control>x"));
     menus.push_back(info);
 
     info = Item(Icon(Gtk::StockID(Gtk::Stock::PASTE)),
                 _("Paste"),
-                slot(*this, &AudioCDView::pasteTrackData),
+                sigc::mem_fun(*this, &AudioCDView::pasteTrackData),
                 _("Paste previously cut samples"));
-    info.set_accel(Gtk::Menu::AccelKey("<control>v"));
+    info.set_accel(Gtk::AccelKey("<control>v"));
     menus.push_back(info);
 
     menus.push_back(Separator());
 
     info = Item(_("Add Track Mark"),
-                slot(*this, &AudioCDView::addTrackMark),
+                sigc::mem_fun(*this, &AudioCDView::addTrackMark),
                 _("Add track marker at current marker position"));
-    info.set_accel(Gtk::Menu::AccelKey("T"));
+    info.set_accel(Gtk::AccelKey("T"));
     menus.push_back(info);
 
     info = Item(_("Add Index Mark"),
-                slot(*this, &AudioCDView::addIndexMark),
+                sigc::mem_fun(*this, &AudioCDView::addIndexMark),
                 _("Add index marker at current marker position"));
-    info.set_accel(Gtk::Menu::AccelKey("I"));
+    info.set_accel(Gtk::AccelKey("I"));
     menus.push_back(info);
     
     info = Item(_("Add Pre-Gap"),
-                slot(*this, &AudioCDView::addPregap),
+                sigc::mem_fun(*this, &AudioCDView::addPregap),
                 _("Add pre-gap at current marker position"));
-    info.set_accel(Gtk::Menu::AccelKey("P"));
+    info.set_accel(Gtk::AccelKey("P"));
     menus.push_back(info);
 
     info = Item(_("Remove Track Mark"),
-                slot(*this, &AudioCDView::removeTrackMark),
+                sigc::mem_fun(*this, &AudioCDView::removeTrackMark),
                 _("Remove selected track/index marker or pre-gap"));
-    info.set_accel(Gtk::Menu::AccelKey("<control>D"));
+    info.set_accel(Gtk::AccelKey("<control>D"));
     menus.push_back(info);
  
     menus.push_back(Separator());
 
     info = Item(_("Append Track"),
-                slot(*this, &AudioCDView::appendTrack),
+                sigc::mem_fun(*this, &AudioCDView::appendTrack),
                 _("Append track with data from audio file"));
-    info.set_accel(Gtk::Menu::AccelKey("<control>T"));
+    info.set_accel(Gtk::AccelKey("<control>T"));
     menus.push_back(info);
 
     info = Item(_("Append File"),
-                slot(*this, &AudioCDView::appendFile),
+                sigc::mem_fun(*this, &AudioCDView::appendFile),
                 _("Append data from audio file to last track"));
-    info.set_accel(Gtk::Menu::AccelKey("<control>F"));
+    info.set_accel(Gtk::AccelKey("<control>F"));
     menus.push_back(info);
   
     info = Item(_("Insert File"),
-                slot(*this, &AudioCDView::insertFile),
+                sigc::mem_fun(*this, &AudioCDView::insertFile),
                 _("Insert data from audio file at current marker position"));
-    info.set_accel(Gtk::Menu::AccelKey("<control>I"));
+    info.set_accel(Gtk::AccelKey("<control>I"));
     menus.push_back(info);
 
     menus.push_back(Separator());
 
     menus.push_back(Item(_("Append Silence"),
-                         slot(*this, &AudioCDView::appendSilence),
+                         sigc::mem_fun(*this, &AudioCDView::appendSilence),
                          _("Append silence to last track")));
 
     menus.push_back(Item(_("Insert Silence"),
-                         slot(*this, &AudioCDView::insertSilence),
+                         sigc::mem_fun(*this, &AudioCDView::insertSilence),
                          _("Insert silence at current marker position")));
 
     Array<Info>& arrayInfo = project->insert_menus(_("Edit/CD-TEXT..."),
@@ -475,11 +475,10 @@ void AudioCDView::selectionSet()
   guiUpdate();
 }
 
-void 
-AudioCDView::drag_data_received_cb(const
-                                   Glib::RefPtr<Gdk::DragContext>& context,
+void
+AudioCDView::drag_data_received_cb(const Glib::RefPtr<Gdk::DragContext>& context,
                                    gint x, gint y,
-                                   GtkSelectionData *selection_data,
+                                   const GtkSelectionData *selection_data,
                                    guint info, guint time)
 {
   GList *names = NULL;

@@ -40,7 +40,7 @@ GCDMaster::GCDMaster()
   blankCDDialog_ = 0;
 
   readFileSelector_.get_cancel_button()->signal_clicked().
-    connect(slot(*this, &GCDMaster::readFileSelectorCancelCB));
+    connect(mem_fun(*this, &GCDMaster::readFileSelectorCancelCB));
 
   Icons::registerStockIcons();
 }
@@ -79,7 +79,7 @@ bool GCDMaster::openNewProject(const char* s)
 void GCDMaster::openProject(ProjectChooser *projectChooser)
 {
   readFileSelector_.get_ok_button()->signal_clicked().
-    connect(bind(slot(*this, &GCDMaster::readFileSelectorOKCB),
+    connect(bind(mem_fun(*this, &GCDMaster::readFileSelectorOKCB),
                  projectChooser));
 
   readFileSelector_.show();

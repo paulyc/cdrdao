@@ -454,7 +454,7 @@ bool CdDevice::recordDao(Gtk::Window& parent, TocEdit *tocEdit, int simulate,
     action_ = A_RECORD;
 
     if (process_->commFd() >= 0) {
-        Glib::signal_io().connect(bind(slot(*this, &CdDevice::updateProgress),
+        Glib::signal_io().connect(bind(mem_fun(*this, &CdDevice::updateProgress),
                                        process_->commFd()),
                                   process_->commFd(),
                                   Glib::IO_IN | Glib::IO_HUP);
@@ -587,7 +587,7 @@ int CdDevice::extractDao(Project& parent, const char *tocFileName,
     action_ = A_READ;
 
     if (process_->commFd() >= 0) {
-        Glib::signal_io().connect(bind(slot(*this, &CdDevice::updateProgress),
+        Glib::signal_io().connect(bind(mem_fun(*this, &CdDevice::updateProgress),
                                        process_->commFd()),
                                   process_->commFd(),
                                   Glib::IO_IN | Glib::IO_PRI |
@@ -743,7 +743,7 @@ int CdDevice::duplicateDao(Project& parent, int simulate, int multiSession,
     action_ = A_DUPLICATE;
 
     if (process_->commFd() >= 0) {
-        Glib::signal_io().connect(bind(slot(*this, &CdDevice::updateProgress),
+        Glib::signal_io().connect(bind(mem_fun(*this, &CdDevice::updateProgress),
                                        process_->commFd()),
                                   process_->commFd(),
                                   Glib::IO_IN | Glib::IO_HUP);
@@ -849,7 +849,7 @@ int CdDevice::blank(Project* parent, int fast, int speed, int eject,
     action_ = A_BLANK;
 
     if (process_->commFd() >= 0) {
-        Glib::signal_io().connect(bind(slot(*this, &CdDevice::updateProgress),
+        Glib::signal_io().connect(bind(mem_fun(*this, &CdDevice::updateProgress),
                                        process_->commFd()),
                                   process_->commFd(),
                                   Glib::IO_IN | Glib::IO_HUP);

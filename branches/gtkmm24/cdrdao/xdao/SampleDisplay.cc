@@ -114,20 +114,30 @@ static gchar *INDEX_EXTEND_XPM_DATA[] = {
   "........."};
 
 
-SampleDisplay::SampleDisplay()
+SampleDisplay::SampleDisplay():
+	pixmap_(NULL),
+	trackMarkerPixmap_(NULL),
+	indexMarkerPixmap_(NULL),
+	trackMarkerSelectedPixmap_(NULL),
+	indexMarkerSelectedPixmap_(NULL),
+	trackExtendPixmap_(NULL),
+	indexExtendPixmap_(NULL),
+	drawGc_(NULL)
+		
 {
   adjustment_ = new Gtk::Adjustment(0.0, 0.0, 1.0);
-  adjustment_->signal_value_changed().connect(slot(*this,
+  adjustment_->signal_value_changed().connect(mem_fun(*this,
                                                    &SampleDisplay::scrollTo));
 
   trackManager_ = NULL;
 
-  pixmap_ = NULL;
-  trackMarkerPixmap_ = indexMarkerPixmap_ = NULL;
-  trackMarkerSelectedPixmap_ = indexMarkerSelectedPixmap_ = NULL;
-  trackExtendPixmap_ = indexExtendPixmap_ = NULL;
+  //  pixmap_ = NULL;
+  // trackMarkerPixmap_ = indexMarkerPixmap_ = NULL;
+  // trackMarkerSelectedPixmap_ = indexMarkerSelectedPixmap_ = NULL;
+  // trackExtendPixmap_ = indexExtendPixmap_ = NULL;
 
-  drawGc_ = NULL;
+  //drawGc_ = NULL;
+  
   width_ = height_ = chanHeight_ = lcenter_ = rcenter_ = 0;
   timeLineHeight_ = timeLineY_ = 0;
   timeTickWidth_ = 0;
@@ -151,20 +161,20 @@ SampleDisplay::SampleDisplay()
   selectedTrack_ = 0;
   selectedIndex_ = 0;
 
-  signal_expose_event().connect(slot(*this,
+  signal_expose_event().connect(mem_fun(*this,
                                      &SampleDisplay::handle_expose_event));
   signal_configure_event().
-    connect(slot(*this, &SampleDisplay::handle_configure_event));
+    connect(mem_fun(*this, &SampleDisplay::handle_configure_event));
   signal_motion_notify_event().
-    connect(slot(*this, &SampleDisplay::handle_motion_notify_event));
+    connect(mem_fun(*this, &SampleDisplay::handle_motion_notify_event));
   signal_button_press_event().
-    connect(slot(*this, &SampleDisplay::handleButtonPressEvent));
+    connect(mem_fun(*this, &SampleDisplay::handleButtonPressEvent));
   signal_button_release_event().
-    connect(slot(*this,	&SampleDisplay::handleButtonReleaseEvent));
+    connect(mem_fun(*this,	&SampleDisplay::handleButtonReleaseEvent));
   signal_enter_notify_event().
-    connect(slot(*this, &SampleDisplay::handleEnterEvent));
+    connect(mem_fun(*this, &SampleDisplay::handleEnterEvent));
   signal_leave_notify_event().
-    connect(slot(*this, &SampleDisplay::handleLeaveEvent));
+    connect(mem_fun(*this, &SampleDisplay::handleLeaveEvent));
 
   set_events (Gdk::EXPOSURE_MASK
 	      | Gdk::LEAVE_NOTIFY_MASK

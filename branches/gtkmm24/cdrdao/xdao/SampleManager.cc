@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2004/02/12 01:13:32  poolshark
+ * Merge from gnome2 branch
+ *
  * Revision 1.5.6.1  2004/01/05 00:34:03  poolshark
  * First checking of gnome2 port
  *
@@ -91,7 +94,7 @@
 
 #include "TrackDataScrap.h"
 
-class SampleManagerImpl : public SigC::Object {
+class SampleManagerImpl : public sigc::trackable {
 public:
   SampleManagerImpl(unsigned long);
   ~SampleManagerImpl();
@@ -222,7 +225,7 @@ SampleManagerImpl::SampleManagerImpl(unsigned long blocking) : tocReader_(NULL)
 void SampleManagerImpl::setAbortButton(Gtk::Button* button)
 {
   abortButton_ = button;
-  button->signal_clicked().connect(slot(*this,
+  button->signal_clicked().connect(mem_fun(*this,
                                         &SampleManagerImpl::abortAction));
 }
 
@@ -337,7 +340,7 @@ int SampleManagerImpl::scanToc(unsigned long start, unsigned long end)
   if (withGui_) {
     if (progressBar_) progressBar_->set_fraction(0.0);
     if (abortButton_) abortButton_->set_sensitive(true);
-    Glib::signal_idle().connect(slot(*this, &SampleManagerImpl::readSamples));
+    Glib::signal_idle().connect(mem_fun(*this, &SampleManagerImpl::readSamples));
     tocEdit_->blockEdit();
   } else {
     while (readSamples());
