@@ -46,7 +46,7 @@ public:
   void add_menus(Glib::RefPtr<Gtk::UIManager> m_refUIManager);
   sigc::signal0<void> add_view;
 
-  void update(unsigned long level);
+  void update(unsigned long level = 0);
 
   enum Mode { ZOOM, SELECT };
   void setMode(Mode);
@@ -55,6 +55,8 @@ public:
   void zoomx2();
   void zoomOut();
   void fullView();
+
+  sigc::signal1<void, unsigned long> signal_tocModified;
 
 private:
   friend class AudioCDChild;

@@ -65,6 +65,8 @@ private:
 public:
   GCDMaster();
 
+  static std::list<GCDMaster *> apps;
+
   void appClose();
   void closeProject();
   void closeChooser();
@@ -72,7 +74,6 @@ public:
   bool openNewProject(const char*);
   void openProject();
   void newChooserWindow();
-//FIXME: join this two: ?
   void newAudioCDProject2();
   void newAudioCDProject(const char *name, TocEdit *tocEdit);
   void newDuplicateCDProject();
