@@ -95,9 +95,9 @@ public:
 
   unsigned long   getDelay();
 
-  bool            appendTrack(const char* filename);
-  bool            appendFile(const char* filename);
-  bool            insertFile(const char* filename);
+  bool            appendTracks(std::list<std::string>&);
+  bool            appendFiles(std::list<std::string>&);
+  bool            insertFiles(std::list<std::string>&);
 };
 #endif
 

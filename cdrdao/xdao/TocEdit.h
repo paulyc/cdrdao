@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.4.6.1  2004/01/05 00:34:03  poolshark
+ * First checking of gnome2 port
+ *
  * Revision 1.2  2003/12/12 02:49:36  denis
  * AudioCDProject and AudioCDView cleanup.
  *
@@ -61,6 +64,9 @@
 #ifndef __TOC_EDIT_H__
 #define __TOC_EDIT_H__
 
+#include <string>
+#include <list>
+
 #include "Toc.h"
 #include "CdTextItem.h"
 
@@ -99,17 +105,19 @@ public:
   int saveToc();
   int saveAsToc(const char *);
   
-
   int moveTrackMarker(int trackNr, int indexNr, long lba);
   int addTrackMarker(long lba);
   int removeTrackMarker(int trackNr, int indexNr);
   int addIndexMarker(long lba);
   int addPregap(long lba);
 
-
-  int appendTrack(const char *fname);
-  int appendFile(const char *fname);
+  int appendTrack(const char* filename);
+  int appendTracks(std::list<std::string>& tracks);
+  int appendFile(const char* filename);
+  int appendFiles(std::list<std::string>& tracks);
   int insertFile(const char *fname, unsigned long pos, unsigned long *len);
+  int insertFiles(std::list<std::string>& tracks, unsigned long pos,
+                  unsigned long *len);
   int appendSilence(unsigned long);
   int insertSilence(unsigned long length, unsigned long pos);
 

@@ -507,71 +507,105 @@ void AudioCDProject::on_select_clicked()
     audioCDView_->setMode(AudioCDView::SELECT);
 }
 
-bool AudioCDProject::appendTrack(const char* filename)
+bool AudioCDProject::appendTracks(std::list<std::string>& files)
 {
-  int ret = tocEdit()->appendTrack(filename);
+  int ret = tocEdit()->appendTracks(files);
+  const char* singlefn = (files.size() > 1 ? 0 : (*(files.begin())).c_str());
 
   switch(ret) {
   case 0:
     audioCDView_->fullView();
-    if (TrackData::audioFileType(filename) == TrackData::WAVE) {
+    if (!singlefn)
+      statusMessage(_("Appended %d tracks."), files.size());
+    else {
+      if (TrackData::audioFileType(singlefn) == TrackData::WAVE) {
         statusMessage(_("Appended track with WAV audio from \"%s\"."),
-                      filename);
-    } else {
+                      singlefn);
+      } else {
         statusMessage(_("Appended track with raw audio samples from \"%s\"."),
-                      filename);
+                      singlefn);
+      }
     }
     break;
   case 1:
-    statusMessage(_("Cannot open audio file \"%s\"."), filename);
+    if (singlefn)
+      statusMessage(_("Cannot open audio file \"%s\"."), singlefn);
+    else
+      statusMessage(_("Cannot open audio file."));
     break;
   case 2:
-    statusMessage(_("Audio file \"%s\" has wrong format."), filename);
+    if (singlefn)
+      statusMessage(_("Audio file \"%s\" has wrong format."), singlefn);
+    else
+      statusMessage(_("Audio file has wrong format."));
     break;
   }
+
   guiUpdate();
+  return (ret == 0);
 }
 
-bool AudioCDProject::appendFile(const char* filename)
+bool AudioCDProject::appendFiles(std::list<std::string>& files)
 {
-  int ret = tocEdit()->appendFile(filename);
+  int ret = tocEdit()->appendFiles(files);
+  const char* singlefn = (files.size() > 1 ? 0 : (*(files.begin())).c_str());
 
   switch (ret) {
   case 0:
     audioCDView_->fullView();
-    statusMessage(_("Appended audio data from \"%s\"."), filename);
+    if (singlefn)
+      statusMessage(_("Appended audio data from \"%s\"."), singlefn);
+    else
+      statusMessage(_("Appended audio data from %d files."), files.size());
     break;
   case 1:
-    statusMessage(_("Cannot open audio file \"%s\"."), filename);
+    if (singlefn)
+      statusMessage(_("Cannot open audio file \"%s\"."), singlefn);
+    else
+      statusMessage(_("Cannot open audio file."));
     break;
   case 2:
-    statusMessage(_("Audio file \"%s\" has wrong format."), filename);
+    if (singlefn)
+      statusMessage(_("Audio file \"%s\" has wrong format."), singlefn);
+    else
+      statusMessage(_("Audio file has wrong format."));
     break;
   }
   guiUpdate();
+  return (ret == 0);
 }
 
-bool AudioCDProject::insertFile(const char* filename)
+bool AudioCDProject::insertFiles(std::list<std::string>& files)
 {
+  const char* singlefn = (files.size() > 1 ? 0 : (*(files.begin())).c_str());
   TocEditView* view = audioCDView_->tocEditView();
   if (!view) return false;
 
   unsigned long pos, len;
   view->sampleMarker(&pos);
-  int ret = tocEdit()->insertFile(filename, pos, &len);
+  int ret = tocEdit()->insertFiles(files, pos, &len);
 
   switch(ret) {
   case 0:
     view->sampleSelection(pos, pos+len-1);
-    audioCDView_->fullView();
-    statusMessage(_("Inserted audio data from \"%s\"."), filename);
+    if (singlefn)
+      statusMessage(_("Inserted audio data from \"%s\"."), singlefn);
+    else
+      statusMessage(_("Inserted audio data from %d files."), files.size());
     break;
   case 1:
-    statusMessage(_("Cannot open audio file \"%s\"."), filename);
+    if (singlefn)
+      statusMessage(_("Cannot open audio file \"%s\"."), singlefn);
+    else
+      statusMessage(_("Cannot open audio file."));
     break;
   case 2:
-    statusMessage(_("Audio file \"%s\" has wrong format."), filename);
+    if (singlefn)
+      statusMessage(_("Audio file \"%s\" has wrong format."), singlefn);
+    else
+      statusMessage(_("Audio file has wrong format."));
     break;
   }
   guiUpdate();
+  return (ret == 0);
 }
