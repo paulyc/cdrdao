@@ -194,7 +194,7 @@ bool BlankCDDialog::on_delete_event(GdkEventAny*)
 
 void BlankCDDialog::startAction()
 {
-  if (Devices->selection()) {
+  if (Devices->selection().empty()) {
     Gtk::MessageDialog d(*this, "Please select at least one recorder device",
                          Gtk::MESSAGE_WARNING);
     d.run();
@@ -211,10 +211,9 @@ void BlankCDDialog::startAction()
   int reload = checkReloadWarning(this);
   int burnSpeed = getSpeed();
 
-  DeviceList::DeviceData* targetData = Devices->selection();
+  std::string targetData = Devices->selection();
 
-  CdDevice *writeDevice = CdDevice::find(targetData->bus, targetData->id,
-                                         targetData->lun);
+  CdDevice *writeDevice = CdDevice::find(targetData.c_str());
   
   if (writeDevice) {
     if (writeDevice->blank(parent_, fast, burnSpeed, eject, reload) != 0) {

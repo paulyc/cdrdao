@@ -42,24 +42,21 @@ private:
   Gtk::TreeIter selectedRow_;
 
   struct DeviceData {
-    int bus, id, lun;
+    std::string dev;
     int driverId;
     int deviceType;
     unsigned long options;
-    std::string specialDevice;
   };
 
   // ------------------------------------- Device TreeView
 
   class ListColumns : public Gtk::TreeModel::ColumnRecord {
   public:
-    ListColumns()
-      { add(bus); add(id); add(lun); add(vendor); add(model); add(status);
-      add(data); };
+    ListColumns() {
+      add(dev); add(vendor); add(model); add(status); add(data);
+    };
 
-    Gtk::TreeModelColumn<int>         bus;
-    Gtk::TreeModelColumn<int>         id;
-    Gtk::TreeModelColumn<int>         lun;
+    Gtk::TreeModelColumn<std::string> dev;
     Gtk::TreeModelColumn<std::string> vendor;
     Gtk::TreeModelColumn<std::string> model;
     Gtk::TreeModelColumn<std::string> status;
@@ -76,10 +73,9 @@ private:
   Gtk::OptionMenu *driverMenu_;
   Gtk::OptionMenu *devtypeMenu_;
 
-  Gtk::SpinButton *busEntry_, *idEntry_, *lunEntry_;
+  Gtk::Entry devEntry_;
   Gtk::Entry vendorEntry_;
   Gtk::Entry productEntry_;
-  Gtk::Entry specialDeviceEntry_;
   Gtk::Entry driverOptionsEntry_;
 
   const char *checkString(const std::string &str);
