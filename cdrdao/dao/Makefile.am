@@ -56,3 +56,6 @@ INCLUDES =						\
 	-I$(srcdir)/../scsilib/export/libschily
 
 AM_CXXFLAGS = -DDRIVER_TABLE_FILE=\"$(DRIVER_TABLE_FILE)\"
+
+man1_MANS = cdrdao.man
+EXTRA_DIST = $(man1_MANS)
