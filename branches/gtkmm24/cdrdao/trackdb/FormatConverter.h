@@ -56,6 +56,7 @@ class FormatSupport
   // FS_IN_PROGRESS.
   virtual Status convertStart(const char* from, const char* to) = 0;
   virtual Status convertContinue() = 0;
+  virtual void   convertAbort() = 0;
   
   // Specify what this object converts to. Should only returns either
   // TrackData::WAVE or TrackData::RAW
@@ -88,7 +89,10 @@ class FormatConverter
 
   // Convert file, return tempory file with WAV or RAW data (based on
   // temp file extension).Returns NULL if conversion failed.
-  const char* convert(const char* fn);
+  const char* convert(const char* src);
+
+  // Do it yourself. Returns a converter.
+  FormatSupport* newConverter(const char* fn);
 
   // Add all supported extensions to string list. Returns number added.
   int supportedExtensions(std::list<std::string>&);
@@ -96,8 +100,6 @@ class FormatConverter
  private:
   std::list<std::string*> tempFiles_;
   std::list<FormatSupportManager*> managers_;
-
-  FormatSupport* newConverter(const char* fn);
 };
 
 extern FormatConverter formatConverter;

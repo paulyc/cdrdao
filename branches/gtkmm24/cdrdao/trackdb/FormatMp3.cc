@@ -72,6 +72,11 @@ FormatSupport::Status FormatMp3::convertContinue()
   return err;
 }
 
+void FormatMp3::convertAbort()
+{
+  madExit();
+}
+
 FormatSupport::Status FormatMp3::madInit()
 {
   struct stat st;

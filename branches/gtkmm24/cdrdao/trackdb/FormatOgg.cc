@@ -57,6 +57,11 @@ FormatSupport::Status FormatOgg::convertContinue()
   return err;
 }
 
+void FormatOgg::convertAbort()
+{
+  oggExit();
+}
+
 FormatSupport::Status FormatOgg::oggInit()
 {
   fin_ = fopen(src_file_, "r");
