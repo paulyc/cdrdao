@@ -182,32 +182,32 @@ void Project::createMenus()
 
 void Project::createToolbar()
 {
-  toolbar = new Gtk::Toolbar;
+  toolbar_ = new Gtk::Toolbar;
   Glib::RefPtr<Gtk::AccelGroup> accel_group = Gtk::AccelGroup::create();
 
   Gtk::Image *pixmap = manage (new Gtk::Image(Gtk::StockID(Gtk::Stock::NEW),
                               Gtk::ICON_SIZE_LARGE_TOOLBAR));
-  toolbar->tools().push_back(Gtk::Toolbar_Helpers::ButtonElem(N_("New"), *pixmap,
+  toolbar_->tools().push_back(Gtk::Toolbar_Helpers::ButtonElem(N_("New"), *pixmap,
   		signal_newProject.slot(), N_("New project"), ""));
 
   pixmap = manage (new Gtk::Image(Gtk::StockID(Gtk::Stock::OPEN),
                               Gtk::ICON_SIZE_LARGE_TOOLBAR));
-  toolbar->tools().push_back(Gtk::Toolbar_Helpers::ButtonElem(N_("Open"), *pixmap,
+  toolbar_->tools().push_back(Gtk::Toolbar_Helpers::ButtonElem(N_("Open"), *pixmap,
   		signal_openProject.slot(), N_("Open a project"), ""));
 
   pixmap = manage (new Gtk::Image(Gtk::StockID(Gtk::Stock::SAVE),
                               Gtk::ICON_SIZE_LARGE_TOOLBAR));
-  toolbar->tools().push_back(Gtk::Toolbar_Helpers::ButtonElem(N_("Save"), *pixmap,
+  toolbar_->tools().push_back(Gtk::Toolbar_Helpers::ButtonElem(N_("Save"), *pixmap,
   		slot(*this, &Project::saveProject), N_("Save current project"), ""));
-  tiSave_ = toolbar->tools().back().get_widget();
+  tiSave_ = toolbar_->tools().back().get_widget();
 
   pixmap = manage(new Gtk::Image(Gtk::StockID(Gtk::Stock::CDROM),
                               Gtk::ICON_SIZE_LARGE_TOOLBAR));
-  toolbar->tools().push_back(Gtk::Toolbar_Helpers::ButtonElem(N_("Record"), *pixmap,
+  toolbar_->tools().push_back(Gtk::Toolbar_Helpers::ButtonElem(N_("Record"), *pixmap,
   		slot(*this, &Project::recordToc2CD), N_("Record to CD"), ""));
-  tiRecord_ = toolbar->tools().back().get_widget();
+  tiRecord_ = toolbar_->tools().back().get_widget();
 
-  set_toolbar(*toolbar);
+  set_toolbar(*toolbar_);
 }
 
 void Project::createStatusbar()
