@@ -20,13 +20,10 @@
 #ifndef __TOC_INFO_DIALOG_H__
 #define __TOC_INFO_DIALOG_H__
 
-#include <gtk--.h>
-#include <gtk/gtk.h>
 
 #include "Toc.h"
 
 class TocEdit;
-//class TocEditView;
 class TextEdit;
 
 class TocInfoDialog : public Gtk::Dialog {
@@ -34,16 +31,12 @@ public:
   TocInfoDialog();
   ~TocInfoDialog();
 
-  gint delete_event_impl(GdkEventAny*);
-
   void update(unsigned long, TocEdit *);
 
-  void start(TocEdit *);
-  void stop();
+  void setView(TocEdit *);
 
 private:
   TocEdit *tocEdit_;
-  int active_;
 
   Gtk::Button *applyButton_;
   Gtk::Label *tocLength_;
@@ -80,7 +73,6 @@ private:
 
   CdTextPage cdTextPages_[8];
 
-  void closeAction();
   void applyAction();
 
   void createCdTextLanguageMenu(int);
