@@ -125,8 +125,11 @@ AM_CXXFLAGS = @GTKMM2_CFLAGS@ @LIBGUIMM2_CFLAGS@
 man1_MANS = gcdmaster.man
 EXTRA_DIST = $(man1_MANS) $(glade_DATA) gcdmaster.desktop BUGS TASKS gcdmaster.png
 
+mimeinfodir = $(datadir)/mime-info
+mimeinfo_DATA = gcdmaster.keys gcdmaster.mime
+
 desktopdir = $(datadir)/applications
 desktop_DATA = gcdmaster.desktop
 
 icondir = $(datadir)/pixmaps
-icon_DATA = gcdmaster.png
+icon_DATA = gcdmaster.png gcdmaster-doc.png
