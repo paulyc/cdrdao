@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2000/11/05 19:20:59  andreasm
+ * Unified progress messages sent from cdrdao to gcdmaster.
+ *
  * Revision 1.5  2000/10/25 20:33:28  andreasm
  * Added BURN Proof support (submitted by ITOH Yasufumi and Martin Buck).
  *
@@ -614,6 +617,7 @@ private:
   TrackInfo *paranoiaTrackInfo_;
   int paranoiaStartTrack_;
   int paranoiaEndTrack_;
+  long paranoiaLastLba_;
   long paranoiaActLba_;
   int paranoiaActTrack_;
   int paranoiaActIndex_;
