@@ -19,6 +19,10 @@
 
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2000/10/08 16:39:40  andreasm
+ * Remote progress message now always contain the track relative and total
+ * progress and the total number of processed tracks.
+ *
  * Revision 1.2  2000/06/06 22:26:13  andreasm
  * Updated list of supported drives.
  * Added saving of some command line settings to $HOME/.cdrdao.
@@ -78,6 +82,7 @@ class CdTextEncoder;
 #define OPT_MMC_CD_TEXT      0x0010 // drive supports CD-TEXT writing
 #define OPT_MMC_NO_SUBCHAN   0x0020 // drive does not support to read 
                                     // sub-channel data
+#define OPT_MMC_NO_BURNPROOF 0x0040 // disable BURN-Proof
 
 class GenericMMC : public CdrDriver {
 public:

@@ -18,6 +18,10 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2000/10/08 16:39:40  andreasm
+ * Remote progress message now always contain the track relative and total
+ * progress and the total number of processed tracks.
+ *
  * Revision 1.3  2000/06/22 12:19:28  andreasm
  * Added switch for reading CDs written in TAO mode.
  * The fifo buffer size is now also saved to $HOME/.cdrdao.
@@ -127,6 +131,7 @@ struct DriveInfo {
   int currentWriteSpeed;
 
   unsigned int accurateAudioStream : 1;
+  unsigned int burnProof : 1;
 };
 
 struct CdTextPack {
