@@ -19,6 +19,7 @@
 
 #include <stdlib.h>
 #include <ao/ao.h>
+#include <fstream>
 
 #include "config.h"
 #include "util.h"
@@ -188,6 +189,45 @@ FormatSupport::Status FormatConverter::convert(Toc* toc)
   }
 
   return FormatSupport::FS_SUCCESS;
+}
+
+bool parseM3u(const char* m3ufile, std::list<std::string>& list)
+{
+  // You'd think STL would be smart enough to NOT have to use a stack
+  // buffer like this. STL is so poorly designed there's no any other
+  // way.
+  char buffer[1024];
+
+  std::string dir = m3ufile;
+  dir = dir.substr(0, dir.rfind("/"));
+  dir += "/";
+
+  std::ifstream file(m3ufile, std::ios::in);
+
+  if (!file.is_open())
+    return false;
+
+  while (!file.eof()) {
+    file.getline(buffer, 1024);
+
+    std::string e = buffer;
+    if (!e.empty() && (*(e.begin())) != '#') {
+
+      if (e[0] != '/')
+        e = dir + e;
+
+      int n;
+      while ((n = e.find('\r')) >= 0)
+        e.erase(n, 1);
+      while ((n = e.find('\n')) >= 0)
+        e.erase(n, 1);
+
+      list.push_back(e);
+    }
+  }
+
+  file.close();
+  return true;
 }
 
 FormatConverter formatConverter;
