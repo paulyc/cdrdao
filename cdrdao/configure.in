@@ -1,7 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.42.2.1 $)dnl
+AC_REVISION($Revision: 1.42.2.2 $)dnl
 
-AC_INIT(cdrdao, 1.1.9rc1)
+AC_INIT(cdrdao, 1.1.9)
 
 AC_CONFIG_SRCDIR(dao/main.cc)
 AM_INIT_AUTOMAKE
@@ -16,6 +16,8 @@ AC_ARG_WITH(scglib,[  --with-scglib           use Joerg Schillings SCSI library 
 AC_ARG_WITH(scglib-inc,[  --with-scglib-inc=dir   set directory for SCSI library include files],[scglib_inc=$withval],[scglib_inc=default])
 AC_ARG_WITH(scglib-lib,[  --with-scglib-lib=dir   set directory that contains the SCSI library],[scglib_lib=$withval],[scglib_lib=default])
 AC_ARG_WITH(xdao,[  --with-xdao             enable building of gcdmaster (default: on)],[xdao=$withval],[xdao=default])
+AC_ARG_WITH(ogg-support,[  --with-ogg-support      enable OGG format support (default:on)],[],[with_ogg_support=yes])
+AC_ARG_WITH(mp3-support,[  --with-mp3-support      enable MP3 format support (default:on)],[],[with_mp3_support=yes])
 
 dnl Checks for programs.
 AC_PROG_CC
@@ -33,6 +35,7 @@ AC_CHECK_HEADERS(fcntl.h getopt.h malloc.h unistd.h sys/mman.h sched.h)
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
+AC_C_BIGENDIAN
 AC_TYPE_SIGNAL
 AC_CHECK_SIZEOF(short)
 AC_CHECK_SIZEOF(int)
@@ -340,6 +343,29 @@ case "$host" in
      ;;
 esac
 
+dnl Check for OGG support
+if test "$with_ogg_support" = yes; then
+  PKG_CHECK_MODULES(VORBISFILE, vorbisfile >= 1.0, [],
+        [echo "OGG support disabled"; with_ogg_support=no])
+fi
+dnl Check for MP3 support
+if test "$with_mp3_support" = yes; then
+  PKG_CHECK_MODULES(MAD, mad >= 0.10, [],
+        [echo "MP3 support disabled"; with_mp3_support=no])
+fi
+dnl Check for libao support
+if test "$with_mp3_support" = yes; then
+  PKG_CHECK_MODULES(AO, ao >= 0.8, [],
+        [echo "MP3/Ogg support disabled"; with_ogg_support=no;
+        with_mp3_support=no])
+fi
+
+if test "$with_ogg_support" = yes; then
+  AC_DEFINE(HAVE_OGG_SUPPORT,1,"")
+fi
+if test "$with_mp3_support" = yes; then
+  AC_DEFINE(HAVE_MP3_SUPPORT,1,"")
+fi
 
 dnl General platform specific setup
 
@@ -372,6 +398,8 @@ AM_CONDITIONAL([COND_XDAO], [test "$en_xdao" = yes])
 AM_CONDITIONAL([COND_TOC2MP3], [test "$en_toc2mp3" = yes])
 AM_CONDITIONAL([COND_SCSILIB], [test "$en_scsilib" = yes])
 AM_CONDITIONAL([COND_PCCTS], [test "$en_pccts" = yes])
+AM_CONDITIONAL([COND_MP3], [test "$with_mp3_support" = yes])
+AM_CONDITIONAL([COND_OGG], [test "$with_ogg_support" = yes])
 
 AC_CONFIG_FILES([
         trackdb/Makefile
@@ -391,6 +419,8 @@ echo "------------------------------------------------------"
 echo "  Building scsilib   : $en_scsilib"
 echo "  Building pccts     : $en_pccts"
 echo "  Building cdrdao    : $en_cdrdao"
+echo "     OGG support     : $with_ogg_support"
+echo "     MP3 support     : $with_mp3_support"
 echo "  Building toc2cue   : $en_toc2cue"
 echo "  Building cue2toc   : $en_cue2toc"
 echo "  Building toc2mp3   : $en_toc2mp3"

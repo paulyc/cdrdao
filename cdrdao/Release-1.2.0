@@ -1,0 +1,20 @@
+Hi,
+
+cdrdao-1.2.0 is available from:
+
+  http://sf.net/projects/cdrdao
+
+
+Cdrdao changes:
+
+- Added MP3 and Ogg Vorbis file support (through respectively the
+  libmad and libvorbis libraries). cdrdao will decode the MP3 and Ogg
+  files into temporary WAV files that will be deleted upon exit
+  (unless the new option --keep is used). The directory used to store
+  those temporary WAV files can be specified with the --tmpdir option
+  (default is /tmp).
+
+
+
+Denis Leroy
+Manuel Clos
