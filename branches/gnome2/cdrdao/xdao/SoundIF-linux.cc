@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.1.1.1.6.1  2004/01/05 00:34:03  poolshark
+ * First checking of gnome2 port
+ *
  * Revision 1.1.1.1  2003/12/09 05:32:28  denis
  * Fooya
  *
@@ -71,6 +74,7 @@ SoundIF::SoundIF()
 
 SoundIF::~SoundIF()
 {
+  end();
   delete impl_;
   impl_ = NULL;
 }
