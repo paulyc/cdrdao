@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.1.1.1  2000/02/05 01:35:20  llanero
+ * Uploaded cdrdao 1.1.3 with pre10 patch applied.
+ *
  * Revision 1.1  1999/05/11 20:03:29  mueller
  * Initial revision
  *
@@ -34,5 +37,6 @@ void mSleep(long milliSeconds);
 void installSignalHandler(int sig, SignalHandler);
 void blockSignal(int sig);
 void unblockSignal(int sig);
+int setRealTimeScheduling(int priority);
 
 #endif
