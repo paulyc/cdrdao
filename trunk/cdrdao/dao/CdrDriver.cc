@@ -18,6 +18,10 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2000/06/19 20:25:07  andreasm
+ * Fixed bug in CD-TEXT reading.
+ * read-cd is now configured to handle DAO disks again.
+ *
  * Revision 1.5  2000/06/19 20:17:37  andreasm
  * Added CDDB reading to add CD-TEXT information to toc-files.
  * Fixed bug in reading ATIP data in 'GenericMMC::diskInfo()'.
@@ -94,7 +98,7 @@
  *
  */
 
-static char rcsid[] = "$Id: CdrDriver.cc,v 1.6 2000-06-19 20:25:07 andreasm Exp $";
+static char rcsid[] = "$Id: CdrDriver.cc,v 1.7 2000-06-22 12:19:28 andreasm Exp $";
 
 #include <config.h>
 
@@ -707,11 +711,15 @@ CdrDriver::CdrDriver(ScsiIf *scsiIf, unsigned long options)
 
   fastTocReading_ = 0;
   rawDataReading_ = 0;
+  taoSource_ = 0;
+  taoSourceAdjust_ = 2; // usually we have 2 unreadable sectors between tracks
+                        // written in TAO mode
   padFirstPregap_ = 1;
   onTheFly_ = 0;
   onTheFlyFd_ = -1;
   multiSession_ = 0;
   encodingMode_ = 0;
+  force_ = 0;
   remote_ = 0;
 
   blockLength_ = 0;
@@ -751,6 +759,14 @@ int CdrDriver::multiSession(int m)
 
   return 0;
 }
+
+// Sets number of adjust sectors for reading TAO source disks.
+void CdrDriver::taoSourceAdjust(int val)
+{
+  if (val >= 0 && val < 100) {
+    taoSourceAdjust_ = val;
+  }
+} 
 
 
 void CdrDriver::onTheFly(int fd)
@@ -1792,29 +1808,6 @@ CdToc *CdrDriver::getToc(int sessionNr, int *cdTocLen)
   return cdToc;
 }
 
-#if 0
-static void adjustPreGaps(TrackInfo *trackInfos, long nofTrackInfos)
-{
-  long i;
-
-  for (i = 0; i < nofTrackInfos - 1; i++) {
-    if (i == 0) {
-      trackInfos[i].pregap = trackInfos[i].start;
-    }
-    else {
-      long prevTrackLen = trackInfos[i].start - trackInfos[i - 1].start;
-
-      if (prevTrackLen >= 6 * 75) {
-	if (trackInfos[i].mode == TrackData::AUDIO ||
-	    trackInfos[i].mode != trackInfos[i - 1].mode) {
-	  trackInfos[i].pregap = 2 * 75;
-	}
-      }
-    }
-  }
-}
-#endif
-
 static char *buildDataFileName(int trackNr, CdToc *toc, int nofTracks, 
 			       const char *basename, const char *extension)
 {
@@ -1972,6 +1965,9 @@ Toc *CdrDriver::readDiskToc(int session, const char *dataFilename)
   trackInfos[nofTracks].ctl = 0;
   trackInfos[nofTracks].mode = trackInfos[nofTracks - 1].mode;
   trackInfos[nofTracks].start = cdToc[nofTracks].start;
+  if (taoSource()) {
+    trackInfos[nofTracks].start -= taoSourceAdjust_;
+  }
   trackInfos[nofTracks].pregap = 0;
   trackInfos[nofTracks].fill = 0;
   trackInfos[nofTracks].indexCnt = 0;
@@ -1980,6 +1976,7 @@ Toc *CdrDriver::readDiskToc(int session, const char *dataFilename)
   trackInfos[nofTracks].bytesWritten = 0;
   
   long pregap = 0;
+  long defaultPregap;
   long slba, elba;
 
   if (session == 1) {
@@ -1992,8 +1989,26 @@ Toc *CdrDriver::readDiskToc(int session, const char *dataFilename)
     slba = trackInfos[i].start;
     elba = trackInfos[i + 1].start;
 
-    if (trackInfos[i].mode != trackInfos[i + 1].mode)
-      elba -= 150;
+    defaultPregap = 0;
+
+    if (taoSource()) {
+      // assume always a pre-gap of 150 + # link blocks between two tracks
+      // except between two audio tracks
+      if ((trackInfos[i].mode != TrackData::AUDIO ||
+	   trackInfos[i + 1].mode != TrackData::AUDIO) &&
+	  i < nofTracks - 1) {
+	defaultPregap = 150 + taoSourceAdjust_;
+      }
+    }
+    else {
+      // assume a pre-gap of 150 between tracks of different mode
+      if (trackInfos[i].mode != trackInfos[i + 1].mode) {
+	defaultPregap = 150;
+      }
+    }
+
+    elba -= defaultPregap;
+    
 
     Msf trackLength(elba - slba);
 
@@ -2017,13 +2032,8 @@ Toc *CdrDriver::readDiskToc(int session, const char *dataFilename)
 	analyzeTrack(TrackData::AUDIO, i + 1, slba, elba,
 		     indexIncrements, &indexIncrementCnt, 
 		     i < nofTracks - 1 ? &pregap : 0, isrcCode, &trackCtl);
-
-	if (trackInfos[i].mode != trackInfos[i + 1].mode)
-	  pregap = 150;
-      }
-      else {
-	if (trackInfos[i].mode != trackInfos[i + 1].mode)
-	  pregap = 150;
+	if (defaultPregap != 0)
+	  pregap = defaultPregap;
       }
     }
     else {
@@ -2031,14 +2041,11 @@ Toc *CdrDriver::readDiskToc(int session, const char *dataFilename)
 	if (readIsrc(i + 1, isrcCode) != 0) {
 	  isrcCode[0] = 0;
 	}
-
-	if (trackInfos[i].mode != trackInfos[i + 1].mode)
-	  pregap = 150;
       }
-      else {
-	if (trackInfos[i].mode != trackInfos[i + 1].mode)
-	  pregap = 150;
-      }	
+    }
+
+    if (pregap == 0) {
+      pregap = defaultPregap;
     }
 
     if (isrcCode[0] != 0) {
@@ -2068,15 +2075,6 @@ Toc *CdrDriver::readDiskToc(int session, const char *dataFilename)
       }
     }
   }
-
-  /*
-  if (pregap != 0)
-    trackInfos[nofTracks - 1].fill += pregap;
-
-  if (fastTocReading_) {
-    adjustPreGaps(trackInfos, nofTracks + 1);
-  }
-  */
 
   int padFirstPregap;
 
@@ -2953,6 +2951,9 @@ Toc *CdrDriver::readDisk(int session, const char *dataFilename)
   trackInfos[nofTracks].ctl = 0;
   trackInfos[nofTracks].mode = trackInfos[nofTracks - 1].mode;
   trackInfos[nofTracks].start = cdToc[nofTracks].start;
+  if (taoSource()) {
+    trackInfos[nofTracks].start -= taoSourceAdjust_;
+  }
   trackInfos[nofTracks].pregap = 0;
   trackInfos[nofTracks].indexCnt = 0;
   trackInfos[nofTracks].isrcCode[0] = 0;
@@ -2970,25 +2971,28 @@ Toc *CdrDriver::readDisk(int session, const char *dataFilename)
 	  trackInfos[trs].pregap = trackInfos[trs].start;
       }
       else {
-	if (trackInfos[trs].mode != trackInfos[trs - 1].mode)
-	  trackInfos[trs].pregap = 150;
-
-	// TAO: trackInfos[trs].pregap = 152;
+	if (taoSource()) {
+	  trackInfos[trs].pregap = 150 + taoSourceAdjust_;
+	}
+	else {
+	  if (trackInfos[trs].mode != trackInfos[trs - 1].mode)
+	    trackInfos[trs].pregap = 150;
+	}
       }
 
       slba = trackInfos[trs].start;
       elba = trackInfos[trs + 1].start;
 
-      if (trackInfos[trs].mode != trackInfos[trs + 1].mode) {
-	elba -= 150;
+      if (taoSource()) {
+	if (trs < nofTracks - 1)
+	  elba -= 150 + taoSourceAdjust_;
+      }
+      else {
+	if (trackInfos[trs].mode != trackInfos[trs + 1].mode) {
+	  elba -= 150;
+	}
       }
 
-      /* TAO:
-      if (trs < nofTracks - 1)
-	elba -= 152;
-      else
-	elba -= 2;
-      */
 
       message(1, "Copying data track %d (%s): start %s, ", trs + 1, 
 	      TrackData::mode2String(trackInfos[trs].mode),
@@ -3012,8 +3016,14 @@ Toc *CdrDriver::readDisk(int session, const char *dataFilename)
 	  trackInfos[trs].pregap = trackInfos[trs].start;
       }
       else {
-	if (trackInfos[trs].mode != trackInfos[trs - 1].mode)
+	// previous track must be of different mode so assume a standard
+	// pre-gap here
+	if (taoSource()) {
+	  trackInfos[trs].pregap = 150 + taoSourceAdjust_;
+	}
+	else {
 	  trackInfos[trs].pregap = 150;
+	}
       }
 
       slba = cdToc[trs].start;
@@ -3029,8 +3039,14 @@ Toc *CdrDriver::readDisk(int session, const char *dataFilename)
 
       // Assume that the pre-gap length conforms to the standard if the track
       // mode changes. 
-      if (trackInfos[tre - 1].mode != trackInfos[tre].mode) {
-	elba -= 150;
+      if (taoSource()) {
+	if (tre < nofTracks)
+	  elba -= 150 + taoSourceAdjust_;
+      }
+      else {
+	if (trackInfos[tre - 1].mode != trackInfos[tre].mode) {
+	  elba -= 150;
+	}
       }
 
       message(1, "Copying audio tracks %d-%d: start %s, ", trs + 1, tre,
