@@ -33,8 +33,6 @@
 
 ProjectChooser::ProjectChooser()
 {
-  set_title(APP_NAME);
-
   Glib::RefPtr<Gnome::Glade::Xml> refXml;
   try
   {
@@ -80,29 +78,20 @@ ProjectChooser::ProjectChooser()
   if (pButton)
   {
     pButton->signal_clicked().
-      connect(bind(mem_fun(*gcdmaster, &GCDMaster::newAudioCDProject2), this));
+      connect(ProjectChooser::newAudioCDProject);
   }
   refXml->get_widget("CopyButton", pButton);
   if (pButton)
   {
     pButton->signal_clicked().
-      connect(bind(mem_fun(*gcdmaster, &GCDMaster::newDuplicateCDProject), this));
+      connect(ProjectChooser::newDuplicateCDProject);
   }
   refXml->get_widget("DumpButton", pButton);
   if (pButton)
   {
     pButton->signal_clicked().
-      connect(bind(mem_fun(*gcdmaster, &GCDMaster::newDumpCDProject), this));
+      connect(ProjectChooser::newDumpCDProject);
   }
 
-  vbox.pack_start(*pBox);
-  add(vbox);
-  vbox.show ();
-}
-
-
-bool ProjectChooser::on_delete_event(GdkEventAny* e)
-{
-  gcdmaster->closeChooser(this);
-  return true;
+  pack_start(*pBox);
 }
