@@ -94,7 +94,9 @@ int SoundIF::play(Sample *sbuf, long nofSamples)
 
 unsigned long SoundIF::getDelay()
 {
-  return 0;
+  // Unfortunately, ao doesn't have a getDelay() API, so let's return
+  // a realistic audio buffering value.
+  return 10000;
 }
 
 // Finishs playing, sound device is released.
