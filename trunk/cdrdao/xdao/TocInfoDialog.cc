@@ -18,6 +18,15 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.4  2000/04/23 09:07:08  andreasm
+ * * Fixed most problems marked with '//llanero'.
+ * * Added audio CD edit menus to MDIWindow.
+ * * Moved central storage of TocEdit object to MDIWindow.
+ * * AudioCdChild is now handled like an ordinary non modal dialog, i.e.
+ *   it has a normal 'update' member function now.
+ * * Added CdTextTable modal dialog.
+ * * Old functionality of xcdrdao is now available again.
+ *
  * Revision 1.3  2000/04/16 20:31:20  andreasm
  * Added missing stdio.h includes.
  *
@@ -33,7 +42,7 @@
  *
  */
 
-static char rcsid[] = "$Id: TocInfoDialog.cc,v 1.4 2000-04-23 09:07:08 andreasm Exp $";
+static char rcsid[] = "$Id: TocInfoDialog.cc,v 1.5 2000-09-21 02:07:07 llanero Exp $";
 
 #include "TocInfoDialog.h"
 
@@ -48,6 +57,7 @@ static char rcsid[] = "$Id: TocInfoDialog.cc,v 1.4 2000-04-23 09:07:08 andreasm 
 #include "CdTextItem.h"
 #include "TextEdit.h"
 #include "CdTextTable.h"
+#include "AudioCDChild.h"
 
 #define MAX_CD_TEXT_LANGUAGE_CODES 22
 
@@ -120,7 +130,7 @@ static GenreCode CD_TEXT_GENRE_CODES[MAX_CD_TEXT_GENRE_CODES] = {
   { 0x00, 0x1c, "World Music" }
 };
 
-TocInfoDialog::TocInfoDialog()
+TocInfoDialog::TocInfoDialog(AudioCDChild *child)
 {
   int i;
   Gtk::Label *label;
@@ -134,6 +144,8 @@ TocInfoDialog::TocInfoDialog()
   tocEdit_ = NULL;
   active_ = 0;
   selectedTocType_ = Toc::CD_DA;
+
+  cdchild = child;
 
   nofTracks_ = new Gtk::Label(string("99"));
   tocLength_ = new Gtk::Label(string("100:00:00"));

@@ -18,6 +18,15 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2000/04/23 09:07:08  andreasm
+ * * Fixed most problems marked with '//llanero'.
+ * * Added audio CD edit menus to MDIWindow.
+ * * Moved central storage of TocEdit object to MDIWindow.
+ * * AudioCdChild is now handled like an ordinary non modal dialog, i.e.
+ *   it has a normal 'update' member function now.
+ * * Added CdTextTable modal dialog.
+ * * Old functionality of xcdrdao is now available again.
+ *
  * Revision 1.2  2000/02/20 23:34:54  llanero
  * fixed scsilib directory (files mising ?-()
  * ported xdao to 1.1.8 / gnome (MDI) app
@@ -40,10 +49,11 @@
 
 class TocEdit;
 class TextEdit;
+class AudioCDChild;
 
 class TocInfoDialog : public Gtk::Dialog {
 public:
-  TocInfoDialog();
+  TocInfoDialog(AudioCDChild *child);
   ~TocInfoDialog();
 
   gint delete_event_impl(GdkEventAny*);
@@ -56,6 +66,8 @@ public:
 private:
   TocEdit *tocEdit_;
   int active_;
+
+  AudioCDChild *cdchild;
 
   Gtk::Button *applyButton_;
   Gtk::Label *tocLength_;

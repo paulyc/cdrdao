@@ -18,6 +18,10 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2000/07/17 22:08:33  llanero
+ * DeviceList is now a class
+ * RecordGenericDialog and RecordCDTarget first implemented.
+ *
  * Revision 1.5  2000/05/14 16:54:59  andreasm
  * Adapted to gtkmm-1.2.0 and gnomemm-1.1.9
  *
@@ -44,7 +48,7 @@
  *
  */
 
-static char rcsid[] = "$Id: MessageBox.cc,v 1.6 2000-07-17 22:08:33 llanero Exp $";
+static char rcsid[] = "$Id: MessageBox.cc,v 1.7 2000-09-21 02:07:06 llanero Exp $";
 
 #include <stddef.h>
 #include <stdarg.h>
@@ -100,7 +104,8 @@ Gtk::Button *MessageBoxBase::createButton(const char *name)
 
   if (pixmap != NULL)
 //    return Gnome::StockPixmap::pixmap_button(*pixmap, text);
-    return new Gnome::Stock::Buttons::Button(name);
+//    return new Gnome::Stock::Buttons::Button(name);
+    return new Gnome::StockButton(name);
   else 
     return new Gtk::Button(name);
 }

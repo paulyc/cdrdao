@@ -68,6 +68,10 @@ private:
   int actCloseButtonLabel_;
 
   Gtk::Label *currentTime_;
+  Gtk::Label *remainingTime_;
+
+  long leadTime_;
+  bool leadTimeFilled_;
 
   struct timeval time_;
   gint RecordProgressDialog::time(gint timer_nr);
@@ -83,7 +87,7 @@ private:
 
   RecordProgressDialog *poolNext_;
 
-  void update(unsigned long, TocEdit *);
+  void update(unsigned long);
   void start(CdDevice *, TocEdit *);
   void start(CdDevice *, char *tocFileName);
   void stop();
@@ -98,7 +102,7 @@ public:
   RecordProgressDialogPool();
   ~RecordProgressDialogPool();
 
-  void update(unsigned long, TocEdit *);
+  void update(unsigned long);
   
   RecordProgressDialog *start(CdDevice *, TocEdit *);
   RecordProgressDialog *start(CdDevice *, char *tocFileName);

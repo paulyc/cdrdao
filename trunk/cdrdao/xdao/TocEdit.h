@@ -18,6 +18,15 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2000/04/23 09:07:08  andreasm
+ * * Fixed most problems marked with '//llanero'.
+ * * Added audio CD edit menus to MDIWindow.
+ * * Moved central storage of TocEdit object to MDIWindow.
+ * * AudioCdChild is now handled like an ordinary non modal dialog, i.e.
+ *   it has a normal 'update' member function now.
+ * * Added CdTextTable modal dialog.
+ * * Old functionality of xcdrdao is now available again.
+ *
  * Revision 1.1.1.1  2000/02/05 01:38:52  llanero
  * Uploaded cdrdao 1.1.3 with pre10 patch applied.
  *
@@ -62,23 +71,6 @@ public:
   void filename(const char *);
   const char *filename() const;
 
-  void sampleMarker(unsigned long);
-  int sampleMarker(unsigned long *) const;
-
-  void sampleSelection(unsigned long, unsigned long);
-  int sampleSelection(unsigned long *, unsigned long *) const;
-
-  void sampleViewFull();
-  void sampleViewInclude(unsigned long, unsigned long);
-  void sampleView(unsigned long *, unsigned long *) const;
-  void sampleView(unsigned long smin, unsigned long smax);
-
-  void trackSelection(int);
-  int trackSelection(int *) const;
-
-  void indexSelection(int);
-  int indexSelection(int *) const;
-
   int readToc(const char *);
   int saveToc();
   int saveAsToc(const char *);
@@ -93,12 +85,14 @@ public:
 
   int appendTrack(const char *fname);
   int appendFile(const char *fname);
-  int insertFile(const char *fname, unsigned long pos);
+  int insertFile(const char *fname, unsigned long pos, unsigned long *len);
   int appendSilence(unsigned long);
   int insertSilence(unsigned long length, unsigned long pos);
 
-  int removeTrackData();
-  int insertTrackData();
+  int removeTrackData(int *sampleSelectionValid_,
+		unsigned long sampleSelectionMin_, unsigned long sampleSelectionMax_);
+  int insertTrackData(int sampleMarkerValid_, unsigned long sampleMarker_,
+  	  unsigned long *selStart, unsigned long *selEnd);
   
   void setTrackCopyFlag(int trackNr, int flag);
   void setTrackPreEmphasisFlag(int trackNr, int flag);
@@ -126,22 +120,6 @@ private:
   int editBlocked_;
 
   unsigned long updateLevel_;
-
-  int sampleMarkerValid_;
-  unsigned long sampleMarker_;
-
-  int sampleSelectionValid_;
-  unsigned long sampleSelectionMin_;
-  unsigned long sampleSelectionMax_;
-
-  unsigned long sampleViewMin_;
-  unsigned long sampleViewMax_;
-  
-  int trackSelectionValid_;
-  int trackSelection_;
-
-  int indexSelectionValid_;
-  int indexSelection_;
 
   int createAudioData(const char *filename, TrackData **);
   int modifyAllowed() const;

@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2000/04/16 20:31:20  andreasm
+ * Added missing stdio.h includes.
+ *
  * Revision 1.2  2000/02/20 23:34:54  llanero
  * fixed scsilib directory (files mising ?-()
  * ported xdao to 1.1.8 / gnome (MDI) app
@@ -30,7 +33,7 @@
  *
  */
 
-static char rcsid[] = "$Id: TrackInfoDialog.cc,v 1.3 2000-04-16 20:31:20 andreasm Exp $";
+static char rcsid[] = "$Id: TrackInfoDialog.cc,v 1.4 2000-09-21 02:07:07 llanero Exp $";
 
 #include "TrackInfoDialog.h"
 
@@ -45,8 +48,10 @@ static char rcsid[] = "$Id: TrackInfoDialog.cc,v 1.3 2000-04-16 20:31:20 andreas
 #include "Track.h"
 #include "CdTextItem.h"
 #include "TextEdit.h"
+#include "AudioCDChild.h"
+#include "AudioCDView.h"
 
-TrackInfoDialog::TrackInfoDialog()
+TrackInfoDialog::TrackInfoDialog(AudioCDChild *child)
 {
   int i;
   Gtk::Label *label, *label1;
@@ -61,6 +66,8 @@ TrackInfoDialog::TrackInfoDialog()
   tocEdit_ = NULL;
   active_ = 0;
   trackNr_ = 0;
+
+  cdchild = child;
 
   trackNr_ = new Gtk::Label(string("99"));
   pregapLen_ = new Gtk::Label(string("100:00:00"));
@@ -472,13 +479,15 @@ void TrackInfoDialog::clear()
 void TrackInfoDialog::update(unsigned long level, TocEdit *tocEdit)
 {
   const Toc *toc;
+  AudioCDView *view = static_cast <AudioCDView *>(cdchild->get_active());
 
   if (!active_)
     return;
 
   tocEdit_ = tocEdit;
 
-  if (tocEdit == NULL || !tocEdit->trackSelection(&selectedTrack_)) {
+
+  if (tocEdit == NULL || !view->trackSelection(&selectedTrack_)) {
     selectedTrack_ = 0;
     applyButton_->set_sensitive(FALSE);
     clear();

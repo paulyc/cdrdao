@@ -18,6 +18,15 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.7  2000/04/23 09:07:08  andreasm
+ * * Fixed most problems marked with '//llanero'.
+ * * Added audio CD edit menus to MDIWindow.
+ * * Moved central storage of TocEdit object to MDIWindow.
+ * * AudioCdChild is now handled like an ordinary non modal dialog, i.e.
+ *   it has a normal 'update' member function now.
+ * * Added CdTextTable modal dialog.
+ * * Old functionality of xcdrdao is now available again.
+ *
  * Revision 1.6  2000/04/17 21:30:49  andreasm
  * Fixed sample display.
  * AudioCDChild displays animated cursor again when playing.
@@ -55,7 +64,7 @@
  *
  */
 
-static char rcsid[] = "$Id: SampleDisplay.cc,v 1.7 2000-04-23 09:07:08 andreasm Exp $";
+static char rcsid[] = "$Id: SampleDisplay.cc,v 1.8 2000-09-21 02:07:06 llanero Exp $";
 
 #include <stdio.h>
 #include <limits.h>
@@ -1010,7 +1019,6 @@ void SampleDisplay::updateSamples()
       gint pos1;
       gint lastPosLeft, lastPosRight;
 
-
       //printf("Drawing exact, res=%ld pres=%g %ld-%ld\n", res, pres, minSample_, maxSample_);
 
       if (reader.seekSample(minSample_) == 0 &&
@@ -1051,7 +1059,11 @@ void SampleDisplay::updateSamples()
 	  if (pos != 0 || pos1 != 0)
 	    pixmap_.draw_line(drawGc_, long(di - pres), rcenter_ - (gint)pos,
 			       long(di), rcenter_ - pos1);
+
 	}
+
+if (&pixmap_ == 0)
+  cout << "null !!" << endl;
 
 	if (0 && (gint)di < sampleEndX_) {
 	  pos = sampleBuf[len -1].left() * halfHeight;
@@ -1067,7 +1079,6 @@ void SampleDisplay::updateSamples()
 			       sampleEndX_, rcenter_ - (gint)pos);
 	}
       }
-
       delete[] sampleBuf;
     }
 
