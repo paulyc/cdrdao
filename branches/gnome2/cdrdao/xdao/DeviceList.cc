@@ -21,6 +21,7 @@
 #include <limits.h>
 #include <math.h>
 #include <assert.h>
+#include <string>
 
 #include <gtkmm.h>
 #include <gnome.h>
@@ -83,47 +84,24 @@ DeviceList::DeviceList(CdDevice::DeviceType filterType)
   add(*listVBox);
 }
 
-DeviceList::~DeviceList()
-{
-  DeviceData *data;
-
-  Gtk::TreeNodeChildren ch = listModel_->children();
-  for (int i = 0; i < ch.size(); i++) {
-    Gtk::TreeRow row = ch[i];
-    data = row[listColumns_.data];
-    if (data)
-      delete data;
-  }
-}
-
-DeviceList::DeviceData* DeviceList::selection()
+std::string DeviceList::selection()
 {
   Gtk::TreeIter i = list_.get_selection()->get_selected();
 
-  if (i)
-    return (*i)[listColumns_.data];
-  else
+  if (i) {
+    return ((std::string)((*i)[listColumns_.dev])).c_str();
+  } else
     return NULL;
 }
 
 void DeviceList::appendTableEntry(CdDevice *dev)
 {
-  DeviceData *data;
-
-  data = new DeviceData;
-  data->bus = dev->bus();
-  data->id = dev->id();
-  data->lun = dev->lun();
-
   Gtk::TreeIter newiter = listModel_->append();
   Gtk::TreeModel::Row row = *newiter;
-  row[listColumns_.bus] = data->bus;
-  row[listColumns_.id] = data->id;
-  row[listColumns_.lun] = data->lun;
+  row[listColumns_.dev] = dev->dev();
   row[listColumns_.vendor] = dev->vendor();
   row[listColumns_.model] = dev->product();
   row[listColumns_.status] = CdDevice::status2string(dev->status());
-  row[listColumns_.data] = data;
 
   if (dev->status() == CdDevice::DEV_READY)
     list_.get_selection()->select(newiter);
@@ -132,16 +110,7 @@ void DeviceList::appendTableEntry(CdDevice *dev)
 void DeviceList::import()
 {
   CdDevice *drun;
-  DeviceData *data;
   unsigned int i;
-
-  Gtk::TreeNodeChildren ch = listModel_->children();
-  for (int i = 0; i < ch.size(); i++) {
-    Gtk::TreeRow row = ch[i];
-    data = row[listColumns_.data];
-    if (data)
-      delete data;
-  }
 
   listModel_->clear();
 
@@ -179,21 +148,21 @@ void DeviceList::import()
 
 void DeviceList::importStatus()
 {
-  DeviceData *data;
-  CdDevice *dev;
+  std::string data;
+  CdDevice *cddev;
 
   Gtk::TreeNodeChildren ch = listModel_->children();
   for (int i = 0; i < ch.size(); i++) {
     Gtk::TreeRow row = ch[i];
-    data = row[listColumns_.data];
+    data = row[listColumns_.dev];
 
-    if (data && (dev = CdDevice::find(data->bus, data->id, data->lun))) {
-      if (dev->status() == CdDevice::DEV_READY)
+    if (cddev = CdDevice::find(data.c_str())) {
+      if (cddev->status() == CdDevice::DEV_READY)
         list_.get_column(i)->set_clickable(true);
       else
         list_.get_column(i)->set_clickable(false);
 
-      row[listColumns_.status] = CdDevice::status2string(dev->status());
+      row[listColumns_.status] = CdDevice::status2string(cddev->status());
     }
   }
 
@@ -202,6 +171,9 @@ void DeviceList::importStatus()
 
 void DeviceList::selectOne()
 {
+  if (list_.get_selection()->count_selected_rows() > 0)
+    return;
+
   for (int i = 0; i < listModel_->children().size(); i++) {
     list_.get_selection()->select(Gtk::TreePath((unsigned)1, i));
     if (list_.get_selection()->count_selected_rows() > 0)
@@ -209,20 +181,20 @@ void DeviceList::selectOne()
   }
 }
 
-void DeviceList::selectOneBut(DeviceList::DeviceData* targetData)
+void DeviceList::selectOneBut(const char *targetData)
 {
+  if (!targetData)
+    return selectOne();
+
   if (list_.get_selection()->count_selected_rows() == 0) {
 
     Gtk::TreeNodeChildren ch = listModel_->children();
 
     for (int i = 0; i < ch.size(); i++) {
 
-      DeviceList::DeviceData *sourceData = (ch[i])[listColumns_.data];
+      std::string sourceData = (ch[i])[listColumns_.dev];
 
-      if ((targetData->bus == sourceData->bus)
-          && (targetData->id == sourceData->id)
-          && (targetData->lun == sourceData->lun)) {
-
+      if (sourceData != targetData) {
         list_.get_selection()->select(ch[i]);
         break;
       }

@@ -22,6 +22,7 @@
 
 #include <gtkmm.h>
 #include <gtk/gtk.h>
+#include <string>
 
 class TocEdit;
 #include "CdDevice.h"
@@ -30,15 +31,11 @@ class DeviceList : public Gtk::Frame
 {
  public:
   DeviceList(CdDevice::DeviceType filterType);
-  ~DeviceList();
+  ~DeviceList() {};
 
-  struct DeviceData {
-    int bus, id, lun;
-  };
-
-  DeviceData* selection();
+  std::string selection();
   void selectOne();
-  void selectOneBut(DeviceData* targetData);
+  void selectOneBut(const char *targetData);
   void appendTableEntry(CdDevice *);
   void import();
   void importStatus();
@@ -51,17 +48,14 @@ private:
 
   class ListColumns : public Gtk::TreeModel::ColumnRecord {
   public:
-    ListColumns()
-      { add(bus); add(id); add(lun); add(vendor); add(model); add(status);
-      add(data); };
+    ListColumns() {
+      add(dev); add(vendor); add(model); add(status); 
+    };
 
-    Gtk::TreeModelColumn<int>         bus;
-    Gtk::TreeModelColumn<int>         id;
-    Gtk::TreeModelColumn<int>         lun;
+    Gtk::TreeModelColumn<std::string> dev;
     Gtk::TreeModelColumn<std::string> vendor;
     Gtk::TreeModelColumn<std::string> model;
     Gtk::TreeModelColumn<std::string> status;
-    Gtk::TreeModelColumn<DeviceData*> data;
   };
 
   Gtk::TreeView list_;

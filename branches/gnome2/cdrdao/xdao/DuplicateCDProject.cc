@@ -109,17 +109,17 @@ void DuplicateCDProject::start()
   DeviceList *sourceList = CDSource->getDeviceList();
   DeviceList *targetList = CDTarget->getDeviceList();
 
-  DeviceList::DeviceData *sourceData = sourceList->selection();
-  DeviceList::DeviceData *targetData = targetList->selection();
+  std::string sourceData = sourceList->selection();
+  std::string targetData = targetList->selection();
 
-  if (!sourceData) {
+  if (sourceData.empty()) {
       Gtk::MessageDialog d(*this, "Please select one reader device",
                            Gtk::MESSAGE_INFO);
       d.run();
       return;
   }
 
-  if (!targetData) {
+  if (targetData.empty()) {
       Gtk::MessageDialog d(*this, "Please select at least one recorder device",
                            Gtk::MESSAGE_INFO);
       d.run();
@@ -132,8 +132,7 @@ void DuplicateCDProject::start()
     // We can't make on the fly copy with the same device, check that
     // We can only have one source device selected
 
-    if (targetData->bus == sourceData->bus &&
-        targetData->id == sourceData->id) {
+    if (sourceData == targetData) {
 
       // If the user selects the same device for reading and writing
       // we can't do on the fly copying. More complex situations with
@@ -188,13 +187,11 @@ void DuplicateCDProject::start()
 
   int buffer = CDTarget->getBuffer();
 
-  CdDevice *readDevice = CdDevice::find(sourceData->bus, sourceData->id,
-                                        sourceData->lun);
+  CdDevice *readDevice = CdDevice::find(sourceData.c_str());
   if (readDevice == NULL)
     return;
 
-  CdDevice *writeDevice = CdDevice::find(targetData->bus, targetData->id,
-                                         targetData->lun);
+  CdDevice *writeDevice = CdDevice::find(targetData.c_str());
   if (writeDevice == NULL)
     return;
   
@@ -225,12 +222,11 @@ void DuplicateCDProject::update(unsigned long level)
     DeviceList *targetList = CDTarget->getDeviceList();
   
     targetList->selectOne();
-  
-    //Gtk::CList_Helpers::SelectionList targetSelection = targetList->selection();
-  
-    //    if (targetSelection.empty())
+
+    if (targetList->selection().empty()) {
       sourceList->selectOne();
-      // else
-      // sourceList->selectOneBut(targetSelection);
+    } else {
+      sourceList->selectOneBut(targetList->selection().c_str());
+    }
   }
 }

@@ -22,6 +22,7 @@
 
 #include <sigc++/object.h>
 #include <gdk/gdk.h>
+#include <string>
 
 #include "Project.h"
 
@@ -38,18 +39,14 @@ public:
 
   enum Action { A_RECORD, A_READ, A_DUPLICATE, A_BLANK, A_NONE };
 
-  CdDevice(int bus, int id, int lun, const char *vendor,
-	   const char *product, bool is_atapi = false);
+  CdDevice(const char* dev, const char *vendor, const char *product);
   ~CdDevice();
 
   char *settingString() const;
 
-  int bus() const                    { return bus_; }
-  int id() const                     { return id_; }
-  int lun() const                    { return lun_; }
-  const char *vendor() const         { return vendor_; }
-  const char *product() const        { return product_; }
-  bool is_atapi() const              { return is_atapi_; }
+  const char *dev() const            { return dev_.c_str(); } 
+  const char *vendor() const         { return vendor_.c_str(); }
+  const char *product() const        { return product_.c_str(); }
 
   Status status() const              { return status_; }
   Process *process() const           { return process_; }
@@ -74,11 +71,8 @@ public:
   unsigned long driverOptions() const;
   void driverOptions(unsigned long);
 
-  const char *specialDevice() const    { return specialDevice_; }
-  void specialDevice(const char *);
-
-  int manuallyConfigured() const       { return manuallyConfigured_; }
-  void manuallyConfigured(int);
+  bool manuallyConfigured() const       { return manuallyConfigured_; }
+  void manuallyConfigured(bool b)       { manuallyConfigured_ = b; }
 
   bool recordDao(Gtk::Window& parent, TocEdit *, int simulate,
                  int multiSession, int speed, int eject, int reload,
@@ -112,16 +106,16 @@ public:
   static void importSettings();
   static void exportSettings();
 
-  static CdDevice *add(int bus, int id, int lun, const char *vendor,
-		       const char *product, bool is_atapi = false);
+  static CdDevice *add(const char* scsidev, const char *vendor,
+		       const char *product);
 
   static CdDevice *add(const char *setting);
 
-  static CdDevice *find(int bus, int id, int lun);
+  static CdDevice *find(const char* dev);
   
   static void scan();
 
-  static void remove(int bus, int id, int lun);
+  static void remove(const char* dev);
 
   static void clear();
 
@@ -139,26 +133,22 @@ public:
   static int count();
 
 private:
-  int bus_; // SCSI bus
-  int id_;  // SCSI id
-  int lun_; // SCSI logical unit
-  bool is_atapi_;
-  char *vendor_;
-  char *product_;
+  std::string dev_; // SCSI device
+  std::string vendor_;
+  std::string product_;
 
   DeviceType deviceType_;
 
   int driverId_;
   unsigned long options_;
-  char *specialDevice_;
 
-  int manuallyConfigured_;
+  bool manuallyConfigured_;
 
   ScsiIf *scsiIf_;
   int scsiIfInitFailed_;
   Status status_;
 
-  Action action_;
+  enum Action action_;
 
   int exitStatus_;
 

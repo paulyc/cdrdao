@@ -84,7 +84,7 @@ void DumpCDProject::start()
 {
   DeviceList *sourceList = CDSource->getDeviceList();
 
-  if (sourceList->selection() == NULL) {
+  if (sourceList->selection().empty()) {
     Gtk::MessageDialog d(*this, "Please select one reader device",
                          Gtk::MESSAGE_INFO);
     d.run();
@@ -185,13 +185,12 @@ void DumpCDProject::start()
     }
   }
 
-  DeviceList::DeviceData *sourceData = sourceList->selection();
+  std::string sourceData = sourceList->selection();
 
-  if (sourceData == NULL)
+  if (sourceData.empty())
     return;
 
-  CdDevice *readDevice = CdDevice::find(sourceData->bus, sourceData->id,
-                                        sourceData->lun);
+  CdDevice *readDevice = CdDevice::find(sourceData.c_str());
 
   if (readDevice == NULL)
     return;

@@ -66,24 +66,18 @@ char *CdDevice::DRIVER_NAMES_[DRIVER_IDS] = {
 };
   
 
-CdDevice::CdDevice(int bus, int id, int lun, const char *vendor,
-		   const char *product, bool is_atapi)
+CdDevice::CdDevice(const char* dev, const char *vendor, const char *product)
 {
-  bus_ = bus;
-  id_ = id;
-  lun_ = lun;
-  is_atapi_ = is_atapi;
-
-  vendor_ = strdupCC(vendor);
-  product_ = strdupCC(product);
+  dev_ = dev;
+  vendor_ = vendor;
+  product_ = product;
   
   driverId_ = 0; // undefined
   options_ = 0;
-  specialDevice_ = NULL;
 
   deviceType_ = CD_R;
 
-  manuallyConfigured_ = 0;
+  manuallyConfigured_ = false;
 
   status_ = DEV_UNKNOWN;
 
@@ -110,15 +104,6 @@ CdDevice::CdDevice(int bus, int id, int lun, const char *vendor,
 
 CdDevice::~CdDevice()
 {
-  delete[] vendor_;
-  vendor_ = NULL;
-
-  delete[] product_;
-  product_ = NULL;
-
-  delete[] specialDevice_;
-  specialDevice_ = NULL;
-
   delete scsiIf_;
   scsiIf_ = NULL;
 }
@@ -128,9 +113,7 @@ char *CdDevice::settingString() const
   char buf[100];
   std::string s;
 
-  sprintf(buf, "%d,%d,%d,'", bus_, id_, lun_);
-
-  s += buf;
+  s = "'" + dev_ + "','";
   s += vendor_;
   s += "','";
   s += product_;
@@ -154,13 +137,8 @@ char *CdDevice::settingString() const
 
   s += ",";
 
-  sprintf(buf, "0x%lx,", options_);
+  sprintf(buf, "0x%lx", options_);
   s += buf;
-
-  s += "'";
-  if (specialDevice_ != NULL)
-    s += specialDevice_;
-  s += "'";
 
   return strdupCC(s.c_str());
 }
@@ -169,29 +147,6 @@ void CdDevice::driverId(int id)
 {
   if (id >= 0 && id < DRIVER_IDS) 
     driverId_ = id;
-}
-
-void CdDevice::specialDevice(const char *s)
-{
-  delete[] specialDevice_;
-
-  if (s == NULL || *s == 0)
-    specialDevice_ = NULL;
-  else
-    specialDevice_ = strdupCC(s);
-
-  // remove existing SCSI interface class, it will be recreated with
-  // respect to special device setting automatically later
-  delete scsiIf_;
-  scsiIf_ = NULL;
-  scsiIfInitFailed_ = 0;
-
-  status_ = DEV_UNKNOWN;
-}
-
-void CdDevice::manuallyConfigured(int f)
-{
-  manuallyConfigured_ = (f != 0) ? 1 : 0;
 }
 
 void CdDevice::status(Status s)
@@ -209,11 +164,13 @@ int CdDevice::autoSelectDriver()
   unsigned long options = 0;
   const char *driverName;
 
-  driverName = CdrDriver::selectDriver(1, vendor_, product_, &options);
+  driverName = CdrDriver::selectDriver(1, vendor_.c_str(), product_.c_str(),
+                                       &options);
 
   if (driverName == NULL) {
     // select read driver 
-    driverName = CdrDriver::selectDriver(0, vendor_, product_, &options);
+    driverName = CdrDriver::selectDriver(0, vendor_.c_str(), product_.c_str(),
+                                         &options);
 
     if (driverName != NULL)
       deviceType_ = CD_ROM;
@@ -451,14 +408,7 @@ bool CdDevice::recordDao(Gtk::Window& parent, TocEdit *tocEdit, int simulate,
     args[n++] = "--overburn";
 
   args[n++] = "--device";
-
-  if (specialDevice_ != NULL && *specialDevice_ != 0) {
-    args[n++] = specialDevice_;
-  }
-  else {
-    sprintf(devname, "%d,%d,%d", bus_, id_, lun_);
-    args[n++] = devname;
-  }
+  args[n++] = (char*)dev_.c_str();
 
   if (driverId_ > 0) {
     sprintf(drivername, "%s:0x%lx", driverName(driverId_), options_);
@@ -587,14 +537,7 @@ int CdDevice::extractDao(Project& parent, const char *tocFileName,
   }
 
   args[n++] = "--device";
-
-  if (specialDevice_ != NULL && *specialDevice_ != 0) {
-    args[n++] = specialDevice_;
-  }
-  else {
-    sprintf(devname, "%d,%d,%d", bus_, id_, lun_);
-    args[n++] = devname;
-  }
+  args[n++] = (char*)dev_.c_str();
 
   if (driverId_ > 0) {
     sprintf(drivername, "%s:0x%lx", driverName(driverId_), options_);
@@ -663,7 +606,6 @@ int CdDevice::duplicateDao(Project& parent, int simulate, int multiSession,
   char *args[30];
   int n = 0;
   char devname[30];
-  char r_devname[30];
   char drivername[50];
   char r_drivername[50];
   char speedbuf[20];
@@ -734,14 +676,7 @@ int CdDevice::duplicateDao(Project& parent, int simulate, int multiSession,
   }
 
   args[n++] = "--device";
-
-  if (specialDevice_ != NULL && *specialDevice_ != 0) {
-    args[n++] = specialDevice_;
-  }
-  else {
-    sprintf(devname, "%d,%d,%d", bus_, id_, lun_);
-    args[n++] = devname;
-  }
+  args[n++] = (char*)dev_.c_str();
 
   if (driverId_ > 0) {
     sprintf(drivername, "%s:0x%lx", driverName(driverId_), options_);
@@ -753,14 +688,7 @@ int CdDevice::duplicateDao(Project& parent, int simulate, int multiSession,
   if (readdev != this) { // reader and write the same, skip source device
 		  
     args[n++] = "--source-device";
-    
-    if (readdev->specialDevice() != NULL && *(readdev->specialDevice()) != 0) {
-      args[n++] = strdup(readdev->specialDevice());
-    }
-    else {
-      sprintf(r_devname, "%d,%d,%d", readdev->bus(), readdev->id(), readdev->lun());
-      args[n++] = r_devname;
-    }
+    args[n++] = (char*)readdev->dev();
 
     if (readdev->driverId() > 0) {
       sprintf(r_drivername, "%s:0x%lx", driverName(readdev->driverId()),
@@ -873,14 +801,7 @@ int CdDevice::blank(Project* parent, int fast, int speed, int eject,
     args[n++] = "--reload";
 
   args[n++] = "--device";
-
-  if (specialDevice_ != NULL && *specialDevice_ != 0) {
-    args[n++] = specialDevice_;
-  }
-  else {
-    sprintf(devname, "%d,%d,%d", bus_, id_, lun_);
-    args[n++] = devname;
-  }
+  args[n++] = (char*)dev_.c_str();
 
   if (driverId_ > 0) {
     sprintf(drivername, "%s:0x%lx", driverName(driverId_), options_);
@@ -938,14 +859,7 @@ void CdDevice::createScsiIf()
     return;
 
   delete scsiIf_;
-
-  if (specialDevice_ != NULL && *specialDevice_ != 0) {
-    scsiIf_ = new ScsiIf(specialDevice_);
-  }
-  else {
-    sprintf(buf, "%d,%d,%d", bus_, id_, lun_);
-    scsiIf_ = new ScsiIf(buf);
-  }
+  scsiIf_ = new ScsiIf(dev_.c_str());
 
   if (scsiIf_->init() != 0) {
     delete scsiIf_;
@@ -1060,7 +974,7 @@ void CdDevice::importSettings()
 
       if (s != NULL) {
 	if ((dev = CdDevice::add(s)) != NULL)
-	  dev->manuallyConfigured(1);
+	  dev->manuallyConfigured(true);
       }
     }
 
@@ -1106,25 +1020,18 @@ void CdDevice::exportSettings()
   }
 }
 
-CdDevice *CdDevice::add(int bus, int id, int lun, const char *vendor,
-			const char *product, bool is_atapi)
+CdDevice *CdDevice::add(const char* dev, const char *vendor,
+                        const char *product)
 {
   CdDevice *run, *pred, *ent;
 
   for (pred = NULL, run = DEVICE_LIST_; run != NULL;
        pred = run, run = run->next_) {
-    if (bus < run->bus() ||
-	(bus == run->bus() && id < run->id()) ||
-	(bus == run->bus() && id == run->id() && lun < run->lun())) {
-      break;
-    }
-    else if (bus == run->bus() && id == run->id() && lun == run->lun()
-             && is_atapi == run->is_atapi()) {
+    if (strcmp(run->dev(), dev) == 0)
       return run;
-    }
   }
 
-  ent = new CdDevice(bus, id, lun, vendor, product, is_atapi);
+  ent = new CdDevice(dev, vendor, product);
 
   if (pred != NULL) {
     ent->next_ = pred->next_;
@@ -1190,29 +1097,24 @@ static char *nextToken(char *&p)
 static CdDevice *addImpl(char *s)
 {
   char *p;
-  int bus, id, lun;
   int driverId;
+  std::string dev;
   std::string vendor;
   std::string model;
   std::string device;
   unsigned long options;
   char *val;
   CdDevice::DeviceType type;
-  CdDevice *dev;
+  CdDevice *cddev;
+
+  if (s[0] != '\'')
+    return NULL;
 
   p = s;
 
   if ((val = nextToken(p)) == NULL)
     return NULL;
-  bus = atoi(val);
-
-  if ((val = nextToken(p)) == NULL)
-    return NULL;
-  id = atoi(val);
-
-  if ((val = nextToken(p)) == NULL)
-    return NULL;
-  lun = atoi(val);
+  dev = val;
 
   if ((val = nextToken(p)) == NULL)
     return NULL;
@@ -1242,18 +1144,13 @@ static CdDevice *addImpl(char *s)
     return NULL;
   options = strtoul(val, NULL, 0);
 
-  if ((val = nextToken(p)) == NULL)
-    return NULL;
-  device = val;
+  cddev = CdDevice::add(dev.c_str(), vendor.c_str(), model.c_str());
 
-  dev = CdDevice::add(bus, id, lun, vendor.c_str(), model.c_str());
-
-  dev->driverId(driverId);
-  dev->deviceType(type);
-  dev->driverOptions(options);
-  dev->specialDevice(device.c_str());
+  cddev->driverId(driverId);
+  cddev->deviceType(type);
+  cddev->driverOptions(options);
   
-  return dev;
+  return cddev;
 }
 
 CdDevice *CdDevice::add(const char *setting)
@@ -1269,14 +1166,13 @@ CdDevice *CdDevice::add(const char *setting)
 
 
 
-CdDevice *CdDevice::find(int bus, int id, int lun)
+CdDevice *CdDevice::find(const char* dev)
 {
   CdDevice *run;
 
   for (run = DEVICE_LIST_; run != NULL; run = run->next_) {
-    if (bus == run->bus() && id == run->id() && lun == run->lun()) {
+    if (strcmp(run->dev(), dev) == 0)
       return run;
-    }
   }
 
   return NULL;
@@ -1289,8 +1185,7 @@ void CdDevice::scan()
 
   if (sdata) {
     for (i = 0; i < len; i++)
-      CdDevice::add(sdata[i].bus, sdata[i].id, sdata[i].lun,
-                    sdata[i]._vendor, sdata[i]._product);
+      CdDevice::add(sdata[i].dev.c_str(), sdata[i].vendor, sdata[i].product);
     delete[] sdata;
   }
 
@@ -1298,20 +1193,19 @@ void CdDevice::scan()
   sdata = ScsiIf::scan(&len, "ATAPI");
   if (sdata) {
     for (i = 0; i < len; i++)
-      CdDevice::add(sdata[i].bus, sdata[i].id, sdata[i].lun,
-                    sdata[i]._vendor, sdata[i]._product, sdata[i].is_atapi);
+      CdDevice::add(sdata[i].dev.c_str(), sdata[i].vendor, sdata[i].product);
     delete[] sdata;
   }
 #endif
 }
 
-void CdDevice::remove(int bus, int id, int lun)
+void CdDevice::remove(const char* dev)
 {
   CdDevice *run, *pred;
 
   for (pred = NULL, run = DEVICE_LIST_; run != NULL;
        pred = run, run = run->next_) {
-    if (bus == run->bus() && id == run->id() && lun == run->lun()) {
+    if (strcmp(run->dev(), dev) == 0) {
       if (run->status() == DEV_RECORDING || run->status() == DEV_BLANKING ||
 	  run->status() == DEV_READING || run->status() == DEV_WAITING)
 	return;
