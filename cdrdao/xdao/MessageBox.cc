@@ -20,7 +20,8 @@
 #include <stddef.h>
 #include <stdarg.h>
 
-#include <libgnomeuimm.h>
+#include <gtkmm.h>
+#include <gnome.h>
 
 #include "MessageBox.h"
 
@@ -87,7 +88,7 @@ void MessageBoxBase::init(const char *type, const char *title, int askDontShow,
   }
 
   if (askDontShow) {
-    dontShowAgain_ = new Gtk::CheckButton("Don't show this message again");
+    dontShowAgain_ = new Gtk::CheckButton(_("Don't show this message again"));
     dontShowAgain_->set_active(FALSE);
     dontShowAgain_->show();
 

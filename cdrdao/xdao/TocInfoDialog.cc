@@ -19,7 +19,8 @@
 
 #include "TocInfoDialog.h"
 
-#include <libgnomeuimm.h>
+#include <gtkmm.h>
+#include <gnome.h>
 
 #include <stdio.h>
 #include <stddef.h>
@@ -134,23 +135,24 @@ TocInfoDialog::TocInfoDialog(Gtk::Window* parent)
   Gtk::MenuItem *mi;
 
   mi = manage(new Gtk::MenuItem("CD-DA"));
-  mi->signal_activate().connect(bind(slot(*this, &TocInfoDialog::setSelectedTocType),
-			    Toc::CD_DA));
+  mi->signal_activate().
+    connect(bind(slot(*this, &TocInfoDialog::setSelectedTocType), Toc::CD_DA));
   menu->append(*mi);
 
   mi = manage(new Gtk::MenuItem("CD-ROM"));
-  mi->signal_activate().connect(bind(slot(*this, &TocInfoDialog::setSelectedTocType),
-			    Toc::CD_ROM));
+  mi->signal_activate().
+    connect(bind(slot(*this, &TocInfoDialog::setSelectedTocType),Toc::CD_ROM));
   menu->append(*mi);
 
   mi = manage(new Gtk::MenuItem("CD-ROM-XA"));
-  mi->signal_activate().connect(bind(slot(*this, &TocInfoDialog::setSelectedTocType),
-			    Toc::CD_ROM_XA));
+  mi->signal_activate().
+    connect(bind(slot(*this, &TocInfoDialog::setSelectedTocType),
+                 Toc::CD_ROM_XA));
   menu->append(*mi);
 
   mi = manage(new Gtk::MenuItem("CD-I"));
-  mi->signal_activate().connect(bind(slot(*this, &TocInfoDialog::setSelectedTocType),
-			    Toc::CD_I));
+  mi->signal_activate().
+    connect(bind(slot(*this, &TocInfoDialog::setSelectedTocType), Toc::CD_I));
   menu->append(*mi);
 
   tocType_ = manage(new Gtk::OptionMenu);
@@ -159,27 +161,27 @@ TocInfoDialog::TocInfoDialog(Gtk::Window* parent)
   contents->set_spacing(10);
 
   // Summary frame (time & data)
-  frame = manage(new Gtk::Frame(" Summary "));
+  frame = manage(new Gtk::Frame(_(" Summary ")));
   table = manage(new Gtk::Table(2, 2, false));
   table->set_border_width(5);
   table->set_row_spacings(5);
   table->set_col_spacings(5);
-  label = manage(new Gtk::Label("Tracks:"));
+  label = manage(new Gtk::Label(_("Tracks:")));
   table->attach(*label, 0, 1, 0, 1, Gtk::SHRINK);
   table->attach(*nofTracks_, 1, 2, 0, 1, Gtk::FILL | Gtk::SHRINK);
-  label = manage(new Gtk::Label("Length:"));
+  label = manage(new Gtk::Label(_("Length:")));
   table->attach(*label, 0, 1, 1, 2, Gtk::SHRINK);
   table->attach(*tocLength_, 1, 2, 1, 2, Gtk::FILL | Gtk::SHRINK);
   frame->add(*table);
   contents->pack_start(*frame, false, false);
   
   // Sub-channel frame
-  frame = manage(new Gtk::Frame(" Sub-Channel "));
+  frame = manage(new Gtk::Frame(_(" Sub-Channel ")));
   table = manage(new Gtk::Table(2, 2, false));
   table->set_border_width(5);
   table->set_row_spacings(5);
   table->set_col_spacings(5);
-  label = manage(new Gtk::Label("Toc Type: "));
+  label = manage(new Gtk::Label(_("Toc Type: ")));
   table->attach(*label, 0, 1, 0, 1, Gtk::SHRINK);
   table->attach(*tocType_, 1, 2, 0, 1);
   label = manage(new Gtk::Label("UPC/EAN: "));
@@ -223,7 +225,7 @@ TocInfoDialog::TocInfoDialog(Gtk::Window* parent)
   get_action_area()->pack_start(*bbox);
   show_all_children();
 
-  set_title("Project Info");
+  set_title(_("Project Info"));
   set_transient_for(*parent);
 }
 
@@ -381,7 +383,7 @@ Gtk::VBox *TocInfoDialog::createCdTextPage(int n)
   table->set_col_spacings(5);
   table->show();
 
-  label = manage(new Gtk::Label("Language:"));
+  label = manage(new Gtk::Label(_("Language:")));
   hbox = manage(new Gtk::HBox);
   hbox->pack_end(*label, Gtk::PACK_SHRINK);
   table->attach(*hbox, 0, 1, 0, 1, Gtk::FILL);
@@ -390,7 +392,7 @@ Gtk::VBox *TocInfoDialog::createCdTextPage(int n)
   table->attach(*(cdTextPages_[n].language), 1, 2, 0, 1);
   cdTextPages_[n].language->show();
 
-  label = manage(new Gtk::Label("Title:"));
+  label = manage(new Gtk::Label(_("Title:")));
   hbox = manage(new Gtk::HBox);
   hbox->pack_end(*label, Gtk::PACK_SHRINK);
   table->attach(*hbox, 0, 1, 1, 2, Gtk::FILL);
@@ -399,7 +401,7 @@ Gtk::VBox *TocInfoDialog::createCdTextPage(int n)
   table->attach(*(cdTextPages_[n].title), 1, 2, 1, 2);
   cdTextPages_[n].title->show();
 
-  label = manage(new Gtk::Label("Performer:"));
+  label = manage(new Gtk::Label(_("Performer:")));
   hbox = manage(new Gtk::HBox);
   hbox->pack_end(*label, Gtk::PACK_SHRINK);
   table->attach(*hbox, 0, 1, 2, 3, Gtk::FILL);
@@ -408,7 +410,7 @@ Gtk::VBox *TocInfoDialog::createCdTextPage(int n)
   table->attach(*(cdTextPages_[n].performer), 1, 2, 2, 3);
   cdTextPages_[n].performer->show();
 
-  label = new Gtk::Label("Songwriter:");
+  label = new Gtk::Label(_("Songwriter:"));
   hbox = manage(new Gtk::HBox);
   hbox->pack_end(*label, Gtk::PACK_SHRINK);
   table->attach(*hbox, 0, 1, 3, 4, Gtk::FILL);
@@ -417,7 +419,7 @@ Gtk::VBox *TocInfoDialog::createCdTextPage(int n)
   table->attach(*(cdTextPages_[n].songwriter), 1, 2, 3, 4);
   cdTextPages_[n].songwriter->show();
 
-  label = new Gtk::Label("Composer:");
+  label = new Gtk::Label(_("Composer:"));
   hbox = manage(new Gtk::HBox);
   hbox->pack_end(*label, Gtk::PACK_SHRINK);
   table->attach(*hbox, 0, 1, 4, 5, Gtk::FILL);
@@ -426,7 +428,7 @@ Gtk::VBox *TocInfoDialog::createCdTextPage(int n)
   table->attach(*(cdTextPages_[n].composer), 1, 2, 4, 5);
   cdTextPages_[n].composer->show();
 
-  label = new Gtk::Label("Arranger:");
+  label = new Gtk::Label(_("Arranger:"));
   hbox = manage(new Gtk::HBox);
   hbox->pack_end(*label, Gtk::PACK_SHRINK);
   table->attach(*hbox, 0, 1, 5, 6, Gtk::FILL);
@@ -435,7 +437,7 @@ Gtk::VBox *TocInfoDialog::createCdTextPage(int n)
   table->attach(*(cdTextPages_[n].arranger), 1, 2, 5, 6);
   cdTextPages_[n].arranger->show();
 
-  label = new Gtk::Label("Message:");
+  label = new Gtk::Label(_("Message:"));
   hbox = manage(new Gtk::HBox);
   hbox->pack_end(*label, Gtk::PACK_SHRINK);
   table->attach(*hbox, 0, 1, 6, 7, Gtk::FILL);
@@ -444,7 +446,7 @@ Gtk::VBox *TocInfoDialog::createCdTextPage(int n)
   table->attach(*(cdTextPages_[n].message), 1, 2, 6, 7);
   cdTextPages_[n].message->show();
 
-  label = new Gtk::Label("Catalog:");
+  label = new Gtk::Label(_("Catalog:"));
   hbox = manage(new Gtk::HBox);
   hbox->pack_end(*label, Gtk::PACK_SHRINK);
   table->attach(*hbox, 0, 1, 7, 8, Gtk::FILL);
@@ -462,7 +464,7 @@ Gtk::VBox *TocInfoDialog::createCdTextPage(int n)
   table->attach(*(cdTextPages_[n].upcEan), 1, 2, 8, 9);
   cdTextPages_[n].upcEan->show();
 
-  label = new Gtk::Label("Genre:");
+  label = new Gtk::Label(_("Genre:"));
   hbox = manage(new Gtk::HBox);
   hbox->pack_end(*label, Gtk::PACK_SHRINK);
   table->attach(*hbox, 0, 1, 9, 10, Gtk::FILL);
@@ -471,7 +473,7 @@ Gtk::VBox *TocInfoDialog::createCdTextPage(int n)
   table->attach(*(cdTextPages_[n].genre), 1, 2, 9, 10);
   cdTextPages_[n].genre->show();
 
-  label = new Gtk::Label("Genre Info:");
+  label = new Gtk::Label(_("Genre Info:"));
   hbox = manage(new Gtk::HBox);
   hbox->pack_end(*label, Gtk::PACK_SHRINK);
   table->attach(*hbox, 0, 1, 10, 11, Gtk::FILL);

@@ -101,19 +101,19 @@ AudioCDView::AudioCDView(AudioCDChild *child, AudioCDProject *project)
   selectionEndPos_->set_size_request(entry_width, -1);
   selectionEndPos_->signal_activate().connect(slot(*this, &AudioCDView::selectionSet));
 
-  label = new Gtk::Label("Cursor: ");
+  label = new Gtk::Label(_("Cursor: "));
   selectionInfoBox->pack_start(*label, FALSE, FALSE);
   selectionInfoBox->pack_start(*cursorPos_);
   label->show();
   cursorPos_->show();
 
-  label = new Gtk::Label("Marker: ");
+  label = new Gtk::Label(_("Marker: "));
   selectionInfoBox->pack_start(*label, FALSE, FALSE);
   selectionInfoBox->pack_start(*markerPos_);
   label->show();
   markerPos_->show();
 
-  label = new Gtk::Label("Selection: ");
+  label = new Gtk::Label(_("Selection: "));
   selectionInfoBox->pack_start(*label, FALSE, FALSE);
   selectionInfoBox->pack_start(*selectionStartPos_);
   label->show();
@@ -158,83 +158,84 @@ AudioCDView::AudioCDView(AudioCDChild *child, AudioCDProject *project)
       int i;
     
     menus.push_back(Item(Icon(Gtk::StockID(Gtk::Stock::PROPERTIES)),
-                         "Track Info...",
+                         _("Track Info..."),
                          slot(*this, &AudioCDView::trackInfo),
-                         "Edit track data"));
+                         _("Edit track data")));
   
     menus.push_back(Separator());
   
     info = Item(Icon(Gtk::StockID(Gtk::Stock::CUT)),
-                "Cut",
+                _("Cut"),
                 slot(*this, &AudioCDView::cutTrackData),
-                "Cut out selected samples");
+                _("Cut out selected samples"));
     info.set_accel(Gtk::Menu::AccelKey("<control>x"));
     menus.push_back(info);
 
     info = Item(Icon(Gtk::StockID(Gtk::Stock::PASTE)),
-                "Paste",
+                _("Paste"),
                 slot(*this, &AudioCDView::pasteTrackData),
-                "Paste previously cut samples");
+                _("Paste previously cut samples"));
     info.set_accel(Gtk::Menu::AccelKey("<control>v"));
     menus.push_back(info);
 
     menus.push_back(Separator());
 
-    info = Item("Add Track Mark",
+    info = Item(_("Add Track Mark"),
                 slot(*this, &AudioCDView::addTrackMark),
-                "Add track marker at current marker position");
+                _("Add track marker at current marker position"));
     info.set_accel(Gtk::Menu::AccelKey("T"));
     menus.push_back(info);
 
-    info = Item("Add Index Mark",
+    info = Item(_("Add Index Mark"),
                 slot(*this, &AudioCDView::addIndexMark),
-                "Add index marker at current marker position");
+                _("Add index marker at current marker position"));
     info.set_accel(Gtk::Menu::AccelKey("I"));
     menus.push_back(info);
     
-    info = Item("Add Pre-Gap",
+    info = Item(_("Add Pre-Gap"),
                 slot(*this, &AudioCDView::addPregap),
-                "Add pre-gap at current marker position");
+                _("Add pre-gap at current marker position"));
     info.set_accel(Gtk::Menu::AccelKey("P"));
     menus.push_back(info);
 
-    info = Item("Remove Track Mark",
+    info = Item(_("Remove Track Mark"),
                 slot(*this, &AudioCDView::removeTrackMark),
-                "Remove selected track/index marker or pre-gap");
+                _("Remove selected track/index marker or pre-gap"));
     info.set_accel(Gtk::Menu::AccelKey("<control>D"));
     menus.push_back(info);
  
     menus.push_back(Separator());
 
-    info = Item("Append Track",
+    info = Item(_("Append Track"),
                 slot(*this, &AudioCDView::appendTrack),
-                "Append track with data from audio file");
+                _("Append track with data from audio file"));
     info.set_accel(Gtk::Menu::AccelKey("<control>T"));
     menus.push_back(info);
 
-    info = Item("Append File",
+    info = Item(_("Append File"),
                 slot(*this, &AudioCDView::appendFile),
-                "Append data from audio file to last track");
+                _("Append data from audio file to last track"));
     info.set_accel(Gtk::Menu::AccelKey("<control>F"));
     menus.push_back(info);
   
-    info = Item("Insert File",
+    info = Item(_("Insert File"),
                 slot(*this, &AudioCDView::insertFile),
-                "Insert data from audio file at current marker position");
+                _("Insert data from audio file at current marker position"));
     info.set_accel(Gtk::Menu::AccelKey("<control>I"));
     menus.push_back(info);
 
     menus.push_back(Separator());
 
-    menus.push_back(Item("Append Silence",
+    menus.push_back(Item(_("Append Silence"),
                          slot(*this, &AudioCDView::appendSilence),
-                         "Append silence to last track"));
+                         _("Append silence to last track")));
 
-    menus.push_back(Item("Insert Silence",
+    menus.push_back(Item(_("Insert Silence"),
                          slot(*this, &AudioCDView::insertSilence),
-                         "Insert silence at current marker position"));
+                         _("Insert silence at current marker position")));
 
-    Array<Info>& arrayInfo = project->insert_menus("Edit/CD-TEXT...", menus);
+    Array<Info>& arrayInfo = project->insert_menus(_("Edit/CD-TEXT..."),
+                                                   menus);
   }
 }
 
@@ -394,7 +395,7 @@ int AudioCDView::getMarker(unsigned long *sample)
     return 0;
 
   if (sampleDisplay_->getMarker(sample) == 0) {
-    project_->statusMessage("Please set marker.");
+    project_->statusMessage(_("Please set marker."));
     return 0;
   }
 
@@ -470,38 +471,34 @@ AudioCDView::drag_data_received_cb(const
                                    GtkSelectionData *selection_data,
                                    guint info, guint time)
 {
-    GList *names = NULL;
+  GList *names = NULL;
   
-    switch (info) {
-    case TARGET_URI_LIST:
-        // names = (GList *)gnome_uri_list_extract_filenames     \
-            //((char *)selection_data->data);  
+  switch (info) {
+  case TARGET_URI_LIST:
+    if (names && names->data) {
+      std::string str = g_strdup(static_cast <char *>(names->data));
+      const char *file = stripCwd(str.c_str());
 
-        //  	tocEdit_->blockEdit();
-        //FIXME      while (names->data) {
-        if (names && names->data) {
-            std::string str = g_strdup(static_cast <char *>(names->data));
-            const char *file = stripCwd(str.c_str());
-
-            switch (tocEditView_->tocEdit()->appendTrack(file)) {
-            case 0:
-                guiUpdate();
-                project_->statusMessage("Appended track with audio data from \"%s\".", file);
-                break;
-            case 1:
-                project_->statusMessage("Cannot open audio file \"%s\".", file);
-                break;
-            case 2:
-                project_->statusMessage("Audio file \"%s\" has wrong format.", file);
-                break;
-	    }
-	    names = g_list_remove(names, names->data);
-	    if (names == NULL)
-                break;
-        }
-        //	tocEdit_->unblockEdit();
+      switch (tocEditView_->tocEdit()->appendTrack(file)) {
+      case 0:
+        guiUpdate();
+        project_->statusMessage(_("Appended track with audio data from "
+                                  "\"%s\"."), file);
+        break;
+      case 1:
+        project_->statusMessage(_("Cannot open audio file \"%s\"."), file);
+        break;
+      case 2:
+        project_->statusMessage(_("Audio file \"%s\" has wrong format."),
+                                file);
+        break;
+      }
+      names = g_list_remove(names, names->data);
+      if (names == NULL)
         break;
     }
+    break;
+  }
 }
 
 void AudioCDView::trackInfo()
@@ -517,7 +514,7 @@ void AudioCDView::trackInfo()
 
   } else {
 
-    Gtk::MessageDialog md(*project_, "Please select a track first",
+    Gtk::MessageDialog md(*project_, _("Please select a track first"),
                           Gtk::MESSAGE_INFO);
     md.run();
   }
@@ -532,14 +529,15 @@ void AudioCDView::cutTrackData()
 
   switch (project_->tocEdit()->removeTrackData(tocEditView_)) {
   case 0:
-    project_->statusMessage("Removed selected samples.");
+    project_->statusMessage(_("Removed selected samples."));
     guiUpdate();
     break;
   case 1:
-    project_->statusMessage("Please select samples.");
+    project_->statusMessage(_("Please select samples."));
     break;
   case 2:
-    project_->statusMessage("Selected sample range crosses track boundaries.");
+    project_->statusMessage(_("Selected sample range crosses track "
+                              "boundaries."));
     break;
   }
 }
@@ -553,11 +551,11 @@ void AudioCDView::pasteTrackData()
 
   switch (project_->tocEdit()->insertTrackData(tocEditView_)) {
   case 0:
-    project_->statusMessage("Pasted samples.");
+    project_->statusMessage(_("Pasted samples."));
     guiUpdate();
     break;
   case 1:
-    project_->statusMessage("No samples in scrap.");
+    project_->statusMessage(_("No samples in scrap."));
     break;
   }
 }
@@ -567,7 +565,7 @@ void AudioCDView::addTrackMark()
   unsigned long sample;
 
   if (!project_->tocEdit()->editable()) {
-    project_->tocBlockedMsg("Add Track Mark");
+    project_->tocBlockedMsg(_("Add Track Mark"));
     return;
   }
 
@@ -577,26 +575,28 @@ void AudioCDView::addTrackMark()
 
     switch (project_->tocEdit()->addTrackMarker(lba)) {
     case 0:
-      project_->statusMessage("Added track mark at %s%s.", Msf(lba).str(),
-				snapped ? " (snapped to next block)" : "");
+      project_->statusMessage(_("Added track mark at %s%s."), Msf(lba).str(),
+                              snapped ? _(" (snapped to next block)") : "");
       guiUpdate();
       break;
 
     case 2:
-      project_->statusMessage("Cannot add track at this point.");
+      project_->statusMessage(_("Cannot add track at this point."));
       break;
 
     case 3:
     case 4:
-      project_->statusMessage("Resulting track would be shorter than 4 seconds.");
+      project_->statusMessage(_("Resulting track would be shorter than "
+                                "4 seconds."));
       break;
 
     case 5:
-      project_->statusMessage("Cannot modify a data track.");
+      project_->statusMessage(_("Cannot modify a data track."));
       break;
 
     default:
-      project_->statusMessage("Internal error in addTrackMark(), please report.");
+      project_->statusMessage(_("Internal error in addTrackMark(), please "
+                                "report."));
       break;
     }
   }
@@ -607,7 +607,7 @@ void AudioCDView::addIndexMark()
   unsigned long sample;
 
   if (!project_->tocEdit()->editable()) {
-    project_->tocBlockedMsg("Add Index Mark");
+    project_->tocBlockedMsg(_("Add Index Mark"));
     return;
   }
 
@@ -617,21 +617,22 @@ void AudioCDView::addIndexMark()
 
     switch (project_->tocEdit()->addIndexMarker(lba)) {
     case 0:
-      project_->statusMessage("Added index mark at %s%s.", Msf(lba).str(),
-				snapped ? " (snapped to next block)" : "");
+      project_->statusMessage(_("Added index mark at %s%s."), Msf(lba).str(),
+                              snapped ? _(" (snapped to next block)") : "");
       guiUpdate();
       break;
 
     case 2:
-      project_->statusMessage("Cannot add index at this point.");
+      project_->statusMessage(_("Cannot add index at this point."));
       break;
 
     case 3:
-      project_->statusMessage("Track has already 98 index marks.");
+      project_->statusMessage(_("Track has already 98 index marks."));
       break;
 
     default:
-      project_->statusMessage("Internal error in addIndexMark(), please report.");
+      project_->statusMessage(_("Internal error in addIndexMark(), "
+                                "please report."));
       break;
     }
   }
@@ -642,7 +643,7 @@ void AudioCDView::addPregap()
   unsigned long sample;
 
   if (!project_->tocEdit()->editable()) {
-    project_->tocBlockedMsg("Add Pre-Gap");
+    project_->tocBlockedMsg(_("Add Pre-Gap"));
     return;
   }
 
@@ -652,25 +653,26 @@ void AudioCDView::addPregap()
 
     switch (project_->tocEdit()->addPregap(lba)) {
     case 0:
-      project_->statusMessage("Added pre-gap mark at %s%s.", Msf(lba).str(),
-				snapped ? " (snapped to next block)" : "");
+      project_->statusMessage(_("Added pre-gap mark at %s%s."), Msf(lba).str(),
+                              snapped ? _(" (snapped to next block)") : "");
       guiUpdate();
       break;
 
     case 2:
-      project_->statusMessage("Cannot add pre-gap at this point.");
+      project_->statusMessage(_("Cannot add pre-gap at this point."));
       break;
 
     case 3:
-      project_->statusMessage("Track would be shorter than 4 seconds.");
+      project_->statusMessage(_("Track would be shorter than 4 seconds."));
       break;
 
     case 4:
-      project_->statusMessage("Cannot modify a data track.");
+      project_->statusMessage(_("Cannot modify a data track."));
       break;
 
     default:
-      project_->statusMessage("Internal error in addPregap(), please report.");
+      project_->statusMessage(_("Internal error in addPregap(), "
+                                "please report."));
       break;
     }
   }
@@ -682,7 +684,7 @@ void AudioCDView::removeTrackMark()
   int indexNr;
 
   if (!project_->tocEdit()->editable()) {
-    project_->tocBlockedMsg("Remove Track Mark");
+    project_->tocBlockedMsg(_("Remove Track Mark"));
     return;
   }
 
@@ -690,22 +692,23 @@ void AudioCDView::removeTrackMark()
       tocEditView_->indexSelection(&indexNr)) {
     switch (project_->tocEdit()->removeTrackMarker(trackNr, indexNr)) {
     case 0:
-      project_->statusMessage("Removed track/index marker.");
+      project_->statusMessage(_("Removed track/index marker."));
       guiUpdate();
       break;
     case 1:
-      project_->statusMessage("Cannot remove first track.");
+      project_->statusMessage(_("Cannot remove first track."));
       break;
     case 3:
-      project_->statusMessage("Cannot modify a data track.");
+      project_->statusMessage(_("Cannot modify a data track."));
       break;
     default:
-      project_->statusMessage("Internal error in removeTrackMark(), please report.");
+      project_->statusMessage(_("Internal error in removeTrackMark(), "
+                                "please report."));
       break; 
     }
   }
   else {
-    project_->statusMessage("Please select a track/index mark.");
+    project_->statusMessage(_("Please select a track/index mark."));
   }
 }
 
@@ -728,7 +731,7 @@ void AudioCDView::trackMarkMovedCallback(const Track *, int trackNr,
 					int indexNr, unsigned long sample)
 {
   if (!project_->tocEdit()->editable()) {
-    project_->tocBlockedMsg("Move Track Marker");
+    project_->tocBlockedMsg(_("Move Track Marker"));
     return;
   }
 
@@ -737,15 +740,15 @@ void AudioCDView::trackMarkMovedCallback(const Track *, int trackNr,
 
   switch (project_->tocEdit()->moveTrackMarker(trackNr, indexNr, lba)) {
   case 0:
-    project_->statusMessage("Moved track marker to %s%s.", Msf(lba).str(),
-			      snapped ? " (snapped to next block)" : "");
+    project_->statusMessage(_("Moved track marker to %s%s."), Msf(lba).str(),
+                            snapped ? _(" (snapped to next block)") : "");
     break;
 
   case 6:
-    project_->statusMessage("Cannot modify a data track.");
+    project_->statusMessage(_("Cannot modify a data track."));
     break;
   default:
-    project_->statusMessage("Illegal track marker position.");
+    project_->statusMessage(_("Illegal track marker position."));
     break;
   }
 

@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.1.1.1.6.1  2004/01/05 00:34:03  poolshark
+ * First checking of gnome2 port
+ *
  * Revision 1.1.1.1  2003/12/09 05:32:28  denis
  * Fooya
  *
@@ -42,6 +45,8 @@
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <sys/types.h>
+
+#include <gnome.h>
 
 #include "SoundIF.h"
 
@@ -151,7 +156,7 @@ int SoundIFImpl::openDevice()
     return 0; // already open
 
   if ((dspFd_ = open("/dev/audio", O_WRONLY | O_NONBLOCK)) < 0) {
-    message(-1, "Cannot open \"/dev/audio\": %s", strerror(errno));
+    message(-1, _("Cannot open \"/dev/audio\": %s"), strerror(errno));
     return 1;
   }
   /* Clear the non-blocking flag */
@@ -177,7 +182,7 @@ int SoundIFImpl::setupDevice()
     return 1;
   
   if (ioctl(dspFd_, AUDIO_GETINFO, &auinf) < 0) {
-    message(-1, "Cannot get state of audio interface: %s", strerror(errno));
+    message(-1, _("Cannot get state of audio interface: %s"), strerror(errno));
     return 1;
   }
   auinf.play.sample_rate=44100;
@@ -186,7 +191,7 @@ int SoundIFImpl::setupDevice()
   auinf.play.encoding=AUDIO_ENCODING_LINEAR;
 
   if (ioctl(dspFd_, AUDIO_SETINFO, &auinf) < 0) {
-    message(-1, "Cannot setup audio interface: %s", strerror(errno));
+    message(-1, _("Cannot setup audio interface: %s"), strerror(errno));
     return 1;
   }
 

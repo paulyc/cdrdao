@@ -23,6 +23,9 @@
 #include <math.h>
 #include <assert.h>
 
+#include <gtkmm.h>
+#include <gnome.h>
+
 #include "AddFileDialog.h"
 
 #include "guiUpdate.h"
@@ -67,13 +70,13 @@ void AddFileDialog::mode(Mode m)
 
   switch (mode_) {
   case M_APPEND_TRACK:
-    set_title("Append Track");
+    set_title(_("Append Track"));
     break;
   case M_APPEND_FILE:
-    set_title("Append File");
+    set_title(_("Append File"));
     break;
   case M_INSERT_FILE:
-    set_title("Insert File");
+    set_title(_("Insert File"));
     break;
   }
 }

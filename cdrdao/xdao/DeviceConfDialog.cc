@@ -23,6 +23,9 @@
 #include <assert.h>
 #include <ctype.h>
 
+#include <gtkmm.h>
+#include <gnome.h>
+
 #include "DeviceConfDialog.h"
 
 #include "CdDevice.h"
@@ -50,15 +53,15 @@ DeviceConfDialog::DeviceConfDialog()
 
   active_ = false;
 
-  set_title("Configure Devices");
+  set_title(_("Configure Devices"));
 
   // TreeView initialization
   listModel_ = Gtk::ListStore::create(listColumns_);
   list_.set_model(listModel_);
-  list_.append_column("Dev", listColumns_.dev);
-  list_.append_column("Vendor", listColumns_.vendor);
-  list_.append_column("Model", listColumns_.model);
-  list_.append_column("Status", listColumns_.status);
+  list_.append_column(_("Dev"), listColumns_.dev);
+  list_.append_column(_("Vendor"), listColumns_.vendor);
+  list_.append_column(_("Model"), listColumns_.model);
+  list_.append_column(_("Status"), listColumns_.status);
 
   selectedRow_ = list_.get_selection()->get_selected();
   list_.get_selection()->signal_changed().
@@ -121,7 +124,7 @@ DeviceConfDialog::DeviceConfDialog()
 
   Gtk::ButtonBox *bbox = manage(new Gtk::HButtonBox(Gtk::BUTTONBOX_SPREAD));
 
-  button = manage(new Gtk::Button("Rescan"));
+  button = manage(new Gtk::Button(_("Rescan")));
   bbox->pack_start(*button);
   button->signal_clicked().
     connect(SigC::slot(*this,&DeviceConfDialog::rescanAction));
@@ -133,28 +136,28 @@ DeviceConfDialog::DeviceConfDialog()
 
   listBox->pack_start(*bbox, Gtk::PACK_SHRINK);
 
-  listFrame_.set_label(" Device List ");
+  listFrame_.set_label(_(" Device List "));
   listFrame_.add(*listBox);
   contents->pack_start(listFrame_, Gtk::PACK_EXPAND_WIDGET);
 
   // ---------------------------- Device settings
 
-  settingFrame_.set_label(" Device Settings ");
+  settingFrame_.set_label(_(" Device Settings "));
   table = manage(new Gtk::Table(2, 4, FALSE));
   table->set_row_spacings(5);
   table->set_col_spacings(5);
   table->set_border_width(10);
   settingFrame_.add(*table);
   
-  label = manage(new Gtk::Label("Device Type:"));
+  label = manage(new Gtk::Label(_("Device Type:")));
   table->attach(*label, 0, 1, 0, 1);
   table->attach(*devtypeMenu_, 1, 2, 0, 1);
 
-  label = manage(new Gtk::Label("Driver:"));
+  label = manage(new Gtk::Label(_("Driver:")));
   table->attach(*label, 0, 1, 1, 2);
   table->attach(*driverMenu_, 1, 2, 1, 2);
 
-  label = manage(new Gtk::Label("Driver Options:"));
+  label = manage(new Gtk::Label(_("Driver Options:")));
   table->attach(*label, 0, 1, 2, 3);
   table->attach(driverOptionsEntry_, 1, 2, 2, 3);
 
@@ -162,7 +165,7 @@ DeviceConfDialog::DeviceConfDialog()
 
   // -------------- Add device
 
-  addDeviceFrame_.set_label(" Add Device ");
+  addDeviceFrame_.set_label(_(" Add Device "));
   Gtk::VBox *addDeviceBox = manage(new Gtk::VBox);
   addDeviceBox->set_spacing(5);
   addDeviceBox->set_border_width(5);
@@ -172,15 +175,15 @@ DeviceConfDialog::DeviceConfDialog()
   table->set_col_spacings(5);
   addDeviceBox->pack_start(*table, Gtk::PACK_EXPAND_WIDGET);
 
-  label = manage(new Gtk::Label("Device:"));
+  label = manage(new Gtk::Label(_("Device:")));
   table->attach(*label, 0, 1, 0, 1);
   table->attach(devEntry_, 1, 2, 0, 1);
 
-  label = manage(new Gtk::Label("Vendor:"));
+  label = manage(new Gtk::Label(_("Vendor:")));
   table->attach(*label, 0, 1, 1, 2);
   table->attach(vendorEntry_, 1, 2, 1, 2);
 
-  label = manage(new Gtk::Label("Product:"));
+  label = manage(new Gtk::Label(_("Product:")));
   table->attach(*label, 0, 1, 2, 3);
   table->attach(productEntry_, 1, 2, 2, 3);
 
@@ -207,7 +210,7 @@ DeviceConfDialog::DeviceConfDialog()
   applyButton->signal_clicked().connect(slot(*this,
                                              &DeviceConfDialog::applyAction));
   
-  Gtk::Button *resetButton = manage(new Gtk::Button("Reset"));
+  Gtk::Button *resetButton = manage(new Gtk::Button(_("Reset")));
   bbox->pack_start(*resetButton);
   resetButton->signal_clicked().connect(slot(*this,
                                              &DeviceConfDialog::resetAction));

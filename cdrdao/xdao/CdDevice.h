@@ -94,7 +94,7 @@ public:
   int progressStatusChanged();
   void progress(int *status, int *totalTracks, int *track,
 		      int *trackProgress, int *totalProgress,
-		      int *bufferFill) const;
+                int *bufferFill, int *writerFill) const;
   
   static int maxDriverId();
   static const char *driverName(int id);
@@ -159,6 +159,7 @@ private:
   int progressTotal_;
   int progressTrackRelative_;
   int progressBufferFill_;
+  int progressWriterFill_;
 
   Process *process_;
 

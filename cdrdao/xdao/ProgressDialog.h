@@ -51,6 +51,7 @@ private:
   int actTrackProgress_;
   int actTotalProgress_;
   int actBufferFill_;
+  int actWriterFill_;
 
   int actCloseButtonLabel_;
 
@@ -72,7 +73,9 @@ private:
   Gtk::Label *trackLabel_;
   Gtk::ProgressBar *totalProgress_;
   Gtk::ProgressBar *bufferFillRate_;
+  Gtk::ProgressBar *writerFillRate_;
   Gtk::Label *bufferFillRateLabel_;
+  Gtk::Label *writerFillRateLabel_;
   void needBufferProgress(bool visible);
   void needTrackProgress(bool visible);
 

@@ -17,6 +17,8 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include <gtkmm.h>
+#include <gnome.h>
 
 #include "xcdrdao.h"
 #include "guiUpdate.h"
@@ -50,16 +52,17 @@ bool AudioCDChild::closeProject()
 {
 
   if (!tocEdit_->editable()) {
-    project_->tocBlockedMsg("Close Project");
+    project_->tocBlockedMsg(_("Close Project"));
     return false;
   }
 
   if (tocEdit_->tocDirty()) {
     gchar *message;
     
-    message = g_strdup_printf("Project %s not saved.", tocEdit_->filename());
+    message = g_strdup_printf(_("Project %s not saved."),
+                              tocEdit_->filename());
 
-    Ask2Box msg(project_, "Close", 0, 2, message, "", "Continue?", NULL);
+    Ask2Box msg(project_, _("Close"), 0, 2, message, "", _("Continue?"), NULL);
     g_free(message);
 
     if (msg.run() != 1)

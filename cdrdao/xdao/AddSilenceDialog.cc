@@ -22,6 +22,9 @@
 #include <math.h>
 #include <assert.h>
 
+#include <gtkmm.h>
+#include <gnome.h>
+
 #include "AddSilenceDialog.h"
 
 #include "TocEdit.h"
@@ -41,7 +44,7 @@ AddSilenceDialog::AddSilenceDialog()
   active_ = false;
   mode_ = M_APPEND;
 
-  Gtk::Frame *frame = new Gtk::Frame(" Length of Silence ");
+  Gtk::Frame *frame = new Gtk::Frame(_(" Length of Silence "));
 
   Gtk::Table *table = new Gtk::Table(4, 2, false);
   table->set_row_spacings(5);
@@ -52,19 +55,19 @@ AddSilenceDialog::AddSilenceDialog()
   vbox->pack_start(*hbox, false, false, 5);
   frame->add(*vbox);
   
-  Gtk::Label *label = new Gtk::Label("Minutes:");
+  Gtk::Label *label = new Gtk::Label(_("Minutes:"));
   table->attach(*label, 0, 1, 0, 1, Gtk::SHRINK);
   table->attach(minutes_, 1, 2, 0, 1);
 
-  label = new Gtk::Label("Seconds:");
+  label = new Gtk::Label(_("Seconds:"));
   table->attach(*label, 0, 1, 1, 2, Gtk::SHRINK);
   table->attach(seconds_, 1, 2, 1, 2);
 
-  label = new Gtk::Label("Frames:");
+  label = new Gtk::Label(_("Frames:"));
   table->attach(*label, 0, 1, 2, 3, Gtk::SHRINK);
   table->attach(frames_, 1, 2, 2, 3);
 
-  label = new Gtk::Label("Samples:");
+  label = new Gtk::Label(_("Samples:"));
   table->attach(*label, 0, 1, 3, 4, Gtk::SHRINK);
   table->attach(samples_, 1, 2, 3, 4);
 
@@ -101,10 +104,10 @@ void AddSilenceDialog::mode(Mode m)
 
   switch (mode_) {
   case M_APPEND:
-    set_title("Append Silence");
+    set_title(_("Append Silence"));
     break;
   case M_INSERT:
-    set_title("Insert Silence");
+    set_title(_("Insert Silence"));
     break;
   }
 }

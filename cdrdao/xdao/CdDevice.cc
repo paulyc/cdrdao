@@ -91,6 +91,7 @@ CdDevice::CdDevice(const char* dev, const char *vendor, const char *product)
   progressTotal_ = 0;
   progressTrackRelative_ = 0;
   progressBufferFill_ = 0;
+  progressWriterFill_ = 0;
 
   process_ = NULL;
 
@@ -278,7 +279,8 @@ bool CdDevice::updateProgress(Glib::IOCondition cond, int fd)
 
     ProgressMsg msg;
 
-    if (read(fd, (char *)&msg, sizeof(msg)) == sizeof(msg)) {
+    int msgsize = read(fd, (char *)&msg, sizeof(msg));
+    if (msgsize >= PSGMSG_MINSIZE) {
       if (msg.status >= PGSMSG_MIN && msg.status <= PGSMSG_MAX &&
 	  msg.track >= 0 &&
 	  msg.totalProgress >= 0 && msg.totalProgress <= 1000 &&
@@ -289,12 +291,16 @@ bool CdDevice::updateProgress(Glib::IOCondition cond, int fd)
 	progressTrackRelative_ = msg.trackProgress;
 	progressTotal_ = msg.totalProgress;
 	progressBufferFill_ = msg.bufferFillRate;
+        if (msgsize == sizeof(msg))
+          progressWriterFill_ = msg.writerFillRate;
+        else
+          progressWriterFill_ = 0;
 	
 	progressStatusChanged_ = 1;
       }
     }
     else {
-      message(-1, "Reading of progress message failed.");
+      message(-1, _("Reading of progress message failed."));
     }
   }
 
@@ -347,13 +353,13 @@ bool CdDevice::recordDao(Gtk::Window& parent, TocEdit *tocEdit, int simulate,
   sprintf(tocFileName, "/tmp/gcdm.toc.XXXXXX");
   int fd = mkstemp(tocFileName);
   if (!fd) {
-    message(-2, "Cannot create temporary toc-file: %s", strerror(errno));
+    message(-2, _("Cannot create temporary toc-file: %s"), strerror(errno));
     return false;
   }
 
   if (!tocEdit->toc()->write(fd)) {
     close(fd);
-    message(-2, "Cannot write temporary toc-file.");
+    message(-2, _("Cannot write temporary toc-file."));
     return false;
   }
 
@@ -466,7 +472,7 @@ int CdDevice::progressStatusChanged()
 
 void CdDevice::progress(int *status, int *totalTracks, int *track,
 			int *trackProgress, int *totalProgress,
-			int *bufferFill) const
+			int *bufferFill, int *writerFill) const
 {
   *status = progressStatus_;
   *totalTracks = progressTotalTracks_;
@@ -474,6 +480,7 @@ void CdDevice::progress(int *status, int *totalTracks, int *track,
   *trackProgress = progressTrackRelative_;
   *totalProgress = progressTotal_;
   *bufferFill = progressBufferFill_;
+  *writerFill = progressWriterFill_;
 }
 
 // Starts a 'cdrdao' for reading whole cd.
@@ -697,7 +704,7 @@ int CdDevice::duplicateDao(Project& parent, int simulate, int multiSession,
   
   assert(n <= 25);
   
-  PROGRESS_POOL->start(parent, this, "CD to CD copy");
+  PROGRESS_POOL->start(parent, this, _("CD to CD copy"));
 
   // Remove the SCSI interface of this device to avoid problems with double
   // usage of device nodes.
@@ -803,9 +810,9 @@ int CdDevice::blank(Project* parent, int fast, int speed, int eject,
   assert(n <= 20);
   
   if (parent)
-    PROGRESS_POOL->start(*parent, this, "Blanking CDRW", false, false);
+    PROGRESS_POOL->start(*parent, this, _("Blanking CDRW"), false, false);
   else
-    PROGRESS_POOL->start(this, "Blanking CDRW", false, false);
+    PROGRESS_POOL->start(this, _("Blanking CDRW"), false, false);
 
   // Remove the SCSI interface of this device to avoid problems with double
   // usage of device nodes.
