@@ -17,6 +17,8 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include <libgnomeuimm.h>
+
 #include "guiUpdate.h"
 #include "Project.h"
 #include "DumpCDProject.h"
@@ -26,7 +28,6 @@
 #include "MessageBox.h"
 #include "Settings.h"
 #include "util.h"
-#include <gnome.h>
 
 DumpCDProject::DumpCDProject()
 {
@@ -52,9 +53,9 @@ DumpCDProject::DumpCDProject()
 
   CDSource = new RecordCDSource(this);
   CDSource->onTheFlyOption(false);
-  CDSource->start();
+  CDSource->show();
   HDTarget = new RecordHDTarget();
-  HDTarget->start();
+  HDTarget->show();
 
   hbox->pack_start(*CDSource);
   CDSource->show();
@@ -69,8 +70,7 @@ DumpCDProject::DumpCDProject()
   frameBox->show();
   hbox->pack_start(*frameBox, true, false);
 
-  Gnome::Pixmap *pixmap =
-  	manage(new Gnome::Pixmap(Gnome::Pixmap::find_file("gcdmaster/pixmap_dumpcd.png")));
+  Gtk::Image *pixmap = new Gtk::Image(PIXMAPS_DIR "/pixmap_dumpcd.png");
   Gtk::Label *startLabel = manage(new Gtk::Label("      Start      "));
   Gtk::VBox *startBox = manage(new Gtk::VBox);
   Gtk::Button *button = manage(new Gtk::Button());
@@ -78,7 +78,7 @@ DumpCDProject::DumpCDProject()
   startBox->pack_start(*startLabel, false, false);
 
   button->add(*startBox);
-  button->clicked.connect(slot(this, &DumpCDProject::start));
+  button->signal_clicked().connect(slot(*this, &DumpCDProject::start));
   pixmap->show();
   startLabel->show();
   startBox->show();
@@ -93,7 +93,7 @@ DumpCDProject::DumpCDProject()
 
   install_menu_hints();
 
-  guiUpdate(UPD_ALL);
+  CdDevice::signal_statusChanged.connect(slot(*this, &DumpCDProject::devicesStatusChanged));
 }
 
 DumpCDProject::~DumpCDProject()
@@ -106,20 +106,20 @@ void DumpCDProject::start()
 {
   DeviceList *sourceList = CDSource->getDeviceList();
 
-  if (sourceList->selection().empty()) {
-    Gnome::Dialogs::ok(*this, "Please select one reader device");
+  if (sourceList->selectionEmpty()) {
+    Gtk::MessageDialog(*this, "Please select one reader device", Gtk::MESSAGE_INFO).run();
     return;
   }
 
   //Read options
   int correction = CDSource->getCorrection();
 
-  Gtk::string imageName = HDTarget->getFilename();
+  Glib::ustring imageName = HDTarget->getFilename();
 
   if (imageName == "")
   {
 //FIXME: Allow for a temporary file?
-    Gnome::Dialogs::ok(*this, "Please specify a name for the image");
+    Gtk::MessageDialog(*this, "Please specify a name for the image", Gtk::MESSAGE_INFO).run();
     return;
   }
 
@@ -130,7 +130,7 @@ void DumpCDProject::start()
     *p = 0;
 
   if (*tmp == 0 || strcmp(tmp, ".") == 0 || strcmp(tmp, "..") == 0) {
-    Gnome::Dialogs::error(*this, "The specified image name is invalid");
+    Gtk::MessageDialog(*this, "The specified image name is invalid", Gtk::MESSAGE_ERROR).run();
     delete[] tmp;
     return;
   }
@@ -138,11 +138,11 @@ void DumpCDProject::start()
   imageName = tmp;
   delete[] tmp;
 
-  Gtk::string imagePath;
-  Gtk::string binPath;
-  Gtk::string tocPath;
+  Glib::ustring imagePath;
+  Glib::ustring binPath;
+  Glib::ustring tocPath;
   {  
-    Gtk::string path = HDTarget->getPath();
+    Glib::ustring path = HDTarget->getPath();
     const char *s = path.c_str();
     long len = strlen(s);
 
@@ -166,7 +166,7 @@ void DumpCDProject::start()
   tocPath += ".toc";
 
   if (access(binPath.c_str(), R_OK) == 0) {
-    Gtk::string s = "The image file \"";
+    Glib::ustring s = "The image file \"";
     s += binPath;
     s += "\" already exists.";
 
@@ -179,7 +179,7 @@ void DumpCDProject::start()
 
   if (access(tocPath.c_str(), R_OK) == 0) 
   {
-    Gtk::string s = "The toc-file \"";
+    Glib::ustring s = "The toc-file \"";
     s += tocPath;
     s += "\" already exists.";
 
@@ -202,21 +202,11 @@ void DumpCDProject::start()
     }
   }
 
-  DeviceList::DeviceData *sourceData =
-      (DeviceList::DeviceData*) sourceList->selection()[0].get_data();
+  // We can only have one source device selected
+  CdDevice *sourceDev = sourceList->getFirstSelected();
 
-  if (sourceData == NULL)
-    return;
-
-  CdDevice *readDevice = CdDevice::find(sourceData->bus, sourceData->id, sourceData->lun);
-
-  if (readDevice == NULL)
-    return;
-
-  if (readDevice->extractDao(imagePath.c_str(), correction) != 0)
-    Gnome::Dialogs::error(*this, "Cannot start reading");
-  else
-    guiUpdate(UPD_CD_DEVICE_STATUS);
+  if (sourceDev->extractDao(imagePath.c_str(), correction) != 0)
+    Gtk::MessageDialog(*this, "Cannot start reading", Gtk::MESSAGE_ERROR).run();
 }
 
 bool DumpCDProject::closeProject()
@@ -224,12 +214,7 @@ bool DumpCDProject::closeProject()
   return true;  // Close the project
 }
 
-void DumpCDProject::update(unsigned long level)
+void DumpCDProject::devicesStatusChanged()
 {
-  CDSource->update(level);
-  HDTarget->update(level);
-
-  if (level & UPD_CD_DEVICE_STATUS)
-    CDSource->getDeviceList()->selectOne();
+  CDSource->getDeviceList()->selectOne();
 }
-

@@ -37,7 +37,7 @@ private:
   void start();
   void recordToc2CD() {}
   void projectInfo() {}
-  void update(unsigned long level);
+  void devicesStatusChanged();
 };
 #endif
 
