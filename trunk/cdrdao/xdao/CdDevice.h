@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2000/07/30 02:41:03  llanero
+ * started CD to CD copy. Still not functional.
+ *
  * Revision 1.5  2000/05/01 18:15:00  andreasm
  * Switch to gnome-config settings.
  * Adapted Message Box to Gnome look, unfortunately the Gnome::MessageBox is
@@ -58,7 +61,7 @@ class ScsiIf;
 
 class CdDevice : public SigC::Object {
 public:
-  enum Status { DEV_READY, DEV_RECORDING, DEV_READING, DEV_BUSY,
+  enum Status { DEV_READY, DEV_RECORDING, DEV_READING, DEV_WAITING, DEV_BUSY,
 		DEV_NO_DISK, DEV_BLANKING, DEV_FAULT, DEV_UNKNOWN };
   enum DeviceType { CD_R, CD_RW, CD_ROM };
 
@@ -110,7 +113,7 @@ public:
   void abortDaoReading();
 
   int duplicateDao(int simulate, int multiSession, int speed,
-		int eject, int reload, int buffer, int onthefly, CdDevice *readdev);
+		int eject, int reload, int buffer, int onthefly, int correction, CdDevice *readdev);
   void abortDaoDuplication();
     
   int progressStatusChanged();
