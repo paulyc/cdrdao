@@ -23,7 +23,6 @@
 
 class RecordTocDialog;
 class TocEdit;
-#include "ViewSwitcher.h"
 
 class Project : public Gnome::UI::App
 {
@@ -33,7 +32,6 @@ protected:
   Gnome::UI::AppBar *statusbar_;  
   Gtk::ProgressBar *progressbar_;  
   Gtk::Button *progressButton_;  
-  ViewSwitcher *viewSwitcher_;
   
   int projectNumber_;
   gint viewNumber;

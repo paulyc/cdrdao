@@ -185,9 +185,6 @@ void Project::createToolbar()
   toolbar = new Gtk::Toolbar;
   Glib::RefPtr<Gtk::AccelGroup> accel_group = Gtk::AccelGroup::create();
 
-  toolbar->show();
-  toolbar->set_border_width(2);
-
   Gtk::Image *pixmap = manage (new Gtk::Image(Gtk::StockID(Gtk::Stock::NEW),
                               Gtk::ICON_SIZE_LARGE_TOOLBAR));
   toolbar->tools().push_back(Gtk::Toolbar_Helpers::ButtonElem(N_("New"), *pixmap,
@@ -210,9 +207,7 @@ void Project::createToolbar()
   		slot(*this, &Project::recordToc2CD), N_("Record to CD"), ""));
   tiRecord_ = toolbar->tools().back().get_widget();
 
-//GTKMM2  add_docked(*toolbar, "main_toolbar", GNOME_DOCK_ITEM_BEH_NORMAL, GNOME_DOCK_TOP, 1, 1, 0);
-//GTKMM2 bugzilla bug #93299
-  add_docked(*toolbar, "main_toolbar", (BonoboDockItemBehavior)0, (BonoboDockPlacement)0, 1, 1, 0);
+  set_toolbar(*toolbar);
 }
 
 void Project::createStatusbar()
