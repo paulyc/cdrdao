@@ -260,14 +260,26 @@ const char *stripCwd(const char *fname)
   return buf;
 }
 
-const char* fileExtension(const char* fname)
+FileExtension fileExtension(const char* fname)
 {
   const char* e;
 
-  if (fname && (e = strrchr(fname, '.')))
-    return e + 1;
-  else
-    return NULL;
+  if (fname && (e = strrchr(fname, '.'))) {
+    e++;
+
+    if (strcasecmp(e, "toc") == 0)
+      return FE_TOC;
+    if (strcasecmp(e, "wav") == 0)
+      return FE_WAV;
+    if (strcasecmp(e, "mp3") == 0)
+      return FE_MP3;
+    if (strcasecmp(e, "ogg") == 0)
+      return FE_OGG;
+    if (strcasecmp(e, "m3u") == 0)
+      return FE_M3U;
+  }
+
+  return FE_UNKNOWN;
 }
                                            
 bool resolveFilename(std::string& abs, const char* file, const char* path)
