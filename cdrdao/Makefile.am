@@ -4,7 +4,13 @@ else
 MAYBE_XDAO = 
 endif
 
-SUBDIRS = scsilib pccts trackdb utils paranoia dao $(MAYBE_XDAO)
+if COND_SCSILIB
+MAYBE_SCSILIB = scsilib
+else
+MAYBE_SCSILIB =
+endif
+
+SUBDIRS = $(MAYBE_SCSILIB) pccts trackdb utils paranoia dao $(MAYBE_XDAO)
 
 DIST_SUBDIRS = trackdb utils paranoia dao xdao
 
@@ -21,4 +27,4 @@ EXTRA_DIST =		\
 	README.Win32	\
 	scsilib		\
 	pccts		\
-	cdrdao.spec
+	specs/*.in

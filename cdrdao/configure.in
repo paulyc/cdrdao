@@ -1,5 +1,5 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.30.2.4 $)dnl
+AC_REVISION($Revision: 1.30.2.5 $)dnl
 
 AC_INIT(cdrdao, 1.1.8pre2)
 
@@ -202,6 +202,7 @@ en_toc2mp3=no
 AC_PATH_LAME(3.92, [utiltools="$utiltools toc2mp3" en_toc2mp3=yes])
 
 en_xdao=yes
+en_scsilib=yes
 PKG_CHECK_MODULES(GTKMM2, gtkmm-2.0 >= 2.2,[],[en_xdao=no])
 PKG_CHECK_MODULES(LIBGUIMM2, libgnomeuimm-2.0 >= 2.0,[],[en_xdao=no])
 
@@ -220,6 +221,7 @@ if test "$use_scglib" = yes; then
     scsilib_libs="-L../scsilib/export"
   else
     scsilib_dir=""
+    en_scsilib="no (bypassed by configuration)"
     scsilib_incl="-I$scglib_inc"
     scsilib_libs="-L$scglib_lib"
   fi
@@ -326,6 +328,7 @@ AC_SUBST(mydefs)
 
 AM_CONDITIONAL([COND_XDAO], [test "$en_xdao" = yes])
 AM_CONDITIONAL([COND_TOC2MP3], [test "$en_toc2mp3" = yes])
+AM_CONDITIONAL([COND_SCSILIB], [test "$en_scsilib" = yes])
 
 AC_CONFIG_FILES([
         trackdb/Makefile
@@ -335,15 +338,16 @@ AC_CONFIG_FILES([
         xdao/stock/Makefile
         paranoia/Makefile
         Makefile
-        cdrdao.spec
+        specs/cdrdao.rh9.spec
         ])
 
 AC_OUTPUT
 
 echo
-echo "------------------------------------------------"
+echo "------------------------------------------------------"
+echo "  Building scsilib   : $en_scsilib"
 echo "  Building cdrdao    : $en_cdrdao"
 echo "  Building toc2cue   : $en_toc2cue"
 echo "  Building toc2mp3   : $en_toc2mp3"
 echo "  Building gcdmaster : $en_xdao"
-echo "------------------------------------------------"
+echo "------------------------------------------------------"
