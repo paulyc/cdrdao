@@ -397,7 +397,7 @@ int TocEdit::insertFile(const char *fname, unsigned long pos, unsigned long *len
       sampleManager_->scanToc(pos, pos + *len);
       
       tocDirty(1);
-      updateLevel_ |= UPD_TOC_DATA | UPD_TRACK_DATA | UPD_SAMPLE_SEL;
+      updateLevel_ |= UPD_TOC_DATA | UPD_TRACK_DATA;
     }
   }
 
@@ -449,7 +449,7 @@ int TocEdit::insertSilence(unsigned long length, unsigned long pos)
       sampleManager_->scanToc(pos, pos + length);
 
       tocDirty(1);
-      updateLevel_ |= UPD_TOC_DATA | UPD_TRACK_DATA | UPD_SAMPLE_SEL;
+      updateLevel_ |= UPD_TOC_DATA | UPD_TRACK_DATA;
       return 0;
     }
   }
@@ -630,7 +630,7 @@ int TocEdit::removeTrackData(TocEditView *view)
       view->sampleMarker(selMin);
 
       tocDirty(1);
-      updateLevel_ |= UPD_TOC_DATA | UPD_TRACK_DATA | UPD_SAMPLE_SEL | UPD_SAMPLE_MARKER | UPD_SAMPLES ;
+      updateLevel_ |= UPD_TOC_DATA | UPD_TRACK_DATA | UPD_SAMPLES ;
     }
     break;
 
@@ -672,7 +672,7 @@ int TocEdit::insertTrackData(TocEditView *view)
       view->sampleSelection(marker, marker + len - 1);
     
       tocDirty(1);
-      updateLevel_ |= UPD_TOC_DATA | UPD_TRACK_DATA | UPD_SAMPLE_SEL;
+      updateLevel_ |= UPD_TOC_DATA | UPD_TRACK_DATA;
     }
   }
   else {
@@ -691,7 +691,7 @@ int TocEdit::insertTrackData(TocEditView *view)
       view->sampleSelection(Msf(start).samples(), Msf(end).samples() - 1);
       
       tocDirty(1);
-      updateLevel_ |= UPD_TOC_DATA | UPD_TRACK_DATA | UPD_SAMPLE_SEL;
+      updateLevel_ |= UPD_TOC_DATA | UPD_TRACK_DATA;
     }
   }
   return 0;
