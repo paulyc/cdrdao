@@ -290,6 +290,11 @@ void GCDMaster::appClose()
 //FIXME: count what project are modified
 // 0 -> exit app
 // 0 < -> show dialog
+  if (!project_) {
+    Gnome::Main::quit();
+    return;
+  }
+
   if (project_->closeProject())
   {
     Project *previous = 0;
