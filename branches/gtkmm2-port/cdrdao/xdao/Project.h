@@ -27,7 +27,7 @@ class TocEdit;
 class Project : public Gnome::UI::App
 {
 protected:
-  Gtk::Toolbar *toolbar;
+  Gtk::Toolbar *toolbar_;
   Gtk::HBox *hbox;
   Gnome::UI::AppBar *statusbar_;  
   Gtk::ProgressBar *progressbar_;  
