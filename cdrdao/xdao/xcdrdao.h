@@ -18,6 +18,10 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.9  2001/04/16 21:56:04  llanero
+ * Fixes to ProjecChooser.
+ * Visibility of Dockitems in Project and AudioCDProject.
+ *
  * Revision 1.8  2001/03/02 01:46:32  llanero
  * more work on the new mdi.
  * killed MDIWINDOW
@@ -74,7 +78,6 @@
 #define APP_NAME "Gnome CD Master"
 
 extern class GCDMaster *gcdmaster;
-//FIXME extern class MDIWindow *MDI_WINDOW;
 extern class DeviceConfDialog *DEVICE_CONF_DIALOG;
 extern class ProcessMonitor *PROCESS_MONITOR;
 extern class ProgressDialogPool *PROGRESS_POOL;
@@ -84,3 +87,4 @@ void blockProcessMonitorSignals();
 void unblockProcessMonitorSignals();
 
 #endif
+
