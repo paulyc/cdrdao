@@ -505,8 +505,7 @@ int TocEdit::appendSilence(unsigned long length)
   if (length > 0) {
     long start, end;
 
-    TrackData *data = new TrackData(TrackData::AUDIO, TrackData::SUBCHAN_NONE,
-				    length);
+    TrackData *data = new TrackData(length);
     TrackDataList list;
     list.append(data);
 
@@ -531,8 +530,7 @@ int TocEdit::insertSilence(unsigned long length, unsigned long pos)
     return 1;
 
   if (length > 0) {
-    TrackData *data = new TrackData(TrackData::AUDIO, TrackData::SUBCHAN_NONE,
-				    length);
+    TrackData *data = new TrackData(length);
     TrackDataList list;
 
     list.append(data);
