@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.1.1.1  2000/02/05 01:35:04  llanero
+ * Uploaded cdrdao 1.1.3 with pre10 patch applied.
+ *
  * Revision 1.7  1999/04/05 11:04:10  mueller
  * Added driver option flags.
  *
@@ -49,6 +52,7 @@
 
 #include "GenericMMC.h"
 #include "PQChannelEncoder.h"
+#include "PWSubChannel96.h"
 
 class GenericMMCraw : public GenericMMC, private PQChannelEncoder {
 public:
@@ -75,7 +79,14 @@ private:
 
   SubChannel *subChannel_; // sub channel template
 
+  long cdTextStartLba_;
+  long cdTextEndLba_;
+  const PWSubChannel96 **cdTextSubChannels_;
+  long cdTextSubChannelCount_;
+  long cdTextSubChannelAct_;
+
   long nextWritableAddress();
+  int getMultiSessionInfo(int sessionNr, int multi, SessionInfo *info);
 };
 
 #endif

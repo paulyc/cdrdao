@@ -19,6 +19,9 @@
 
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.16  2000/11/19 17:49:33  andreasm
+ * Updated 'msinfo' command.
+ *
  * Revision 1.15  2000/11/12 18:47:59  andreasm
  * Updated 'msinfo' command.
  *
@@ -160,7 +163,7 @@
  *
  */
 
-static char rcsid[] = "$Id: main.cc,v 1.16 2000-11-19 17:49:33 andreasm Exp $";
+static char rcsid[] = "$Id: main.cc,v 1.17 2000-12-17 10:51:23 andreasm Exp $";
 
 #include <config.h>
 
@@ -204,7 +207,7 @@ static int EJECT = 0;
 static int SWAP = 0;
 static int MULTI_SESSION = 0;
 static Command COMMAND;
-static int VERBOSE = 1; // verbose level
+static int VERBOSE = 2; // verbose level
 static int SESSION = 1; // session for read-toc/read-cd
 static int FAST_TOC = 0; // toc reading without sub-channel analysis
 static int PAUSE = 1; // pause before writing
@@ -293,12 +296,12 @@ static void printVersion()
 	  VERSION);
 
 #ifdef USE_SCGLIB
-  message(1, "  SCSI interface library - (C) Joerg Schilling");
+  message(2, "  SCSI interface library - (C) Joerg Schilling");
 #endif
-  message(1, "  L-EC encoding library - (C) Heiko Eissfeldt");
-  message(1, "  Paranoia DAE library - (C) Monty");
-  message(1, "");
-  message(1, "Check http://cdrdao.sourceforge.net/drives.html#dt for current driver tables.");
+  message(2, "  L-EC encoding library - (C) Heiko Eissfeldt");
+  message(2, "  Paranoia DAE library - (C) Monty");
+  message(2, "");
+  message(2, "Check http://cdrdao.sourceforge.net/drives.html#dt for current driver tables.");
   message(1, "");
 }
 
@@ -908,7 +911,7 @@ static CdrDriver *setupDevice(Command cmd, const char *scsiDevice,
     break;
   }
   
-  message(1, "%s: %s %s\tRev: %s", scsiDevice, scsiIf->vendor(),
+  message(2, "%s: %s %s\tRev: %s", scsiDevice, scsiIf->vendor(),
 	  scsiIf->product(), scsiIf->revision());
 
 
@@ -924,7 +927,7 @@ static CdrDriver *setupDevice(Command cmd, const char *scsiDevice,
     return NULL;
   }
 
-  message(1, "Using driver: %s (options 0x%04lx)\n", cdr->driverName(),
+  message(2, "Using driver: %s (options 0x%04lx)\n", cdr->driverName(),
 	  cdr->options());
 
   if (!initDevice)
@@ -1128,9 +1131,9 @@ void showDiskInfo(DiskInfo *di)
 {
   const char *s1, *s2;
 
-  message(0, "That disk info data may not reflect the real status of the inserted medium");
-  message(0, "if a simulation run was performed before. Reload the medium in this case.");
-  message(0, "");
+  message(1, "That disk info data may not reflect the real status of the inserted medium");
+  message(1, "if a simulation run was performed before. Reload the medium in this case.");
+  message(1, "");
 
   printf("CD-RW                : ");
   if (di->valid.cdrw)
@@ -1740,11 +1743,11 @@ int main(int argc, char **argv)
 
   settingsPath = "/etc/cdrdao.conf";
   if (SETTINGS->read(settingsPath) == 0)
-    message(2, "Read settings from \"%s\".", settingsPath);
+    message(3, "Read settings from \"%s\".", settingsPath);
 
   settingsPath = "/etc/defaults/cdrdao";
   if (SETTINGS->read(settingsPath) == 0)
-    message(2, "Read settings from \"%s\".", settingsPath);
+    message(3, "Read settings from \"%s\".", settingsPath);
 
   settingsPath = NULL;
 
@@ -1752,7 +1755,7 @@ int main(int argc, char **argv)
     settingsPath = strdup3CC(homeDir, "/.cdrdao", NULL);
 
     if (SETTINGS->read(settingsPath) == 0)
-      message(2, "Read settings from \"%s\".", settingsPath);
+      message(3, "Read settings from \"%s\".", settingsPath);
   }
   else {
     message(-1,
@@ -1761,7 +1764,7 @@ int main(int argc, char **argv)
 
 
   if (parseCmdline(argc - 1, argv + 1) != 0) {
-    VERBOSE = 1;
+    VERBOSE = 2;
     message(0, "");
     printVersion();
     printUsage();
@@ -1889,7 +1892,7 @@ int main(int argc, char **argv)
 
   case READ_TEST:
     message(1, "Starting read test...");
-    message(1, "Process can be aborted with QUIT signal (usually CTRL-\\).");
+    message(2, "Process can be aborted with QUIT signal (usually CTRL-\\).");
     if (writeDiskAtOnce(toc, NULL, FIFO_BUFFERS, SWAP, 1) != 0) {
       message(-2, "Read test failed.");
       exitCode = 1; goto fail;
@@ -2080,7 +2083,7 @@ int main(int argc, char **argv)
       sleep(10);
     }
 
-    message(1, "Process can be aborted with QUIT signal (usually CTRL-\\).");
+    message(2, "Process can be aborted with QUIT signal (usually CTRL-\\).");
     if (cdr->preventMediumRemoval(1) != 0) {
       exitCode = 1; goto fail;
     }
@@ -2203,6 +2206,14 @@ int main(int argc, char **argv)
     break;
 
   case BLANK:
+    if (WRITING_SPEED >= 0) {
+      if (cdr->speed(WRITING_SPEED) != 0) {
+	message(-2, "Blanking speed %d not supported by device.",
+		WRITING_SPEED);
+	exitCode = 1; goto fail;
+      }
+    }
+
     message(1, "Blanking disk...");
     if (cdr->blankDisk() != 0) {
       message(-2, "Blanking failed.");

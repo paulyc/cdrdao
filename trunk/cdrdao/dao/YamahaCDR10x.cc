@@ -19,6 +19,10 @@
 
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2000/10/08 16:39:41  andreasm
+ * Remote progress message now always contain the track relative and total
+ * progress and the total number of processed tracks.
+ *
  * Revision 1.2  2000/04/23 16:29:50  andreasm
  * Updated to state of my private development environment.
  *
@@ -60,7 +64,7 @@
  * Written by Cameron G. MacKinnon <C_MacKinnon@yahoo.com>.
  */
 
-static char rcsid[] = "$Id: YamahaCDR10x.cc,v 1.3 2000-10-08 16:39:41 andreasm Exp $";
+static char rcsid[] = "$Id: YamahaCDR10x.cc,v 1.4 2000-12-17 10:51:23 andreasm Exp $";
 
 #include <config.h>
 
@@ -456,11 +460,11 @@ unsigned char *YamahaCDR10x::createCueSheet(long *cueSheetLen)
   cueSheet[n*8+6] = SubChannel::bcd(lostart.sec());
   cueSheet[n*8+7] = SubChannel::bcd(lostart.frac());
 
-  message(3, "\nCue Sheet:");
-  message(3, "CTL/  TNO  INDEX  DATA  DATA  MIN  SEC  FRAME");
-  message(3, "ADR   BCD  BCD    TYPE  Form  BCD  BCD  BCD <- Note");
+  message(4, "\nCue Sheet:");
+  message(4, "CTL/  TNO  INDEX  DATA  DATA  MIN  SEC  FRAME");
+  message(4, "ADR   BCD  BCD    TYPE  Form  BCD  BCD  BCD <- Note");
   for (n = 0; n < len; n++) {
-    message(3, "%02x    %02x    %02x     %02x    %02x   %02x   %02x   %02x",
+    message(4, "%02x    %02x    %02x     %02x    %02x   %02x   %02x   %02x",
 	   cueSheet[n*8],
 	   cueSheet[n*8+1], cueSheet[n*8+2], cueSheet[n*8+3], cueSheet[n*8+4],
 	   cueSheet[n*8+5], cueSheet[n*8+6], cueSheet[n*8+7]);
@@ -556,7 +560,7 @@ int YamahaCDR10x::startDao()
 	return 1;
   }
 
-  //message(1, "Writing lead-in and gap...");
+  //message(2, "Writing lead-in and gap...");
 
   long lba = -150;
 
@@ -573,7 +577,7 @@ int YamahaCDR10x::finishDao()
   const unsigned char *sense;
   int senseLen;
 
-  message(1, "Flushing cache...");
+  message(2, "Flushing cache...");
   
   if (flushCache() != 0) {
     return 1;
@@ -1094,7 +1098,7 @@ int YamahaCDR10x::readAudioRange(ReadDiskInfo *rinfo, int fd, long start,
       info[t].isrcCode[0] = 0;
       readIsrc(t + 1, info[t].isrcCode);
       if (info[t].isrcCode[0] != 0)
-	message(1, "Found ISRC code.");
+	message(2, "Found ISRC code.");
 
       totalProgress = (t + 1) * 1000;
       totalProgress /= rinfo->tracks;
