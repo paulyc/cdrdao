@@ -826,9 +826,10 @@ void AudioCDView::appendSilence()
   if (addSilenceDialog_ == 0) {
     addSilenceDialog_ = new AddSilenceDialog();
     addSilenceDialog_->set_transient_for(*project_->getParentWindow ());
-    addSilenceDialog_->signal_tocModified.connect(sigc::mem_fun(
-                                                  *this, &AudioCDView::update));
-
+    addSilenceDialog_->signal_tocModified.
+      connect(sigc::mem_fun(*this, &AudioCDView::update));
+    addSilenceDialog_->signal_fullView.
+      connect(sigc::mem_fun(*this, &AudioCDView::fullView));
   }
 
   addSilenceDialog_->mode(AddSilenceDialog::M_APPEND);
