@@ -131,16 +131,15 @@ int main (int argc, char* argv[])
   installSignalHandler(SIGCHLD, signalHandler);
 
   // setup periodic GUI updates
-  Glib::signal_timeout().connect(SigC::slot(&guiUpdatePeriodic), 2000);
+  Glib::signal_timeout().connect(&CdDevice::updateDeviceStatus, 2000);
 
   installSignalHandler(SIGPIPE, SIG_IGN);
 
   // scan for SCSI devices
   CdDevice::scan();
 
-  // this forces a CdDevice::updateDeviceStatus() so
   // when gcdmaster is first show we already have the device status
-  guiUpdatePeriodic();
+  CdDevice::updateDeviceStatus();
 
   DEVICE_CONF_DIALOG = new DeviceConfDialog;
   PROGRESS_POOL = new ProgressDialogPool;
