@@ -117,15 +117,15 @@ void DuplicateCDProject::start()
   DeviceList *sourceList = CDSource->getDeviceList();
   DeviceList *targetList = CDTarget->getDeviceList();
 
-  if (sourceList->get_selection()->get_selected() == 0) {
+  if (sourceList->selectionEmpty()) {
     Gtk::MessageDialog(*this, "Please select one reader device", Gtk::MESSAGE_INFO);
     return;
   }
 
-  if (targetList->get_selection()->get_selected() == 0) {
+  if (targetList->selectionEmpty()) {
     Gtk::MessageDialog(*this, "Please select at least one recorder device", Gtk::MESSAGE_INFO);
     return;
- }
+  }
 
   // We can only have one source device selected
   CdDevice *sourceDev = sourceList->getFirstSelected();
