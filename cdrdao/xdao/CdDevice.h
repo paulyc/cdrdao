@@ -30,7 +30,7 @@ class TocEdit;
 class Process;
 class ScsiIf;
 
-class CdDevice : public SigC::Object
+class CdDevice : public sigc::trackable
 {
 public:
   enum Status { DEV_READY, DEV_RECORDING, DEV_READING, DEV_WAITING, DEV_BUSY,

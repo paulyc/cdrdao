@@ -75,7 +75,7 @@ AudioCDProject::AudioCDProject(int number, const char *name, TocEdit *tocEdit)
 
     menus.push_back(Item(Icon(Gtk::StockID(Gtk::Stock::PROPERTIES)),
                          _("CD-TEXT..."),
-                         slot(*this, &AudioCDProject::cdTextDialog),
+                         sigc::mem_fun(*this, &AudioCDProject::cdTextDialog),
                          _("Edit CD-TEXT data")));
     insert_menus(_("Edit/Project Info..."), menus);
   }
@@ -192,7 +192,7 @@ void AudioCDProject::playStart(unsigned long start, unsigned long end)
   if (playStatus_ == PAUSED)
     {
       playStatus_ = PLAYING;
-      Glib::signal_idle().connect(slot(*this, &AudioCDProject::playCallback));
+      Glib::signal_idle().connect(sigc::mem_fun(*this,&AudioCDProject::playCallback));
       return;
     }
 
@@ -248,14 +248,14 @@ void AudioCDProject::playStart(unsigned long start, unsigned long end)
 
   guiUpdate(level);
 
-  Glib::signal_idle().connect(slot(*this, &AudioCDProject::playCallback));
+  Glib::signal_idle().connect(sigc::mem_fun(*this, &AudioCDProject::playCallback));
 }
 
 void AudioCDProject::playPause()
 {
   if (playStatus_ == PAUSED) {
     playStatus_ = PLAYING;
-    Glib::signal_idle().connect(slot(*this, &AudioCDProject::playCallback));
+    Glib::signal_idle().connect(sigc::mem_fun(*this, &AudioCDProject::playCallback));
   } else if (playStatus_ == PLAYING) {
     playStatus_ = PAUSED;
   }
@@ -346,56 +346,56 @@ void AudioCDProject::createToolbar()
 
   std::vector<Info> toollist;
   toollist.push_back(Item(Icon(Gtk::Stock::NEW), _("New"),
-                          slot(*gcdmaster, &GCDMaster::newChooserWindow),
+                          sigc::mem_fun(*gcdmaster, &GCDMaster::newChooserWindow),
                           _("New Project")));
   toollist.push_back(Item(Icon(Gtk::Stock::OPEN), _("Open"),
-                          bind(slot(*gcdmaster,&GCDMaster::openProject),
+                          bind(sigc::mem_fun(*gcdmaster,&GCDMaster::openProject),
                                (ProjectChooser *)0),
                           _("Open a project")));
   toollist.push_back(Item(Icon(Gtk::Stock::CLOSE), _("Close"),
-                          bind(slot(*gcdmaster, &GCDMaster::closeProject),
+                          bind(sigc::mem_fun(*gcdmaster, &GCDMaster::closeProject),
                                this),
                           _("Close current project")));
 
   toollist.push_back(Item(Icon(Gtk::Stock::SAVE), _("Save"),
-                          slot(*this, &Project::saveProject),
+                          sigc::mem_fun(*this, &Project::saveProject),
                           _("Save current project")));
 
   toollist.push_back(Item(Icon(Gtk::Stock::CDROM), _("Record"),
-                          slot(*this, &Project::recordToc2CD),
+                          sigc::mem_fun(*this, &Project::recordToc2CD),
                           _("Record to CD")));
 
   toollist.push_back(Separator());
   toollist.push_back(Item(Icon(Icons::PLAY), _("Play"),
-                          slot(*this, &AudioCDProject::on_play_clicked),
+                          sigc::mem_fun(*this, &AudioCDProject::on_play_clicked),
                           _("Play")));
   toollist.push_back(Item(Icon(Icons::STOP), _("Stop"),
-                          slot(*this, &AudioCDProject::on_stop_clicked),
+                          sigc::mem_fun(*this, &AudioCDProject::on_stop_clicked),
                           _("Stop")));
   toollist.push_back(Item(Icon(Icons::PAUSE), _("Pause"),
-                          slot(*this, &AudioCDProject::on_pause_clicked),
+                          sigc::mem_fun(*this, &AudioCDProject::on_pause_clicked),
                           _("Pause")));
 
   toollist.push_back(Separator());
 
   std::vector<Info> radiotree;
   radiotree.push_back(Item(Icon(Gtk::Stock::JUMP_TO), _("Select"),
-                           slot(*this, &AudioCDProject::on_select_clicked),
+                           sigc::mem_fun(*this, &AudioCDProject::on_select_clicked),
                            _("Select Mode")));
   radiotree.push_back(Item(Icon(Gtk::Stock::ZOOM_FIT), _("Zoom"),
-                           slot(*this, &AudioCDProject::on_zoom_clicked),
+                           sigc::mem_fun(*this, &AudioCDProject::on_zoom_clicked),
                            _("Zoom Mode")));
   toollist.push_back(RadioTree(radiotree));
   toollist.push_back(Separator());
 
   toollist.push_back(Item(Icon(Gtk::Stock::ZOOM_IN), _("In"),
-                          slot(*this, &AudioCDProject::on_zoom_in_clicked),
+                          sigc::mem_fun(*this, &AudioCDProject::on_zoom_in_clicked),
                           _("Zoom In")));
   toollist.push_back(Item(Icon(Gtk::Stock::ZOOM_OUT), _("Out"),
-                          slot(*this, &AudioCDProject::on_zoom_out_clicked),
+                          sigc::mem_fun(*this, &AudioCDProject::on_zoom_out_clicked),
                           _("Zoom Out")));
   toollist.push_back(Item(Icon(Gtk::Stock::ZOOM_FIT), _("Fit"),
-                          slot(*this, &AudioCDProject::on_zoom_fit_clicked),
+                          sigc::mem_fun(*this, &AudioCDProject::on_zoom_fit_clicked),
                           _("Zoom Fit")));
 
   Array<Info>& realtb = create_toolbar(toollist);
@@ -411,56 +411,6 @@ void AudioCDProject::createToolbar()
   buttonPause_->set_sensitive(false);
 }
 
-
-void AudioCDProject::createToolbar2()
-{
-  using namespace Gnome::UI::Items;
-  using namespace Gtk::Toolbar_Helpers;
-
-  Gtk::Toolbar* toolbar = manage(new Gtk::Toolbar);
-  toolbar->set_toolbar_style(Gtk::TOOLBAR_ICONS);
-  toolbar->tools().
-    push_back(StockElem(Gtk::Stock::NEW,
-                        slot(*gcdmaster, &GCDMaster::newChooserWindow),
-                        _("New Project")));
-  toolbar->tools().
-    push_back(StockElem(Gtk::Stock::OPEN,
-                        bind(slot(*gcdmaster,&GCDMaster::openProject),
-                             (ProjectChooser *)0),
-                        _("Open a project")));
-  toolbar->tools().
-    push_back(StockElem(Gtk::Stock::CLOSE,
-                        bind(slot(*gcdmaster, &GCDMaster::closeProject), this),
-                        _("Close current project")));
-
-  toolbar->tools().
-    push_back(StockElem(Gtk::Stock::SAVE,
-                        slot(*this, &Project::saveProject),
-                        _("Save current project")));
-
-  toolbar->tools().
-    push_back(StockElem(Gtk::Stock::CDROM,
-                        slot(*this, &Project::recordToc2CD),
-                        _("Record to CD")));
-  toolbar->tools().
-    push_back(StockElem(Gtk::Stock::ZOOM_IN,
-                        slot(*this, &AudioCDProject::on_zoom_in_clicked),
-                        _("Zoom In")));
-  toolbar->tools().
-    push_back(StockElem(Gtk::Stock::ZOOM_OUT,
-                        slot(*this, &AudioCDProject::on_zoom_out_clicked),
-                        _("Zoom Out")));
-  toolbar->tools().
-    push_back(StockElem(Gtk::Stock::ZOOM_FIT,
-                        slot(*this, &AudioCDProject::on_zoom_fit_clicked),
-                        _("Zoom Fit")));
-
-  toolbar->show_all();
-  add_docked(*toolbar, "some name", BONOBO_DOCK_ITEM_BEH_NORMAL,
-             BONOBO_DOCK_TOP, 0, 0, 0);
-  toolbar->set_toolbar_style(Gtk::TOOLBAR_BOTH);
-  toolbar->set_icon_size(Gtk::ICON_SIZE_SMALL_TOOLBAR);
-}
 
 void AudioCDProject::on_play_clicked()
 {

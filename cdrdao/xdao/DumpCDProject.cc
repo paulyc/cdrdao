@@ -66,7 +66,7 @@ DumpCDProject::DumpCDProject()
   startBox->pack_start(*pixmap, false, false);
   startBox->pack_start(*startLabel, false, false);
   button->add(*startBox);
-  button->signal_clicked().connect(slot(*this, &DumpCDProject::start));
+  button->signal_clicked().connect(mem_fun(*this, &DumpCDProject::start));
   bbox->pack_start(*button, Gtk::PACK_EXPAND_PADDING);
   top_vbox->pack_start(*bbox, Gtk::PACK_SHRINK);
 

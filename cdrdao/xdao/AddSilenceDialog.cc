@@ -80,15 +80,15 @@ AddSilenceDialog::AddSilenceDialog()
 
   applyButton_ = new Gtk::Button(Gtk::StockID(Gtk::Stock::APPLY));
   bbox->pack_start(*applyButton_);
-  applyButton_->signal_clicked().connect(slot(*this, &AddSilenceDialog::applyAction));
+  applyButton_->signal_clicked().connect(mem_fun(*this, &AddSilenceDialog::applyAction));
 
   button = new Gtk::Button(Gtk::StockID(Gtk::Stock::CLEAR));
   bbox->pack_start(*button);
-  button->signal_clicked().connect(slot(*this, &AddSilenceDialog::clearAction));
+  button->signal_clicked().connect(mem_fun(*this, &AddSilenceDialog::clearAction));
 
   button = new Gtk::Button(Gtk::StockID(Gtk::Stock::CLOSE));
   bbox->pack_start(*button);
-  button->signal_clicked().connect(slot(*this, &AddSilenceDialog::closeAction));
+  button->signal_clicked().connect(mem_fun(*this, &AddSilenceDialog::closeAction));
 
   get_action_area()->pack_start(*bbox);
   show_all_children();

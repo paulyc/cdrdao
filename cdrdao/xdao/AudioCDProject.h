@@ -71,7 +71,6 @@ private:
   Gtk::Button* buttonPause_;
 
   virtual void createToolbar();
-  virtual void createToolbar2();
   virtual void on_play_clicked();
   virtual void on_stop_clicked();
   virtual void on_pause_clicked();

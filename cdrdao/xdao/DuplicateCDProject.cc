@@ -84,7 +84,7 @@ DuplicateCDProject::DuplicateCDProject()
   startBox->pack_start(*startLabel, false, false);
 
   button->add(*startBox);
-  button->signal_clicked().connect(slot(*this, &DuplicateCDProject::start));
+  button->signal_clicked().connect(mem_fun(*this, &DuplicateCDProject::start));
 
   hbox->pack_start(*button, true, false);
 

@@ -27,7 +27,6 @@
 #include <gnome.h>
 
 #include "AddFileDialog.h"
-
 #include "guiUpdate.h"
 #include "TocEdit.h"
 #include "Sample.h"
@@ -55,9 +54,10 @@ AddFileDialog::AddFileDialog(AudioCDProject *project)
   ok->set_label(Gtk::Stock::ADD.id);
   ok->set_use_stock(true);
 
-  ok->signal_clicked().connect(SigC::slot(*this,&AddFileDialog::applyAction));
-  cancel->signal_clicked().connect(SigC::slot(*this,
-                                              &AddFileDialog::closeAction));
+  ok->signal_clicked().connect(sigc::mem_fun(*this,
+                                             &AddFileDialog::applyAction));
+  cancel->signal_clicked().connect(sigc::mem_fun(*this,
+                                                 &AddFileDialog::closeAction));
 }
 
 AddFileDialog::~AddFileDialog()

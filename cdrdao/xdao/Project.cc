@@ -65,27 +65,27 @@ void Project::createMenus()
     using namespace Gnome::UI::Items;
     using namespace Gnome::UI::MenuItems;
     fileMenuTree.push_back(New(_("New..."), _("Create a new project"),
-                               slot(*gcdmaster,
+                               mem_fun(*gcdmaster,
                                     &GCDMaster::newChooserWindow)));
 
     // File->New menu
     newMenuTree.push_back(Item(Icon(Gtk::StockID(Gtk::Stock::NEW)),
                                _("_Audio CD"),
-                               bind(slot(*gcdmaster,
+                               bind(mem_fun(*gcdmaster,
                                          &GCDMaster::newAudioCDProject2),
                                     (ProjectChooser *)NULL),
                                _("New Audio CD")));
 
     newMenuTree.push_back(Item(Icon(Gtk::StockID(Gtk::Stock::NEW)),
                                _("_Duplicate CD"),
-                               bind(slot(*gcdmaster,
+                               bind(mem_fun(*gcdmaster,
                                          &GCDMaster::newDuplicateCDProject),
                                     (ProjectChooser *)NULL),
                                _("Make a copy of a CD")));
 
     newMenuTree.push_back(Item(Icon(Gtk::StockID(Gtk::Stock::NEW)),
                                _("_Copy CD to disk"),
-                               bind(slot(*gcdmaster,
+                               bind(mem_fun(*gcdmaster,
                                          &GCDMaster::newDumpCDProject),
                                     (ProjectChooser *)NULL),
                                _("Dump CD to disk")));
@@ -101,28 +101,28 @@ void Project::createMenus()
   guint posFileSaveAs;
   {
     using namespace Gnome::UI::MenuItems;
-    fileMenuTree.push_back(Open(bind(slot(*gcdmaster,
+    fileMenuTree.push_back(Open(bind(mem_fun(*gcdmaster,
                                           &GCDMaster::openProject),
                                      (ProjectChooser *)0)));
-    fileMenuTree.push_back(Save(slot(*this, &Project::saveProject)));
+    fileMenuTree.push_back(Save(mem_fun(*this, &Project::saveProject)));
     posFileSave = fileMenuTree.size() - 1;
-    fileMenuTree.push_back(SaveAs(slot(*this, &Project::saveAsProject)));
+    fileMenuTree.push_back(SaveAs(mem_fun(*this, &Project::saveAsProject)));
     posFileSaveAs = fileMenuTree.size() - 1;
 
     fileMenuTree.push_back(Gnome::UI::Items::Separator());
 
-//    fileMenuTree.push_back(PrintSetup(slot(*this, &Project::nothing_cb)));
+//    fileMenuTree.push_back(PrintSetup(mem_fun(*this, &Project::nothing_cb)));
 //
 //    fileMenuTree.push_back(Gnome::UI::Item(Gnome::UI::Icon(GNOME_STOCK_MENU_PRINT),
 //								 "Print Cover...",
-//								 slot(*this, &Project::nothing_cb),
+//								 mem_fun(*this, &Project::nothing_cb),
 //								 "Print Cover"));
 //
 //    fileMenuTree.push_back(Gnome::UI::Items::Separator());
 
     // Close the current child (project);
-    fileMenuTree.push_back(Close(bind(slot(*gcdmaster, &GCDMaster::closeProject), this)));
-    fileMenuTree.push_back(Exit(bind(slot(*gcdmaster, &GCDMaster::appClose), this)));
+    fileMenuTree.push_back(Close(bind(mem_fun(*gcdmaster, &GCDMaster::closeProject), this)));
+    fileMenuTree.push_back(Exit(bind(mem_fun(*gcdmaster, &GCDMaster::appClose), this)));
   }
 
   guint posActionsRecord;
@@ -132,43 +132,43 @@ void Project::createMenus()
     editMenuTree.push_back(Item(Icon(Gtk::StockID(Gtk::Stock::PROPERTIES)),
                                 _("Project Info..."),
 
-                                slot(*this, &Project::projectInfo),
+                                mem_fun(*this, &Project::projectInfo),
                                 _("Edit global project data")));
 
     // Actions menu
     actionsMenuTree.push_back(Item(Icon(Gtk::StockID(Gtk::Stock::CDROM)),
                                    _("_Record"),
-                                   slot(*this, &Project::recordToc2CD),
+                                   mem_fun(*this, &Project::recordToc2CD),
                                    _("Record")));
     posActionsRecord = actionsMenuTree.size() - 1;
 
     actionsMenuTree.push_back(Item(Icon(Gtk::StockID(Gtk::Stock::CDROM)),
                                    _("Blank CD-RW"),
-                                   bind(slot(*gcdmaster,
+                                   bind(mem_fun(*gcdmaster,
                                              &GCDMaster::blankCDRW),
                                         this),
                                    _("Erase a CD-RW")));
 
 //    actionsMenuTree.push_back(Gnome::UI::Item("Fixate CD",
-//					    slot(*this, &Project::nothing_cb)));
+//					    mem_fun(*this, &Project::nothing_cb)));
 //    actionsMenuTree.push_back(Gnome::UI::Item("Get Info",
-//					    slot(*this, &Project::nothing_cb)));
+//					    mem_fun(*this, &Project::nothing_cb)));
 
     // Settings menu
     settingsMenuTree.push_back(Item(Icon(Gtk::StockID(Gtk::Stock::PREFERENCES)),
                                     _("Configure Devices..."),
-                                    slot(*gcdmaster, &GCDMaster::configureDevices)));
+                                    mem_fun(*gcdmaster, &GCDMaster::configureDevices)));
   }
 
 //    settingsMenuTree.push_back(Gnome::UI::MenuItems::Preferences
-//  				(slot(*this, &Project::nothing_cb)));
+//  				(mem_fun(*this, &Project::nothing_cb)));
 
 
   // Help menu
   //helpMenuTree.push_back(Gnome::UI::Help("Quick Start"));
 
   helpMenuTree.push_back(Gnome::UI::MenuItems::About
-  				(slot(*this, &Project::aboutDialog)));
+  				(mem_fun(*this, &Project::aboutDialog)));
 
   {
     using namespace Gnome::UI::Menus;
@@ -261,9 +261,9 @@ void Project::saveAsProject()
   if (!saveFileSelector_) {
     saveFileSelector_ = new Gtk::FileSelection(_("Save Project"));
     saveFileSelector_->get_ok_button()->signal_clicked().
-      connect(slot(*this, &Project::saveFileSelectorOKCB));
+      connect(mem_fun(*this, &Project::saveFileSelectorOKCB));
     saveFileSelector_->get_cancel_button()->signal_clicked().
-      connect(slot(*this, &Project::saveFileSelectorCancelCB));
+      connect(mem_fun(*this, &Project::saveFileSelectorCancelCB));
     saveFileSelector_->set_transient_for(*this);
   }
 

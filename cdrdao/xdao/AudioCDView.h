@@ -43,7 +43,7 @@ class AudioCDView : public GenericView
 public:
   AudioCDView(AudioCDChild *child, AudioCDProject *project);
   ~AudioCDView();
-  SigC::Signal0<void> add_view;
+  sigc::signal0<void> add_view;
 
   void update(unsigned long level);
 
@@ -104,9 +104,9 @@ private:
   void selectionSet();
 
   void drag_data_received_cb(const Glib::RefPtr<Gdk::DragContext>& context,
-                             gint x, gint y, GtkSelectionData *selection_data,
-                             guint info, guint time);
-
+			     gint x, gint y,
+			     const GtkSelectionData *selection_data,
+			     guint info, guint time);
 };
 
 #endif

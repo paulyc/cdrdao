@@ -79,13 +79,13 @@ ProjectChooser::ProjectChooser()
 
   // Connect button signals
   openButton.signal_clicked().
-    connect(bind(slot(*gcdmaster, &GCDMaster::openProject), this));
+    connect(bind(mem_fun(*gcdmaster, &GCDMaster::openProject), this));
   audioCDButton.signal_clicked().
-    connect(bind(slot(*gcdmaster, &GCDMaster::newAudioCDProject2), this));
+    connect(bind(mem_fun(*gcdmaster, &GCDMaster::newAudioCDProject2), this));
   copyCDButton.signal_clicked().
-    connect(bind(slot(*gcdmaster, &GCDMaster::newDuplicateCDProject), this));
+    connect(bind(mem_fun(*gcdmaster, &GCDMaster::newDuplicateCDProject), this));
   dumpCDButton.signal_clicked().
-    connect(bind(slot(*gcdmaster, &GCDMaster::newDumpCDProject), this));
+    connect(bind(mem_fun(*gcdmaster, &GCDMaster::newDumpCDProject), this));
 
   vbox.show_all();
 }
