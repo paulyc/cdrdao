@@ -40,6 +40,11 @@ Project::Project()
   saveFileSelector_ = 0;  
   viewNumber = 0;
   recordTocDialog_ = 0;
+  parent_ = NULL;
+  progressbar_ = NULL;
+  progressButton_ = NULL;
+  tocEdit_ = NULL;
+  saveFileSelector_ = NULL;
 }
 
 void Project::updateWindowTitle()
