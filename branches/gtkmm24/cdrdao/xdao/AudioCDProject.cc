@@ -40,17 +40,22 @@
 AudioCDProject::AudioCDProject(int number, const char *name, TocEdit *tocEdit,
     Gtk::Window *parent)
 {
+  tocInfoDialog_ = NULL;
+  cdTextDialog_ = NULL;
+  soundInterface_ = NULL;
+  buttonPlay_ = NULL;
+  buttonStop_ = NULL;
+  buttonPause_ = NULL;
+  audioCDView_ = NULL;
+
   parent_ = parent;
   pack_start(hbox_);
 
   projectNumber_ = number;
 
-  tocInfoDialog_ = NULL;
-  cdTextDialog_ = NULL;
   playStatus_ = STOPPED;
   playBurst_ = 588 * 10;
   playBuffer_ = new Sample[playBurst_];
-  soundInterface_ = NULL;
 
   if (tocEdit == NULL)
     tocEdit_ = new TocEdit(NULL, NULL);
