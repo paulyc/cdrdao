@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2000/04/16 20:31:20  andreasm
+ * Added missing stdio.h includes.
+ *
  * Revision 1.2  2000/02/20 23:34:54  llanero
  * fixed scsilib directory (files mising ?-()
  * ported xdao to 1.1.8 / gnome (MDI) app
@@ -27,7 +30,7 @@
  *
  */
 
-static char rcsid[] = "$Id: RecordProgressDialog.cc,v 1.3 2000-04-16 20:31:20 andreasm Exp $";
+static char rcsid[] = "$Id: RecordProgressDialog.cc,v 1.4 2000-04-23 09:07:08 andreasm Exp $";
 
 #include <stdio.h>
 #include <stddef.h>
@@ -315,16 +318,7 @@ void RecordProgressDialog::setCloseButtonLabel(int l)
   if (actCloseButtonLabel_ == l)
     return;
 
-  switch (actCloseButtonLabel_) {
-  case 1:
-//llanero    closeButton_->remove(abortLabel_);
-    closeButton_->remove();
-    break;
-  case 2:
-//llanero    closeButton_->remove(closeLabel_);
-    closeButton_->remove();
-    break;
-  }
+  closeButton_->remove();
 
   switch (l) {
   case 1:

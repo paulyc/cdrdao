@@ -18,18 +18,21 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.1.1.1  2000/02/05 01:40:28  llanero
+ * Uploaded cdrdao 1.1.3 with pre10 patch applied.
+ *
  * Revision 1.1  1999/08/19 20:28:40  mueller
  * Initial revision
  *
  */
 
-static char rcsid[] = "$Id: guiUpdate.cc,v 1.1.1.1 2000-02-05 01:40:28 llanero Exp $";
+static char rcsid[] = "$Id: guiUpdate.cc,v 1.2 2000-04-23 09:07:08 andreasm Exp $";
 
 #include "guiUpdate.h"
 
 #include "xcdrdao.h"
 #include "TocEdit.h"
-#include "MainWindow.h"
+#include "MDIWindow.h"
 #include "TrackInfoDialog.h"
 #include "TocInfoDialog.h"
 #include "AddSilenceDialog.h"
@@ -44,14 +47,14 @@ static char rcsid[] = "$Id: guiUpdate.cc,v 1.1.1.1 2000-02-05 01:40:28 llanero E
 
 void guiUpdate(unsigned long level)
 {
-  if (MAIN_WINDOW == NULL)
+  if (MDI_WINDOW == NULL)
     return;
 
-  TocEdit *tocEdit = MAIN_WINDOW->tocEdit();
+  TocEdit *tocEdit = MDI_WINDOW->tocEdit();
 
   level |= tocEdit->updateLevel();
 
-  MAIN_WINDOW->update(level);
+  MDI_WINDOW->update(level);
 
   if (TRACK_INFO_DIALOG != NULL)
     TRACK_INFO_DIALOG->update(level, tocEdit);

@@ -1,6 +1,6 @@
 /*  cdrdao - write audio CD-Rs in disc-at-once mode
  *
- *  Copyright (C) 1998, 1999  Andreas Mueller <mueller@daneb.ping.de>
+ *  Copyright (C) 1998-2000  Andreas Mueller <mueller@daneb.ping.de>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -18,6 +18,10 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2000/02/20 23:34:54  llanero
+ * fixed scsilib directory (files mising ?-()
+ * ported xdao to 1.1.8 / gnome (MDI) app
+ *
  * Revision 1.1.1.1  2000/02/05 01:38:52  llanero
  * Uploaded cdrdao 1.1.3 with pre10 patch applied.
  *
@@ -59,8 +63,7 @@ private:
 
   TextEdit *catalog_;
 
-//llanero  Gtk::ItemFactory_Menu *tocTypeMenuFactory_;
-//llanero  Gtk::OptionMenu *tocType_;
+  Gtk::OptionMenu *tocType_;
   Toc::TocType selectedTocType_;
 
   struct BlockValue {
@@ -69,11 +72,9 @@ private:
   };
 
   struct CdTextPage {
-//llanero    Gtk::ItemFactory_Menu *languageMenuFactory;
     Gtk::OptionMenu *language;
     int selectedLanguage;
 
-//llanero    Gtk::ItemFactory_Menu *genreMenuFactory;
     Gtk::OptionMenu *genre;
     int selectedGenre;
     
@@ -104,6 +105,7 @@ private:
   const char *checkString(const string &);
   int getCdTextLanguageIndex(int code);
   int getCdTextGenreIndex(int code1, int code2);
+  void cdTextTableAction(int language);
 
   void importCdText(const Toc *);
   void importData(const Toc *);

@@ -18,6 +18,10 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2000/02/20 23:34:53  llanero
+ * fixed scsilib directory (files mising ?-()
+ * ported xdao to 1.1.8 / gnome (MDI) app
+ *
  * Revision 1.1.1.1  2000/02/05 01:39:00  llanero
  * Uploaded cdrdao 1.1.3 with pre10 patch applied.
  *
@@ -34,7 +38,7 @@
  *
  */
 
-static char rcsid[] = "$Id: AddSilenceDialog.cc,v 1.2 2000-02-20 23:34:53 llanero Exp $";
+static char rcsid[] = "$Id: AddSilenceDialog.cc,v 1.3 2000-04-23 09:07:08 andreasm Exp $";
 
 #include <stdio.h>
 #include <limits.h>
@@ -117,8 +121,6 @@ AddSilenceDialog::AddSilenceDialog()
   applyButton_ = new Gtk::Button(string(" Apply "));
   bbox->pack_start(*applyButton_);
   applyButton_->show();
-//llanero  connect_to_method(applyButton_->clicked, this,
-//		    &AddSilenceDialog::applyAction);
   applyButton_->clicked.connect(slot(this, &AddSilenceDialog::applyAction));
 
   button = new Gtk::Button(string(" Clear "));

@@ -18,6 +18,10 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2000/02/20 23:34:54  llanero
+ * fixed scsilib directory (files mising ?-()
+ * ported xdao to 1.1.8 / gnome (MDI) app
+ *
  * Revision 1.1.1.1  2000/02/05 01:39:52  llanero
  * Uploaded cdrdao 1.1.3 with pre10 patch applied.
  *
@@ -57,7 +61,6 @@
 
 #include "TrackDataScrap.h"
 
-//llanero: class SampleManagerImpl : public Gtk_Signal_Base {
 class SampleManagerImpl : public SigC::Object {
 public:
   SampleManagerImpl(unsigned long);
@@ -188,13 +191,11 @@ SampleManagerImpl::SampleManagerImpl(unsigned long blocking) : tocReader_(NULL)
   Gtk::Button *button = new Gtk::Button(string(" Abort "));
   hbox->pack_start(*button, TRUE, FALSE);
   button->show();
-//llanero  connect_to_method(button->clicked, this, &SampleManagerImpl::abortAction);
   button->clicked.connect(slot(this, &SampleManagerImpl::abortAction));
   vbox->pack_start(*hbox, FALSE, FALSE, 5);
   hbox->show();
 
   progressWindow_ = new Gtk::Window(GTK_WINDOW_DIALOG);
-//llanero  progressWindow_->add(vbox);
   progressWindow_->add(*vbox);
   progressWindow_->set_usize(200, 0);
   vbox->show();
@@ -311,7 +312,6 @@ int SampleManagerImpl::scanToc(unsigned long start, unsigned long end)
   if (withGui_) {
     progressWindow_->show();
 
-//llanero:    connect_to_method(Gtk_Main::idle(), this, &SampleManagerImpl::readSamples);
     Gtk::Main::idle.connect(slot(this, &SampleManagerImpl::readSamples));
 
     tocEdit_->blockEdit();

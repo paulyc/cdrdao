@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2000/04/16 20:31:59  andreasm
+ * Fixed radio button stuff.
+ *
  * Revision 1.2  2000/02/20 23:34:54  llanero
  * fixed scsilib directory (files mising ?-()
  * ported xdao to 1.1.8 / gnome (MDI) app
@@ -30,7 +33,7 @@
  *
  */
 
-static char rcsid[] = "$Id: RecordDialog.cc,v 1.3 2000-04-16 20:31:59 andreasm Exp $";
+static char rcsid[] = "$Id: RecordDialog.cc,v 1.4 2000-04-23 09:07:08 andreasm Exp $";
 
 #include <stdio.h>
 #include <limits.h>
@@ -74,24 +77,24 @@ RecordDialog::RecordDialog()
   set_title(string("Record"));
   set_usize(0, 300);
 
-/*llanero
-  speedMenuFactory_ = new Gtk::ItemFactory_Menu("<Main>");
+  Gtk::Menu *menu = manage(new Gtk::Menu);
+  Gtk::MenuItem *mi;
 
   for (i = 0; i <= MAX_SPEED_ID; i++) {
-    string s("/");
-    s += SPEED_TABLE[i].name;
-
-    speedMenuFactory_->create_item(s, 0, "<Item>", ItemFactoryConnector<RecordDialog, int>(this, &RecordDialog::setSpeed, i));
+    mi = manage(new Gtk::MenuItem(SPEED_TABLE[i].name));
+    mi->activate.connect(bind(slot(this, &RecordDialog::setSpeed), i));
+    mi->show();
+    menu->append(*mi);
   }
 
   speedMenu_ = new Gtk::OptionMenu;
-  speedMenu_->set_menu(speedMenuFactory_->get_menu_widget(string("")));
+  speedMenu_->set_menu(menu);
 
   speed_ = 0;
   speedMenu_->set_history(speed_);
 
   startButton_ = new Gtk::Button(string(" Start "));
-*/
+
   Gtk::RadioButton_Helpers::Group simWriteGroup;
 
   simulateButton_ = new Gtk::RadioButton(simWriteGroup, string("Simulate"));
@@ -207,7 +210,7 @@ RecordDialog::RecordDialog()
   label = new Gtk::Label(string("Recording Speed: "));
   hbox->pack_start(*label, FALSE);
   label->show();
-//llanero  hbox->pack_start(*speedMenu_, FALSE);
+  hbox->pack_start(*speedMenu_, FALSE);
   speedMenu_->show();
   table->attach(*hbox, 1, 2, 1, 2);
   hbox->show();
