@@ -17,8 +17,12 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
+#include <gtkmm.h>
+#include <gnome.h>
+#include <glibmm/convert.h>
 #include <iostream>
 
+#include "config.h"
 #include "xcdrdao.h"
 #include "guiUpdate.h"
 #include "MessageBox.h"
@@ -33,8 +37,6 @@
 #include "TrackInfoDialog.h"
 #include "AddFileDialog.h"
 #include "AddSilenceDialog.h"
-#include <gtkmm.h>
-#include <gnome.h>
 
 AudioCDView::AudioCDView(AudioCDProject *project) 
     : addFileDialog_(project)
@@ -51,15 +53,13 @@ AudioCDView::AudioCDView(AudioCDProject *project)
 
   std::list<Gtk::TargetEntry> drop_types;
 
-  drop_types.push_back(Gtk::TargetEntry("text/uri-list", Gtk::TargetFlags(0), TARGET_URI_LIST));
+  drop_types.push_back(Gtk::TargetEntry("text/uri-list", Gtk::TargetFlags(0),
+                                        TARGET_URI_LIST));
 
-  drag_dest_set(drop_types,
-                Gtk::DEST_DEFAULT_MOTION |
-                Gtk::DEST_DEFAULT_HIGHLIGHT |
-                Gtk::DEST_DEFAULT_DROP);
-#if 0
-  signal_drag_data_received().connect(sigc::mem_fun(*this, &AudioCDView::drag_data_received_cb));
-#endif
+  drag_dest_set(drop_types);
+  signal_drag_data_received().
+      connect(sigc::mem_fun(*this, &AudioCDView::drag_data_received_cb));
+
   sampleDisplay_ = new SampleDisplay;
   sampleDisplay_->setTocEdit(project->tocEdit());
 
@@ -83,7 +83,8 @@ AudioCDView::AudioCDView(AudioCDProject *project)
   markerPos_ = new Gtk::Entry;
   markerPos_->set_editable(true);
   markerPos_->set_size_request(entry_width, -1);
-  markerPos_->signal_activate().connect(sigc::mem_fun(*this, &AudioCDView::markerSet));
+  markerPos_->signal_activate().
+      connect(sigc::mem_fun(*this, &AudioCDView::markerSet));
 
   cursorPos_ = new Gtk::Label;
   cursorPos_->set_size_request(entry_width, -1);
@@ -511,28 +512,47 @@ void AudioCDView::selectionSet()
 }
 
 void
-AudioCDView::drag_data_received_cb(const Glib::RefPtr<Gdk::DragContext>& context,
-                                   gint x, gint y,
-                                   const GtkSelectionData *selection_data,
+AudioCDView::drag_data_received_cb(const Glib::RefPtr<Gdk::DragContext>&
+                                   context, int x, int y,
+                                   const Gtk::SelectionData& selection_data,
                                    guint info, guint time)
 {
-  GList *names = NULL;
-  
   switch (info) {
-  case TARGET_URI_LIST:
-    if (names && names->data) {
-      std::string str = g_strdup(static_cast <char *>(names->data));
-      const char *file = stripCwd(str.c_str());
 
-      tocEditView_->tocEdit()->queueAppendTrack(file);
-      names = g_list_remove(names, names->data);
-      if (names == NULL)
-        break;
+  case TARGET_URI_LIST:
+
+    std::string list = selection_data.get_data_as_string();
+    int idx = 0, n;
+
+    while ((n = list.find("\r\n", idx)) >= 0) {
+      std::string sub = list.substr(idx, n - idx);
+      idx = n + 2;
+
+      std::string fn;
+      try {
+        fn = Glib::filename_from_uri(sub);
+      } catch (std::exception& e) {
+        fn.clear();
+      }
+
+      if (fn.empty())
+        continue;
+
+      TrackData::FileType type = TrackData::audioFileType(fn.c_str());
+      if (type == TrackData::WAVE
+#ifdef HAVE_MP3_SUPPORT
+          || type == TrackData::MP3
+#endif
+#ifdef HAVE_OGG_SUPPORT
+          || type == TrackData::OGG
+#endif
+          ) {
+        tocEditView_->tocEdit()->queueAppendTrack(fn.c_str());
+      }
     }
     break;
   }
 }
-
 void AudioCDView::trackInfo()
 {
   int track;
