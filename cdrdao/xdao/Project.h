@@ -51,14 +51,12 @@ protected:
   virtual void createToolbar() = 0;
   virtual void createStatusbar();
   void updateWindowTitle();
-  void saveProject();
   void saveAsProject();
   Gtk::FileSelection *saveFileSelector_;
   void saveFileSelectorOKCB();
   void saveFileSelectorCancelCB();
 
   virtual bool on_delete_event(GdkEventAny *event);
-  virtual void recordToc2CD() = 0;
   virtual void projectInfo() = 0;
 
 public:
@@ -67,7 +65,9 @@ public:
   void readToc(char *name);
   void statusMessage(const char *fmt, ...);
   void tocBlockedMsg(const char *);
-  virtual bool closeProject() = 0;
+  virtual bool closeProject() = 0; 
+  virtual void saveProject();
+  virtual void recordToc2CD() = 0;
   int projectNumber();
   TocEdit *tocEdit();
   gint getViewNumber();
