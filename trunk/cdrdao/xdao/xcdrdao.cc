@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2000/02/28 23:29:55  llanero
+ * fixed Makefile.in to include glade-gnome
+ *
  * Revision 1.2  2000/02/20 23:34:54  llanero
  * fixed scsilib directory (files mising ?-()
  * ported xdao to 1.1.8 / gnome (MDI) app
@@ -43,6 +46,8 @@
 
 #include "config.h"
 
+#include "AudioCDChild.h"
+
 #include "xcdrdao.h"
 #include "MDIWindow.h"
 #include "TocEdit.h"
@@ -62,6 +67,9 @@
 #include "Settings.h"
 
 #include "port.h"
+
+//only for testing:
+AudioCDChild *AUDIOCD_CHILD = NULL;
 
 MDIWindow *MDI_WINDOW = NULL;
 MainWindow *MAIN_WINDOW = NULL;
@@ -157,6 +165,7 @@ int main (int argc, char* argv[])
    
   Gtk::ButtonBox::set_child_size_default(50, 10);
 
+//not needed by now...
 glade_gnome_init ();
 
   // settings
@@ -208,7 +217,11 @@ glade_gnome_init ();
 //llanero  MAIN_WINDOW->show();
   MDI_WINDOW = new MDIWindow();
   MDI_WINDOW->open_toplevel();
-  MDI_WINDOW->example_child();
+
+  AUDIOCD_CHILD = new AudioCDChild(tocEdit);
+
+  MDI_WINDOW->add_child(*AUDIOCD_CHILD);
+  MDI_WINDOW->add_view(*AUDIOCD_CHILD);
 
 //llanero  guiUpdate();
 
