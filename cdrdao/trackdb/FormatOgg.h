@@ -35,6 +35,7 @@ class FormatOgg : public FormatSupport
   Status convert(const char* from, const char* to);
   Status convertStart(const char* from, const char* to);
   Status convertContinue();
+  void   convertAbort();
 
   TrackData::FileType format() { return TrackData::WAVE; }
 
