@@ -164,7 +164,7 @@ void DeviceList::import()
     }
   }
 
-//FIXME: emit a selection_changed signal?
+  selectOne();
 }
 
 void DeviceList::importStatus()
@@ -186,7 +186,7 @@ void DeviceList::selectOne()
   Gtk::TreeIter iter;
   Gtk::TreeRow row;
 
-  if (treeView_.get_selection()->get_selected() == 0) {
+  if (selectionEmpty()) {
     for (iter = listStore_->get_iter("0"); iter != 0; iter++) {
       row = *(iter);
       static_cast<void *>(dev) = row[modelColumns_.device];
@@ -204,14 +204,17 @@ void DeviceList::selectOneBut(CdDevice *target)
   Gtk::TreeIter iter;
   Gtk::TreeRow row;
 
-  if (treeView_.get_selection()->get_selected() == 0) {
+
+  if (selectionEmpty()) {
     for (iter = listStore_->get_iter("0"); iter != 0; iter++) {
-      row = *(iter);
-      static_cast<void *>(dev) = row[modelColumns_.device];
-      if ((dev->status() == CdDevice::DEV_READY)
-       && (dev != target)) {
-        treeView_.get_selection()->select(iter);
+      if (treeView_.get_selection()->is_selected(Gtk::TreePath(iter))) {
+        row = *(iter);
+        static_cast<void *>(dev) = row[modelColumns_.device];
+        if ((dev->status() == CdDevice::DEV_READY)
+         && (dev != target)) {
+           treeView_.get_selection()->select(iter);
         break;
+        }
       }
     }
   }
@@ -226,9 +229,13 @@ CdDevice *DeviceList::getFirstSelected()
   Gtk::TreeIter iter;
   Gtk::TreeRow row;
 
-  if (iter = treeView_.get_selection()->get_selected()) {
-    row = *(iter);
-    static_cast<void *>(dev) = row[modelColumns_.device];
+  for (iter = listStore_->get_iter("0"); iter != 0; iter++) {
+    if (treeView_.get_selection()->is_selected(Gtk::TreePath(iter)))
+    {
+      row = *(iter);
+      static_cast<void *>(dev) = row[modelColumns_.device];
+	  break;
+    }
   }
 
   return dev;
@@ -240,14 +247,31 @@ bool DeviceList::isSelected(CdDevice *device)
   Gtk::TreeIter iter;
   Gtk::TreeRow row;
 
-  for (iter = treeView_.get_selection()->get_selected(); iter != 0; iter++) {
-    row = *(iter);
-    static_cast<void *>(dev) = row[modelColumns_.device];
-    if (dev == device)
-      return true;
+  for (iter = listStore_->get_iter("0"); iter != 0; iter++) {
+    if (treeView_.get_selection()->is_selected(Gtk::TreePath(iter)))
+    {
+      row = *(iter);
+      static_cast<void *>(dev) = row[modelColumns_.device];
+      if (dev == device)
+        return true;
+    }
   }
 
   return false;
+}
+
+bool DeviceList::selectionEmpty()
+{
+  CdDevice *dev;
+  Gtk::TreeIter iter;
+  Gtk::TreeRow row;
+
+  for (iter = listStore_->get_iter("0"); iter != 0; iter++) {
+    if (treeView_.get_selection()->is_selected(Gtk::TreePath(iter)))
+      return false;
+  }
+
+  return true;
 }
 
 std::list<CdDevice *> DeviceList::getAllSelected()
@@ -257,10 +281,13 @@ std::list<CdDevice *> DeviceList::getAllSelected()
   Gtk::TreeRow row;
   std::list<CdDevice *> devices;
 
-  for (iter = treeView_.get_selection()->get_selected(); iter != 0; iter++) {
-    row = *(iter);
-    static_cast<void *>(dev) = row[modelColumns_.device];
-    devices.push_back(dev);
+  for (iter = listStore_->get_iter("0"); iter != 0; iter++) {
+    if (treeView_.get_selection()->is_selected(Gtk::TreePath(iter)))
+    {
+      row = *(iter);
+      static_cast<void *>(dev) = row[modelColumns_.device];
+      devices.push_back(dev);
+    }
   }
 
   return devices;

@@ -35,7 +35,7 @@ public:
 
   CdDevice *getFirstSelected();
   bool isSelected(CdDevice *);
-
+  bool selectionEmpty();
   std::list<CdDevice *> getAllSelected();
 
 private:
