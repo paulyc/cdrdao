@@ -245,7 +245,7 @@ void DumpCDProject::projectOptions()
     button->signal_clicked().connect(slot(*moreOptionsDialog_, &Gtk::Widget::hide));
 
     Gtk::VBox *vbox = moreOptionsDialog_->get_vbox();
-    Gtk::HBox *hbox = new Gtk::HBox();
+    Gtk::VBox *hbox = new Gtk::VBox();
     hbox->show();
     vbox->pack_start(*hbox);
     vbox->set_border_width(10);

@@ -213,7 +213,7 @@ void DuplicateCDProject::start()
 
   int buffer = CDTarget->getBuffer();
 
-  std::list<CdDevice *> devices = targetList->getAllSelected();
+  std::list<CdDevice *> devices = targetList->getAll(true);
 
   for (std::list<CdDevice *>::iterator i = devices.begin();
          i != devices.end(); i++)
@@ -242,7 +242,7 @@ void DuplicateCDProject::projectOptions()
     button->signal_clicked().connect(slot(*moreOptionsDialog_, &Gtk::Widget::hide));
 
     Gtk::VBox *vbox = moreOptionsDialog_->get_vbox();
-    Gtk::HBox *hbox = new Gtk::HBox();
+    Gtk::VBox *hbox = new Gtk::VBox();
     hbox->show();
     vbox->pack_start(*hbox);
     vbox->set_border_width(10);

@@ -228,7 +228,7 @@ void RecordTocDialog::startAction()
 
   int buffer = CDTarget->getBuffer();
 
-  std::list<CdDevice *> devices = targetList->getAllSelected();
+  std::list<CdDevice *> devices = targetList->getAll(true);
 
   for (std::list<CdDevice *>::iterator i = devices.begin();
          i != devices.end(); i++)
