@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.1.1.1  2000/02/05 01:36:30  llanero
+ * Uploaded cdrdao 1.1.3 with pre10 patch applied.
+ *
  * Revision 1.10  1999/09/03 15:00:02  mueller
  * Changed message levels from 0 to 1.
  *
@@ -54,7 +57,7 @@
  *
  */
 
-static char rcsid[] = "$Id: GenericMMCraw.cc,v 1.1.1.1 2000-02-05 01:36:30 llanero Exp $";
+static char rcsid[] = "$Id: GenericMMCraw.cc,v 1.2 2000-04-24 12:47:57 andreasm Exp $";
 
 #include <config.h>
 
@@ -67,7 +70,7 @@ static char rcsid[] = "$Id: GenericMMCraw.cc,v 1.1.1.1 2000-02-05 01:36:30 llane
 
 #include "Toc.h"
 #include "util.h"
-
+#include "port.h"
 
 GenericMMCraw::GenericMMCraw(ScsiIf *scsiIf, unsigned long options) 
   : GenericMMC(scsiIf, options), PQChannelEncoder()
@@ -212,8 +215,6 @@ int GenericMMCraw::initDao(const Toc *toc)
 
 int GenericMMCraw::startDao()
 {
-  //scsiTimeout_ = scsiIf_->timeout(1 * 20);
-
   message(1, "Writing lead-in and gap...");
 
   long lba = leadInStart_.lba() - 450150;
@@ -231,6 +232,8 @@ int GenericMMCraw::startDao()
 
 int GenericMMCraw::finishDao()
 {
+  int ret;
+
   message(1, "Writing lead-out...");
 
   long lba = CdrDriver::toc_->length().lba();
@@ -243,9 +246,12 @@ int GenericMMCraw::finishDao()
     return 1;
   }
 
-  message(1, "");
+  while ((ret = testUnitReady(0)) == 2)
+    mSleep(2000);
 
-  //scsiIf_->timeout(scsiTimeout_);
+  if (ret != 0)
+    message(-1, "TEST UNIT READY failed after recording.");
+
   delete[] zeroBuffer_, zeroBuffer_ = NULL;
   delete[] encodeBuffer_, encodeBuffer_ = NULL;
 
