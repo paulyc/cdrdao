@@ -371,6 +371,7 @@ static int writer(const Toc *toc, CdrDriver *cdr, BufferHeader *header,
     }	
 #endif
 
+    // Write track data.
     if (cdr != NULL) {
       blockSignals();
       if (cdr->writeData(dataMode, subChanMode, lba, buf.buffer, len) != 0) {
@@ -378,14 +379,22 @@ static int writer(const Toc *toc, CdrDriver *cdr, BufferHeader *header,
 	unblockSignals();
 	return 2;
       }
-      else {
-	cntMb = cnt >> 20;
-	if (cntMb > lastMb) {
-	  message(1, "Wrote %ld of %ld MB (Buffer %3d%%).\r", cnt >> 20,
-		  total >> 20, buffFill);
-	  lastMb = cntMb;
-	}
+
+      // Print stat line update every megabyte.
+      cntMb = cnt >> 20;
+      if (cntMb > lastMb) {
+        long totalcap, availcap;
+        if (cdr->readBufferCapacity(&totalcap, &availcap)) {
+          message(1, "Wrote %ld of %ld MB (Buffers %3d%% %.0f%%).\n",
+                  cnt >> 20, total >> 20, buffFill,
+                  (1.0 - ((double)availcap / (double)totalcap)) * 100.0);
+        } else {
+          message(1, "Wrote %ld of %ld MB (Buffer %3d%%).\n",
+                  cnt >> 20, total >> 20, buffFill);
+        }
+        lastMb = cntMb;
       }
+
       unblockSignals();
 
       actProgress = cnt;
