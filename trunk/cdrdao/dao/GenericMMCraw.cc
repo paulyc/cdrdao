@@ -18,6 +18,10 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2000/06/22 12:19:28  andreasm
+ * Added switch for reading CDs written in TAO mode.
+ * The fifo buffer size is now also saved to $HOME/.cdrdao.
+ *
  * Revision 1.2  2000/04/24 12:47:57  andreasm
  * Fixed unit attention problem after writing is finished.
  * Added cddb disk id calculation.
@@ -61,7 +65,7 @@
  *
  */
 
-static char rcsid[] = "$Id: GenericMMCraw.cc,v 1.3 2000-06-22 12:19:28 andreasm Exp $";
+static char rcsid[] = "$Id: GenericMMCraw.cc,v 1.4 2000-11-05 12:29:47 andreasm Exp $";
 
 #include <config.h>
 
@@ -128,6 +132,19 @@ int GenericMMCraw::setWriteParameters(int dataBlockType)
   mp[2] |= 0x03; // write type: raw
   if (simulate_) {
     mp[2] |= 1 << 4; // test write
+  }
+
+  DriveInfo di;
+  if (driveInfo(&di, 1) == 0 && di.burnProof) {
+    // This drive has BURN-Proof function.
+    // Enable it unless explicitly disabled.
+    if (options_ & OPT_MMC_NO_BURNPROOF) {
+      message(1, "Turning BURN-Proof off");
+      mp[2] &= ~0x40;
+    } else {
+      message(1, "Turning BURN-Proof on");
+      mp[2] |= 0x40;
+    }
   }
 
   mp[3] &= 0x3f; // Multi-session: No B0 pointer, next session not allowed
