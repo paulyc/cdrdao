@@ -20,15 +20,11 @@
 #ifndef __GCDMASTER_H__
 #define __GCDMASTER_H__
 
-#include <gtk--.h>
-#include <gtk/gtk.h>
-#include <gnome--.h>
-
 #include <list>
 
 class ProjectChooser;
 class BlankCDDialog;
-#include "Project.h"
+class Project;
 
 class GCDMaster : public Gtk::Widget
 {
@@ -38,7 +34,7 @@ private:
 
   gint project_number;
 
-  Gnome::About *about_;  
+  Gnome::UI::About *about_;  
   BlankCDDialog *blankCDDialog_;
 
   void add(Project *);
@@ -48,30 +44,29 @@ private:
   void readFileSelectorOKCB(ProjectChooser *projectChooser);
   void readFileSelectorCancelCB();
 
-  int aboutDestroy();
-
 public:
   GCDMaster();
+  ~GCDMaster();
 
-  void appClose(Project *);
-  void closeProject(Project *);
-  void closeChooser(ProjectChooser *);
-  bool openNewProject(const char*);
-  void openProject(ProjectChooser *);
   void newChooserWindow();
   ProjectChooser* newChooserWindow2();
-//FIXME: join this two: ?
+  bool openNewProject(const char*);
+  void update(unsigned long level);
+
+private:
+  void appClose(Project *);
+  void connectSignals(Project *);
+  void closeProject(Project *);
+  void closeChooser(ProjectChooser *);
+  void openProject(ProjectChooser *);
   void newAudioCDProject2(ProjectChooser *);
   void newAudioCDProject(const char *name, TocEdit *tocEdit, ProjectChooser *);
   void newDuplicateCDProject(ProjectChooser *);
   void newDumpCDProject(ProjectChooser *);
-
-  void update(unsigned long level);
-
-  void configureDevices();
   void blankCDRW();
-
+  void configureDevices();
   void aboutDialog();
+
 };
 #endif
 
