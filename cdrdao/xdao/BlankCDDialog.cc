@@ -17,7 +17,7 @@
  *  Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
  */
 
-#include <gnome--.h>
+#include <libgnomeuimm.h>
 
 #include "guiUpdate.h"
 #include "DeviceList.h"
@@ -25,17 +25,14 @@
 #include "BlankCDDialog.h"
 #include "Settings.h"
 
-#include <gnome.h>
 
 BlankCDDialog::BlankCDDialog()
 {
   Gtk::VBox *vbox = new Gtk::VBox;
   vbox->set_border_width(10);
   vbox->set_spacing(10);
-  vbox->show();
   add(*vbox);
 
-  active_ = 0;
   moreOptionsDialog_ = 0;
   speed_ = 1;
 
@@ -43,24 +40,26 @@ BlankCDDialog::BlankCDDialog()
   vbox->pack_start(*Devices, true, true);
 
   // device settings
-  Gtk::Frame *blankOptionsFrame = new Gtk::Frame("Blank Options");
-  Gtk::VBox *frameBox = new Gtk::VBox;
-  frameBox->set_border_width(5);
-  frameBox->set_spacing(5);
-  frameBox->show();
-  blankOptionsFrame->add(*frameBox);
+  Gtk::VBox *vbox2 = new Gtk::VBox;
+  vbox2->set_border_width(5);
+  vbox2->set_spacing(5);
 
-  fastBlank_rb = new Gtk::RadioButton("Fast Blank - does not erase contents", 0);
-  fullBlank_rb = new Gtk::RadioButton("Full Blank - erases contents, slower", 0);
+  Gtk::Label *optionsLabel = new Gtk::Label("<b><big>Blank options</big></b>");
+  optionsLabel->set_alignment(0, 1);
+  optionsLabel->set_use_markup(true);
+  vbox2->pack_start(*optionsLabel, false, false);
+  optionsLabel->show();
 
-  frameBox->pack_start(*fastBlank_rb);
+  Gtk::RadioButton_Helpers::Group group;
+  fastBlank_rb = new Gtk::RadioButton(group, "Fast Blank - does not erase contents", 0);
+  fullBlank_rb = new Gtk::RadioButton(group, "Full Blank - erases contents, slower", 0);
+
+  vbox2->pack_start(*fastBlank_rb);
   fastBlank_rb->show();
-  frameBox->pack_start(*fullBlank_rb);
+  vbox2->pack_start(*fullBlank_rb);
   fullBlank_rb->show();
-  fullBlank_rb->set_group(fastBlank_rb->group());
 
-  Gnome::StockPixmap *moreOptionsPixmap =
-  	manage(new Gnome::StockPixmap(GNOME_STOCK_MENU_PROP));
+  Gtk::Image *moreOptionsPixmap = manage(new Gtk::Image(Gtk::StockID(Gtk::Stock::PROPERTIES), Gtk::ICON_SIZE_SMALL_TOOLBAR));
   Gtk::Label *moreOptionsLabel = manage(new Gtk::Label("More Options"));
   Gtk::HBox *moreOptionsBox = manage(new Gtk::HBox);
   moreOptionsBox->set_border_width(2);
@@ -68,21 +67,17 @@ BlankCDDialog::BlankCDDialog()
   moreOptionsBox->pack_start(*moreOptionsPixmap, false, false, 3);
   moreOptionsBox->pack_start(*moreOptionsLabel, false, false, 4);
   moreOptionsButton->add(*moreOptionsBox);
-  moreOptionsButton->clicked.connect(slot(this, &BlankCDDialog::moreOptions));
+  moreOptionsButton->signal_clicked().connect(slot(*this, &BlankCDDialog::moreOptions));
   moreOptionsPixmap->show();
   moreOptionsLabel->show();
   moreOptionsBox->show();
   moreOptionsButton->show();
   moreOptionsBox = manage(new Gtk::HBox);
   moreOptionsBox->show();
-  frameBox->pack_start(*moreOptionsBox);
-  moreOptionsBox->pack_end(*moreOptionsButton, false, false);
-
-  vbox->pack_start(*blankOptionsFrame, false, false);
-  blankOptionsFrame->show();
-
-  Gnome::Pixmap *pixmap =
-  	manage(new Gnome::Pixmap(Gnome::Pixmap::find_file("gcdmaster/gcdmaster.png")));
+  vbox2->pack_start(*moreOptionsBox, false, false);
+  moreOptionsBox->pack_start(*moreOptionsButton, false, false);
+ 
+  Gtk::Image *pixmap = new Gtk::Image(PIXMAPS_DIR "/gcdmaster.png");
   Gtk::Label *startLabel = manage(new Gtk::Label("      Start      "));
   Gtk::VBox *startBox = manage(new Gtk::VBox);
   Gtk::Button *button = manage(new Gtk::Button());
@@ -90,7 +85,7 @@ BlankCDDialog::BlankCDDialog()
   startBox->pack_start(*startLabel, false, false);
 
   button->add(*startBox);
-  button->clicked.connect(slot(this, &BlankCDDialog::startAction));
+  button->signal_clicked().connect(slot(*this, &BlankCDDialog::startAction));
   pixmap->show();
   startLabel->show();
   startBox->show();
@@ -99,19 +94,30 @@ BlankCDDialog::BlankCDDialog()
   Gtk::HBox *hbox2 = new Gtk::HBox;
   hbox2->show();
   hbox2->pack_start(*button, true, false);
+
+  vbox->pack_start(*vbox2, false, false);
   vbox->pack_start(*hbox2, true, false);
+  vbox2->show();
+  vbox->show();
+
+  CdDevice::signal_statusChanged.connect(slot(*this, &BlankCDDialog::devicesStatusChanged));
+
+  set_title("Blank Rewritable CD");
 }
 
 void BlankCDDialog::moreOptions()
 {
   if (!moreOptionsDialog_)
   {
+    Gtk::Button *button;
     std::vector <std::string> buttons;
-    buttons.push_back(GNOME_STOCK_BUTTON_CLOSE);
-    moreOptionsDialog_ = new Gnome::Dialog("Blank options", buttons);
+    moreOptionsDialog_ = new Gtk::Dialog("Blank options",
+							  *this, false, false);
 
-    moreOptionsDialog_->set_parent(*this);
-    moreOptionsDialog_->set_close(true);
+    button = moreOptionsDialog_->add_button(Gtk::StockID(Gtk::Stock::CLOSE), Gtk::RESPONSE_CLOSE);
+    moreOptionsDialog_->set_transient_for(*this);
+
+    button->signal_clicked().connect(slot(*moreOptionsDialog_, &Gtk::Dialog::hide));
 
     Gtk::VBox *vbox = moreOptionsDialog_->get_vbox();
     Gtk::Frame *frame = new Gtk::Frame("More Blank Options");
@@ -144,69 +150,31 @@ void BlankCDDialog::moreOptions()
     speedSpinButton_->set_digits(0);
     speedSpinButton_->show();
     speedSpinButton_->set_sensitive(false);
-    adjustment->value_changed.connect(SigC::slot(this, &BlankCDDialog::speedChanged));
+    adjustment->signal_value_changed().connect(SigC::slot(*this, &BlankCDDialog::speedChanged));
     hbox->pack_start(*speedSpinButton_, false, false, 10);
   
     speedButton_ = new Gtk::CheckButton("Use max.", 0);
     speedButton_->set_active(true);
     speedButton_->show();
-    speedButton_->toggled.connect(SigC::slot(this, &BlankCDDialog::speedButtonChanged));
+    speedButton_->signal_toggled().connect(SigC::slot(*this, &BlankCDDialog::speedButtonChanged));
     hbox->pack_start(*speedButton_, true, true);
     vbox->pack_start(*hbox);
+
+    signal_hide().connect(slot(*moreOptionsDialog_, &Gtk::Dialog::hide));
   }
 
-  moreOptionsDialog_->show();
+  moreOptionsDialog_->present();
 }
 
-void BlankCDDialog::start()
+void BlankCDDialog::devicesStatusChanged()
 {
-  if (active_) {
-    get_window().raise();
-  }
-
-  active_ = 1;
-
-  update(UPD_CD_DEVICES);
-
-  show();
-}
-
-void BlankCDDialog::stop()
-{
-  if (active_) {
-    hide();
-    if (moreOptionsDialog_)
-      moreOptionsDialog_->hide();
-    active_ = 0;
-  }
-}
-
-void BlankCDDialog::update(unsigned long level)
-{
-  if (!active_)
-    return;
-
-  set_title("Blank CD Rewritable");
-
-  if (level & UPD_CD_DEVICES)
-    Devices->import();
-  else if (level & UPD_CD_DEVICE_STATUS)
-  {
-    Devices->importStatus();
-    Devices->selectOne();
-  }
-}
-
-gint BlankCDDialog::delete_event_impl(GdkEventAny*)
-{
-  stop();
-  return 1;
+  Devices->selectOne();
 }
 
 void BlankCDDialog::startAction()
 {
-  if (Devices->selection().empty()) {
-    Gnome::Dialogs::ok(*this, "Please select at least one recorder device");
+  if (Devices->selectionEmpty()) {
+    Gtk::MessageDialog(*this, "Please select at least one recorder device", Gtk::MESSAGE_INFO).run();
     return;
   }
 
@@ -220,26 +188,20 @@ void BlankCDDialog::startAction()
   int reload = checkReloadWarning(this);
   int burnSpeed = getSpeed();
 
-  Gtk::CList_Helpers::SelectionList targetSelection = Devices->selection();
+  std::list<CdDevice *> devices = Devices->getAllSelected();
 
-  for (int i = 0; i < targetSelection.size(); i++) {
-    DeviceList::DeviceData *targetData =
-        (DeviceList::DeviceData*)targetSelection[i].get_data();
-
-    if (targetData == NULL)
-      break;
-  
-    CdDevice *writeDevice = CdDevice::find(targetData->bus, targetData->id, targetData->lun);
-  
-    if (writeDevice == NULL)
-      break;
+  for (std::list<CdDevice *>::iterator i = devices.begin();
+         i != devices.end(); i++)
+  {
+    CdDevice *writeDevice = *i;
 
     if (writeDevice->blank(fast, burnSpeed, eject, reload) != 0)
-      Gnome::Dialogs::error(*this, "Cannot start blanking");
+      Gtk::MessageDialog(*this, "Cannot start blanking", Gtk::MESSAGE_ERROR).run();
     else
       guiUpdate(UPD_CD_DEVICE_STATUS);
   }
-  stop();
+
+  hide();
 }
 
 void BlankCDDialog::speedButtonChanged()
