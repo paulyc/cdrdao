@@ -537,7 +537,13 @@ bool AudioCDProject::appendTrack(const char* filename)
   switch(ret) {
   case 0:
     audioCDView_->fullView();
-    statusMessage(_("Appended track with audio data from \"%s\"."), filename);
+    if (TrackData::audioFileType(filename) == TrackData::WAVE) {
+        statusMessage(_("Appended track with WAV audio from \"%s\"."),
+                      filename);
+    } else {
+        statusMessage(_("Appended track with raw audio samples from \"%s\"."),
+                      filename);
+    }
     break;
   case 1:
     statusMessage(_("Cannot open audio file \"%s\"."), filename);
