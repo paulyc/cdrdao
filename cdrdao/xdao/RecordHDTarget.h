@@ -20,8 +20,6 @@
 #ifndef __RECORD_HD_TARGET_H
 #define __RECORD_HD_TARGET_H
 
-#include <gnome--.h>
-
 class TocEdit;
 class CdDevice;
 class DeviceList;
@@ -38,15 +36,15 @@ public:
   void update(unsigned long level);
   void cancelAction();
 
-  Gtk::string getFilename();
-  Gtk::string getPath();
+  Glib::ustring getFilename();
+  Glib::ustring getPath();
 
 private:
   int active_;
 
   int speed_;
 
-  Gnome::FileEntry *dirEntry_;
+  Gnome::UI::FileEntry *dirEntry_;
   Gtk::Entry *fileNameEntry_;
 
 };
