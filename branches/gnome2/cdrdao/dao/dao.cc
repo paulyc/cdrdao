@@ -211,6 +211,7 @@ static int writer(const Toc *toc, CdrDriver *cdr, BufferHeader *header,
   long lastMb = 0;
   long buffered;
   int buffFill;
+  int writerFill = 0;
   int minFill = 100;
   int maxFill = 0;
   int actTrackNr = 0;
@@ -385,9 +386,10 @@ static int writer(const Toc *toc, CdrDriver *cdr, BufferHeader *header,
       if (cntMb > lastMb) {
         long totalcap, availcap;
         if (cdr->readBufferCapacity(&totalcap, &availcap)) {
-          message(1, "Wrote %ld of %ld MB (Buffers %3d%% %.0f%%).\n",
-                  cnt >> 20, total >> 20, buffFill,
-                  (1.0 - ((double)availcap / (double)totalcap)) * 100.0);
+          writerFill = (int)((1.0 - ((double)availcap / (double)totalcap))
+                             * 100.0);
+          message(1, "Wrote %ld of %ld MB (Buffers %3d%% %3d%%).\n",
+                  cnt >> 20, total >> 20, buffFill, writerFill);
         } else {
           message(1, "Wrote %ld of %ld MB (Buffer %3d%%).\n",
                   cnt >> 20, total >> 20, buffFill);
@@ -401,7 +403,8 @@ static int writer(const Toc *toc, CdrDriver *cdr, BufferHeader *header,
       actProgress /= total / 1000;
 
       cdr->sendWriteCdProgressMsg(CdrDriver::WCD_DATA, totalTracks, actTrackNr,
-				  buf.trackProgress, actProgress, buffFill);
+				  buf.trackProgress, actProgress, buffFill,
+                                  writerFill);
     }
     else {
       if (speed > 0) {
