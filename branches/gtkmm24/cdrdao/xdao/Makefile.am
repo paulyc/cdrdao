@@ -132,6 +132,9 @@ freedesktop_DATA = gcdmaster.xml
 desktopdir = $(datadir)/applications
 desktop_DATA = gcdmaster.desktop
 
+appregdir = $(datadir)/application-registry
+appreg_DATA = gcdmaster.applications
+
 icondir = $(datadir)/pixmaps
 icon_DATA = gcdmaster.png gcdmaster-doc.png
 
@@ -142,5 +145,6 @@ EXTRA_DIST = \
 	$(desktop_DATA)	\
 	$(icon_DATA)	\
 	$(freedesktop_DATA)	\
+	$(appreg_DATA)	\
 	BUGS TASKS
 
