@@ -56,29 +56,29 @@ void Project::createMenus()
 
   {
     using namespace Gnome::UI::Items;
-    fileMenuTree.push_back(Item(Icon(Gtk::Stock::NEW.id),
+    fileMenuTree.push_back(Item(Icon(Gtk::Stock::NEW),
 						N_("New..."),
 						signal_newProject.slot(),
 						N_("New Project")));
 
     // File->New menu
-    newMenuTree.push_back(Item(Icon(Gtk::Stock::NEW.id),
+    newMenuTree.push_back(Item(Icon(Gtk::Stock::NEW),
 						N_("_Audio CD"),
 						signal_newAudioProject.slot(),
 						N_("New Audio CD")));
 
-    newMenuTree.push_back(Item(Icon(Gtk::Stock::NEW.id),
+    newMenuTree.push_back(Item(Icon(Gtk::Stock::NEW),
 						N_("_Duplicate CD"),
 						signal_newDuplicateProject.slot(),
 						N_("Make a copy of a CD")));
 
-    newMenuTree.push_back(Item(Icon(Gtk::Stock::NEW.id),
+    newMenuTree.push_back(Item(Icon(Gtk::Stock::NEW),
 						N_("_Copy CD to disk"),
 						signal_newDumpProject.slot(),
 						N_("Dump CD to disk")));
 
     // File menu
-    fileMenuTree.push_back(SubTree(Icon(Gtk::Stock::NEW.id),
+    fileMenuTree.push_back(SubTree(Icon(Gtk::Stock::NEW),
 					    N_("New"),
 					    newMenuTree,
 					    "Create a new project"));
@@ -114,19 +114,19 @@ void Project::createMenus()
   {
     using namespace Gnome::UI::Items;
     // Edit menu
-    editMenuTree.push_back(Item(Icon(Gtk::Stock::PROPERTIES.id),
+    editMenuTree.push_back(Item(Icon(Gtk::Stock::PROPERTIES),
     				 N_("Project Info..."),
 			      slot(*this, &Project::projectInfo),
 			      N_("Edit global project data")));
 
     // Actions menu
-    actionsMenuTree.push_back(Item(Icon(Gtk::Stock::CDROM.id),
+    actionsMenuTree.push_back(Item(Icon(Gtk::Stock::CDROM),
 								N_("_Record"),
 								slot(*this, &Project::recordToc2CD),
 								N_("Record")));
     posActionsRecord = actionsMenuTree.size() - 1;
 
-    actionsMenuTree.push_back(Item(Icon(Gtk::Stock::CDROM.id),
+    actionsMenuTree.push_back(Item(Icon(Gtk::Stock::CDROM),
 								N_("Blank CD-RW"),
 								signal_blankCD.slot(),
 								N_("Erase a CD-RW")));
@@ -137,7 +137,7 @@ void Project::createMenus()
 //					    slot(this, &Project::nothing_cb)));
 
     // Settings menu
-    settingsMenuTree.push_back(Item(Icon(Gtk::Stock::PREFERENCES.id),
+    settingsMenuTree.push_back(Item(Icon(Gtk::Stock::PREFERENCES),
 								N_("Configure Devices..."),
 								signal_configureDevices.slot()));
   }
@@ -220,7 +220,7 @@ void Project::createStatusbar()
 {
   Gtk::HBox *container = new Gtk::HBox;
 //GTKMM2 bugzilla bug #93317
-  statusbar_ = new Gnome::UI::AppBar(FALSE, TRUE, GNOME_PREFERENCES_NEVER);
+  statusbar_ = new Gnome::UI::AppBar(FALSE, TRUE, Gnome::UI::PREFERENCES_NEVER);
   progressbar_ = new Gtk::ProgressBar;
   progressButton_ = new Gtk::Button("Cancel");
   progressButton_->set_sensitive(false);
