@@ -76,7 +76,7 @@ class FormatConverter
   int supportedExtensions(std::list<std::string>&);
 
  private:
-  std::list<std::string> tempFiles_;
+  std::list<std::string*> tempFiles_;
   std::list<FormatSupportManager*> managers_;
 
   FormatSupport* newConverter(const char* fn);
