@@ -18,6 +18,10 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2000/06/10 14:44:47  andreasm
+ * Tracks that are shorter than 4 seconds do not lead to a fatal error anymore.
+ * The user has the opportunity to record such tracks now.
+ *
  * Revision 1.1.1.1  2000/02/05 01:32:33  llanero
  * Uploaded cdrdao 1.1.3 with pre10 patch applied.
  *
@@ -136,6 +140,7 @@ private:
   friend class TocParserGram;
   friend class Toc;
   friend class TrackReader;
+  friend class SubTrackIterator;
 
   TrackData::Mode type_; // track type
 
@@ -205,6 +210,19 @@ private:
 
   long readTrackData(Sample *buf, long len);
   int readBlock(int raw, long lba, Sample *buf);
+};
+
+class SubTrackIterator {
+public:
+  SubTrackIterator(const Track *);
+  ~SubTrackIterator();
+
+  const SubTrack *first();
+  const SubTrack *next();
+
+private:
+  const Track *track_;
+  SubTrack *iterator_;
 };
 
 #endif
