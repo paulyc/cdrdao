@@ -900,17 +900,14 @@ int TrackData::dataFileLength(const char *fname, long offset,
 //         WAVE: wave file
 TrackData::FileType TrackData::audioFileType(const char *filename)
 {
-  const char *p = fileExtension(filename);
+  FileExtension p = fileExtension(filename);
 
-  if (p) {
-    if (strcasecmp(p, "wav") == 0) {
-      return WAVE;
-    } else if (strcasecmp(p, "mp3") == 0) {
-      return MP3;
-    } else if (strcasecmp(p, "ogg") == 0) {
-      return OGG;
-    }
-  }
+  if (p == FE_WAV)
+    return WAVE;
+  if (p == FE_MP3)
+    return MP3;
+  if (p == FE_OGG)
+    return OGG;
 
   return RAW;
 }
