@@ -55,7 +55,11 @@ gcdmaster_LDADD =					\
 	@scsilib_libs@					\
 	@LIBGUIMM2_LIBS@ @GTKMM2_LIBS@
 
-gcdmaster_DEPENDENCIES = @sound_if_obj@
+gcdmaster_DEPENDENCIES = \
+	$(top_builddir)/dao/libdao.a			\
+	$(top_builddir)/paranoia/libcdda_paranoia.a	\
+	$(top_builddir)/trackdb/libtrackdb.a		\
+	@sound_if_obj@
 
 INCLUDES =					\
 	-I$(srcdir)/../trackdb			\

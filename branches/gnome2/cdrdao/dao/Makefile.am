@@ -39,12 +39,15 @@ EXTRA_libdao_a_SOURCES = 	\
 
 cdrdao_LDADD =						\
 	-L. -ldao					\
-	@thread_libs@					\
 	-L$(top_builddir)/paranoia -lcdda_paranoia	\
 	-L$(top_builddir)/trackdb -ltrackdb		\
+	@thread_libs@					\
 	@scsilib_libs@
 
-cdrdao_DEPENDENCIES = ../paranoia/libcdda_paranoia.a libdao.a
+cdrdao_DEPENDENCIES = \
+	$(top_builddir)/paranoia/libcdda_paranoia.a	\
+	$(top_builddir)/trackdb/libtrackdb.a		\
+	libdao.a
 
 CDRDAO_DATA_DIR = $(datadir)/cdrdao
 DRIVER_TABLE_FILE = $(CDRDAO_DATA_DIR)/drivers
