@@ -49,7 +49,13 @@ FormatSupport::Status FormatOgg::convertStart(const char* from, const char* to)
 
 FormatSupport::Status FormatOgg::convertContinue()
 {
-  Status err = oggDecodeFrame();
+  Status err;
+
+  for (int i = 0; i < 4; i++) {
+    err = oggDecodeFrame();
+    if (err != FS_IN_PROGRESS)
+      break;
+  }
 
   if (err != FS_IN_PROGRESS)
     oggExit();

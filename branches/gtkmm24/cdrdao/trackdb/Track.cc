@@ -490,7 +490,7 @@ int Track::isPadded() const
 }
 
 // writes out track data in TOC file syntax
-void Track::print(std::ostream &out) const
+void Track::print(std::ostream &out, bool conversions) const
 {
   SubTrack *st;
   const char *s;
@@ -533,7 +533,7 @@ void Track::print(std::ostream &out) const
 
 
   for (st = subTracks_; st != NULL; st = st->next_) {
-    st->print(out);
+    st->print(out, conversions);
   }
 
   if (start_.lba() != 0) {
@@ -542,6 +542,27 @@ void Track::print(std::ostream &out) const
 
   for (i = 0; i < nofIndices_; i++) {
     out << "INDEX " << index_[i].str() << std::endl;
+  }
+}
+
+void Track::collectFiles(std::set<std::string>& set)
+{
+  SubTrack* st;
+  for (st = subTracks_; st != NULL; st = st->next_) {
+    const char* f = st->filename();
+    if (f)
+      set.insert(f);
+  }
+}
+
+void Track::markFileConversion(const char* src, const char* dst)
+{
+  SubTrack* st;
+  for (st = subTracks_; st != NULL; st = st->next_) {
+    const char* f = st->filename();
+    if (f && strcmp(f, src) == 0) {
+      st->convertedFilename(dst);
+    }
   }
 }
 

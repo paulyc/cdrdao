@@ -23,7 +23,9 @@
 #include <string>
 #include <map>
 #include <list>
+
 #include "TrackData.h"
+#include "Toc.h"
 
 // Quick abstract class declarations. Format converters should derive
 // their own FormatSupport and FormatSupportManager.
@@ -89,10 +91,20 @@ class FormatConverter
 
   // Convert file, return tempory file with WAV or RAW data (based on
   // temp file extension).Returns NULL if conversion failed.
-  const char* convert(const char* src);
+  const char* convert(const char* src, FormatSupport::Status* st = NULL);
 
-  // Do it yourself. Returns a converter.
-  FormatSupport* newConverter(const char* fn);
+  // Convert all files contained in a given Toc object, and update the
+  // Toc accordingly. This is a big time blocking call.
+  FormatSupport::Status convert(Toc* toc);
+
+  // Dynamic allocator.
+  FormatSupport* newConverter(const char* src);
+
+  // Do it yourself. Returns a converter and starts it. Sets dst to
+  // the converter file name (or clears it if no converter
+  // found). Returns NULL if file can't be converted.
+  FormatSupport* newConverterStart(const char* src, std::string& dst,
+                                   FormatSupport::Status* status = NULL);
 
   // Add all supported extensions to string list. Returns number added.
   int supportedExtensions(std::list<std::string>&);

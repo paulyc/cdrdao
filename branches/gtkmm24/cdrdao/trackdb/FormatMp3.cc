@@ -64,7 +64,13 @@ FormatSupport::Status FormatMp3::convertStart(const char* from, const char* to)
 
 FormatSupport::Status FormatMp3::convertContinue()
 {
-  Status err = madDecodeFrame();
+  Status err;
+
+  for (int i = 0; i < 3; i++) {
+    err = madDecodeFrame();
+    if (err != FS_IN_PROGRESS)
+      break;
+  }
 
   if (err != FS_IN_PROGRESS)
     madExit();

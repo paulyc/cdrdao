@@ -76,6 +76,43 @@ FormatSupport* FormatConverter::newConverter(const char* fn)
   return candidate;
 }
 
+FormatSupport* FormatConverter::newConverterStart(const char* src,
+                                                  std::string& dst,
+                                                  FormatSupport::Status* st)
+{
+  if (st)
+    *st = FormatSupport::FS_SUCCESS;
+
+  FormatSupport* candidate = newConverter(src);
+
+  if (candidate) {
+    const char* extension;
+    if (candidate->format() == TrackData::WAVE)
+      extension = "wav";
+    else
+      extension = "raw";
+
+    bool exists = tempFileManager.getTempFile(dst, src, extension);
+
+    if (exists) {
+      delete candidate;
+      return NULL;
+    }
+
+    FormatSupport::Status ret = candidate->convertStart(src, dst.c_str());
+    if (st)
+        *st = ret;
+
+    if (ret == FormatSupport::FS_SUCCESS)
+      return candidate;
+    else
+      delete candidate;
+  }
+
+  dst.clear();
+  return NULL;
+}
+
 bool FormatConverter::canConvert(const char* fn)
 {
   FormatSupport* c = newConverter(fn);
@@ -87,8 +124,11 @@ bool FormatConverter::canConvert(const char* fn)
   return true;
 }
 
-const char* FormatConverter::convert(const char* fn)
+const char* FormatConverter::convert(const char* fn,
+                                     FormatSupport::Status* err)
 {
+  *err = FormatSupport::FS_SUCCESS;
+
   FormatSupport* c = newConverter(fn);
 
   if (!c)
@@ -105,9 +145,9 @@ const char* FormatConverter::convert(const char* fn)
 
   if (!exists) {
     message(2, "Decoding file \"%s\"", fn);
-    int result = c->convert(fn, file->c_str());
+    *err = c->convert(fn, file->c_str());
 
-    if (result != 0)
+    if (*err != FormatSupport::FS_SUCCESS)
       return NULL;
     
     tempFiles_.push_front(file);
@@ -118,13 +158,36 @@ const char* FormatConverter::convert(const char* fn)
 
 int FormatConverter::supportedExtensions(std::list<std::string>& list)
 {
-    int num = 0;
+  int num = 0;
 
-    std::list<FormatSupportManager*>::iterator i = managers_.begin();
-    for (;i != managers_.end(); i++) {
-        num += (*i)->supportedExtensions(list);
-    }
-    return num;
+  std::list<FormatSupportManager*>::iterator i = managers_.begin();
+  for (;i != managers_.end(); i++) {
+    num += (*i)->supportedExtensions(list);
+  }
+  return num;
+}
+
+FormatSupport::Status FormatConverter::convert(Toc* toc)
+{
+  FormatSupport::Status err;
+
+  std::set<std::string> set;
+
+  toc->collectFiles(set);
+
+  std::set<std::string>::iterator i = set.begin();
+
+  for (; i != set.end(); i++) {
+
+    const char* dst = convert((*i).c_str(), &err);
+    if (!dst && err != FormatSupport::FS_SUCCESS)
+      return FormatSupport::FS_OTHER_ERROR;
+
+    if (dst)
+      toc->markFileConversion((*i).c_str(), dst);
+  }
+
+  return FormatSupport::FS_SUCCESS;
 }
 
 FormatConverter formatConverter;

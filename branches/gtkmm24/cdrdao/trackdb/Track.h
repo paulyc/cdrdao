@@ -115,7 +115,10 @@ public:
     return cdtext_.getPack(blockNr, t);
   }
 
-  void print(std::ostream &) const;
+  void print(std::ostream &, bool conversions = false) const;
+
+  void collectFiles(std::set<std::string>& set);
+  void markFileConversion(const char* src, const char* dst);
 
 private:
   friend class TocParserGram;
