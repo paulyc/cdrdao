@@ -287,9 +287,6 @@ void GCDMaster::update(unsigned long level)
   {
 //GTKMM2    (*i)->update(level);
   }
-
-  if (blankCDDialog_ != 0)
-    blankCDDialog_->update(level);
 }
 
 void GCDMaster::configureDevices()
@@ -302,7 +299,7 @@ void GCDMaster::blankCDRW()
   if (blankCDDialog_ == 0)
     blankCDDialog_ = new BlankCDDialog;
 
-  blankCDDialog_->start();
+  blankCDDialog_->present();
 }
 
 void GCDMaster::aboutDialog()
