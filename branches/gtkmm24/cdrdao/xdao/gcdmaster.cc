@@ -273,9 +273,6 @@ void GCDMaster::closeProject()
   }
   delete this;
 
-  std::cout << "Number of projects = " << projects.size() << std::endl;
-  std::cout << "Number of choosers = " << choosers.size() << std::endl;
-
   if ((projects.size() == 0) && (choosers.size() == 0))
     Gnome::Main::quit(); // Quit if there are not remaining windows
 }
