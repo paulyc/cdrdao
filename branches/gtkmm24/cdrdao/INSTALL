@@ -4,10 +4,7 @@ Installation:
 The GnomeCDMaster GUI additionally requires the Gimp toolkit gtk+-2.4
 recent Gnome libraries and the C++ bindings gtkmm-2.4 and gnomemm-2.4.
 The packages are available from www.gtk.org, www.gnome.org and
-gtkmm.sourceforge.net. You will need exactly the mentioned library
-version. With older or newer versions the GnomeCDMaster sources
-usually fail to compile.
-
+gtkmm.sourceforge.net.
 
 If you fetched the source tree directly from CVS, you will first have
 to run the autogen.sh script to unpack the scsilib and pccts libraries
