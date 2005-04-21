@@ -1,5 +1,5 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.1.2.2 $)dnl
+AC_REVISION($Revision: 1.1.2.3 $)dnl
 
 AC_INIT(cdrdao, 1.1.9)
 
@@ -102,8 +102,9 @@ fi
 dnl Checks for library functions.
 AC_CHECK_FUNCS(strerror)
 AC_CHECK_FUNCS(mlockall munlockall)
-AC_CHECK_FUNCS(seteuid setegid getpagesize)
+AC_CHECK_FUNCS(getpagesize)
 AC_CHECK_FUNCS(usleep)
+AC_CHECK_FUNCS(setreuid setregid seteuid setegid setuid setgid)
 
 AC_CHECK_FUNCS(inet_aton)
 
