@@ -1,5 +1,5 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_REVISION($Revision: 1.1.2.1 $)dnl
+AC_REVISION($Revision: 1.1.2.2 $)dnl
 
 AC_INIT(cdrdao, 1.1.9)
 
@@ -350,7 +350,7 @@ if test "$with_mp3_support" = yes; then
         [echo "MP3 support disabled"; with_mp3_support=no])
 fi
 dnl Check for libao support
-if test "$with_mp3_support" = yes; then
+if test "$with_mp3_support" = yes || test "$with_ogg_support" = yes; then
   PKG_CHECK_MODULES(AO, ao >= 0.8, [],
         [echo "Building of gcdmaster disabled"; with_ogg_support=no;
         with_mp3_support=no; en_xdao=no])
