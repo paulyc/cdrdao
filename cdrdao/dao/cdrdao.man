@@ -414,7 +414,7 @@ Upon exit from cdrdao, do not delete temporary WAV files created from MP3 and Og
 .TP
 .BI \--save
 Saves some of the current options to the settings file
-"$HOME/.cdrdao". See section \'SETTINGS\' for more details.
+"$HOME/.cdrdao" and exit. See section \'SETTINGS\' for more details.
 .TP
 .BI \-n
 Suppresses the 10 second pause before writing or simulating.
@@ -835,6 +835,9 @@ Local directory where fetched CDDB records will be stored, used by
 .I read-cddb.
 Corresponding option:
 .I --cddb-directory
+.IP tmp_file_dir
+Directory where temporay WAV files will be created from decoding MP3 and Ogg Vorbis files. Corresponding option:
+.I --tmpdir
 .LP
 
 
