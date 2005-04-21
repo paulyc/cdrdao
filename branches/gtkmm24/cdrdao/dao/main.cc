@@ -42,6 +42,7 @@
 #include "ScsiIf.h"
 #include "CdrDriver.h"
 #include "dao.h"
+#include "port.h"
 #include "Settings.h"
 #include "Cddb.h"
 #include "TempFileManager.h"
@@ -1081,8 +1082,14 @@ static void commitSettings(Settings* SETTINGS, const char* settingsPath)
   tempFileManager.setKeepTemps(KEEP);
 
   if (SAVE_SETTINGS && settingsPath != NULL) {
-    exportSettings(COMMAND);
-    SETTINGS->write(settingsPath);
+    // If we're saving our settings, give up root privileges and
+    // exit. The --save option is only compiled in if setreuid() is
+    // available (because it could be used for a local root exploit).
+    if (giveUpRootPrivileges()) {
+      exportSettings(COMMAND);
+      SETTINGS->write(settingsPath);
+    }
+    exit(0);
   }
 }
 
