@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2004/02/12 01:13:32  poolshark
+ * Merge from gnome2 branch
+ *
  * Revision 1.1.1.1.6.2  2004/01/12 20:50:26  poolshark
  * Added _( and N_( intl macros
  *
@@ -159,7 +162,7 @@ int SoundIFImpl::openDevice()
     return 0; // already open
 
   if ((dspFd_ = open("/dev/audio", O_WRONLY | O_NONBLOCK)) < 0) {
-    message(-1, _("Cannot open \"/dev/audio\": %s"), strerror(errno));
+    log_message(-1, _("Cannot open \"/dev/audio\": %s"), strerror(errno));
     return 1;
   }
   /* Clear the non-blocking flag */
@@ -185,7 +188,7 @@ int SoundIFImpl::setupDevice()
     return 1;
   
   if (ioctl(dspFd_, AUDIO_GETINFO, &auinf) < 0) {
-    message(-1, _("Cannot get state of audio interface: %s"), strerror(errno));
+    log_message(-1, _("Cannot get state of audio interface: %s"), strerror(errno));
     return 1;
   }
   auinf.play.sample_rate=44100;
@@ -194,7 +197,7 @@ int SoundIFImpl::setupDevice()
   auinf.play.encoding=AUDIO_ENCODING_LINEAR;
 
   if (ioctl(dspFd_, AUDIO_SETINFO, &auinf) < 0) {
-    message(-1, _("Cannot setup audio interface: %s"), strerror(errno));
+    log_message(-1, _("Cannot setup audio interface: %s"), strerror(errno));
     return 1;
   }
 
