@@ -18,6 +18,9 @@
  */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2004/02/12 01:13:31  poolshark
+ * Merge from gnome2 branch
+ *
  * Revision 1.2.6.1  2004/01/05 00:34:02  poolshark
  * First checking of gnome2 port
  *
@@ -66,7 +69,7 @@ public:
 
   int statusChanged();
 
-  Process *start(const char *, char *args[], int pipeFdArgNum);
+  Process *start(const char *, const char **args, int pipeFdArgNum);
   void stop(Process *);
 
   void remove(Process *);
